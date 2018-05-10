@@ -12,13 +12,14 @@ usage(){
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
      print "       -c  command:"
      print "                     createuser         -a -u"
+     print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
      print "                     changepassword     -a -u -p"
      print "                     listpolicies       -a -u"
      print "                     listgroups         -a -u"
      print "                     detachpolicies     -a -u"
      print "                     deleteuser         -a -u"
      print "                     attachpolicy       -a -u -t"
-     print "                     getpolicyarn       -a -t"
+     print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex (-t)"
      print "       -h  display usage"
 }
 
@@ -71,6 +72,25 @@ do
 done
 shift $(($OPTIND - 1))
 
+if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               if [ "$PASSWORD" == "" ] ; then
+                    print "password not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AdministratorAccess    --user-name $USERNAME
+               print $USERNAME
+               print $PASSWORD
+fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
                if [ "$USERNAME" == "" ] ; then
                     print "user not specified"
@@ -189,7 +209,7 @@ if [ "$COMMAND" == "GETPOLICYARN" ] ; then
                     print "thing not specified"
                     exit 1
                fi
-               aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | grep $THING
+               aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
 fi
 
 exit 1
