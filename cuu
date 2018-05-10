@@ -1,0 +1,150 @@
+#!/usr/bin/ksh
+Tmp="/tmp/$$"
+TmpDir="/tmp/dir$$"
+trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
+trap "exit 2" 1 2 3 13 15
+rm $Tmp  >/dev/null 2>&1
+
+
+typeset -u COMMAND
+COMMAND=""
+USERNAME=""
+ACCOUNT=""
+CREATEUSER=""
+PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
+
+while getopts "c:u:a:p:t" arg
+do
+	case $arg in
+            c)
+               COMMAND=$OPTARG
+               ;;
+            u)
+               USERNAME=$OPTARG  
+               ;;
+            a)
+               ACCOUNT=$OPTARG
+               ;;
+            p)
+               PASSWORD=$OPTARG
+               ;;
+            t)
+               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
+               aws --profile $1 iam create-user --user-name $USERNAME
+               aws --profile $1 iam create-login-profile --user-name $2 --password ONETWOthreefour1234!!!!  --password-reset-required
+               aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
+               aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
+               ;;
+	    *)
+	       ls
+	       exit 0
+	       ;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+if [ "$COMMAND" == "CREATEUSER" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               if [ "$PASSWORD" == "" ] ; then
+                    print "password not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
+fi
+if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               if [ "$PASSWORD" == "" ] ; then
+                    print "password not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+fi
+if [ "$COMMAND" == "LISTPOLICIES" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk '{print $2}'
+fi
+if [ "$COMMAND" == "LISTGROUPS" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk '{print $5}'
+fi
+if [ "$COMMAND" == "DETACHGROUPS" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
+               {
+                   sz = "aws --profile " A " remove-user-from-group --user-name " U " --group-name " $5
+                   print sz
+               }'
+fi
+if [ "$COMMAND" == "DETACHPOLICIES" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
+               {
+                   sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
+                   print sz
+                   system(sz)
+               }'
+fi
+if [ "$COMMAND" == "DELETEUSER" ] ; then
+               if [ "$USERNAME" == "" ] ; then
+                    print "user not specified"
+                    exit 1
+               fi
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
+               aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
+fi
+
+
+exit 1
