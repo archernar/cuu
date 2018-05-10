@@ -38,6 +38,7 @@ do
                aws --profile $1 iam create-login-profile --user-name $2 --password ONETWOthreefour1234!!!!  --password-reset-required
                aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
                aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
+               exit 0
                ;;
 	    *)
 	       ls
