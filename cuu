@@ -33,6 +33,12 @@ usage(){
      print "       -h  display usage"
 }
 
+assert() {
+    if [ "$1" == "" ] ; then
+         print $2
+         exit 1
+    fi
+}
 typeset -u COMMAND
 COMMAND=""
 USERNAME=""
@@ -77,19 +83,13 @@ do
 done
 shift $(($OPTIND - 1))
 
+if [ "$COMMAND" == "TEST" ] ; then
+     assert "$ACCOUNT" "Account not specified"
+fi
 if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
-               if [ "$PASSWORD" == "" ] ; then
-                    print "password not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
+               assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AdministratorAccess    --user-name $USERNAME
@@ -97,18 +97,9 @@ if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
                print $PASSWORD
 fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
-               if [ "$PASSWORD" == "" ] ; then
-                    print "password not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
+               assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
@@ -116,65 +107,32 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
-               if [ "$PASSWORD" == "" ] ; then
-                    print "password not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
+               assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
 if [ "$COMMAND" == "LISTUSERS" ] ; then
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-users | gawk '{printf("%-44s %s\n",$6,$2)}'
 fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-groups | gawk '{printf("%-44s %s\n",$5,$2)}'
 fi
 if [ "$COMMAND" == "LISTPOLICIES" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk '{print $0}'
 fi
 if [ "$COMMAND" == "LISTUSERGROUPS" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk '{print $5}'
 fi
 if [ "$COMMAND" == "DETACHGROUPS" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " remove-user-from-group --user-name " U " --group-name " $5
@@ -182,14 +140,8 @@ if [ "$COMMAND" == "DETACHGROUPS" ] ; then
                }'
 fi
 if [ "$COMMAND" == "DETACHPOLICIES" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
@@ -197,45 +149,24 @@ if [ "$COMMAND" == "DETACHPOLICIES" ] ; then
                }'
 fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
-               if [ "$USERNAME" == "" ] ; then
-                    print "user not specified"
-                    exit 1
-               fi
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
 if [ "$COMMAND" == "ATTACHPOLICY" ] ; then
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
-               if [ "$THING" == "" ] ; then
-                    print "thing not specified"
-                    exit 1
-               fi
+               assert "$ACCOUNT" "Account not specified"
+               assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
 fi
 if [ "$COMMAND" == "GETPOLICYARN" ] ; then
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
-               if [ "$THING" == "" ] ; then
-                    print "thing not specified"
-                    exit 1
-               fi
+               assert "$ACCOUNT" "Account not specified"
+               assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
-               if [ "$ACCOUNT" == "" ] ; then
-                    print "account not specified"
-                    exit 1
-               fi
+               assert "$ACCOUNT" "Account not specified"
                if [ "$THING" == "" ] ; then
                     THING="ConsoleLogin"
                fi
