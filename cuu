@@ -5,6 +5,22 @@ trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 
+usage(){
+     print "Usage: cuu [-a][-u][-t][-c][-h]"
+     print "       -a  cli profile name  (from .aws/config)"
+     print "       -u  operand:  username"
+     print "       -t  operand:  thing name  (used to specify a resource or object name)"
+     print "       -c  command:"
+     print "                     createuser         -a -u"
+     print "                     changepassword     -a -u -p"
+     print "                     listpolicies       -a -u"
+     print "                     listgroups         -a -u"
+     print "                     detachpolicies     -a -u"
+     print "                     deleteuser         -a -u"
+     print "                     attachpolicy       -a -u -t"
+     print "                     getpolicyarn       -a -t"
+     print "       -h  display usage"
+}
 
 typeset -u COMMAND
 COMMAND=""
@@ -14,7 +30,7 @@ CREATEUSER=""
 THING=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
-while getopts "c:u:a:p:t:z" arg
+while getopts "c:u:a:p:t:zh" arg
 do
 	case $arg in
             c)
@@ -44,8 +60,11 @@ do
                aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
                exit 0
                ;;
+	    h)
+               usage
+	       exit 0
+               ;;
 	    *)
-	       ls
 	       exit 0
 	       ;;
 	esac
@@ -174,3 +193,8 @@ if [ "$COMMAND" == "GETPOLICYARN" ] ; then
 fi
 
 exit 1
+
+
+
+
+
