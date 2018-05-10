@@ -12,10 +12,11 @@ rm $Tmp  >/dev/null 2>&1
 # ----------------------------------------------------
 
 usage(){
-     print "Usage: cuu [-a][-u][-t][-c][-h]"
+     print "Usage: cuu [-a][-u][-t][-c][-z][-h]"
      print "       -a  cli profile name  (from .aws/config)"
      print "       -u  operand:  username"
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
+     print "       -z  shadow file reset (/tmp/cuu.out)"
      print "       -c  command:"
      print "                     createuser         -a -u"
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
@@ -37,11 +38,15 @@ USERNAME=""
 ACCOUNT=""
 CREATEUSER=""
 THING=""
+COUNT=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
-while getopts "c:u:a:p:t:zh" arg
+while getopts "n:c:u:a:p:t:zhb" arg
 do
 	case $arg in
+            n)
+               COUNT=$OPTARG
+               ;;
             c)
                COMMAND=$OPTARG
                ;;
@@ -58,16 +63,7 @@ do
                THING=$OPTARG
                ;;
             z)
-               exit 0
-               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
-               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
-               aws --profile $1 iam create-user --user-name $USERNAME
-               aws --profile $1 iam create-login-profile --user-name $2 --password ONETWOthreefour1234!!!!  --password-reset-required
-               aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
-               aws --profile $1 iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
-               exit 0
+               rm -rf /tmp/cuu.out
                ;;
 	    h)
                usage
@@ -233,10 +229,30 @@ if [ "$COMMAND" == "GETPOLICYARN" ] ; then
                fi
                aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
 fi
-
+if [ "$COMMAND" == "TEST" ] ; then
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               if [ "$COUNT" == "" ] ; then
+                    COUNT=6
+               fi
+               aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=ConsoleLogin | gawk '
+               /^EVE/{print ""}
+                     {print $0}
+              ' | tee /tmp/cuu.out
+fi
 exit 1
 
 
 
 
+               # aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+               # aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               # aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/CloudWatchFullAccess   --user-name $USERNAME
+               # aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/$ # awsCodeCommitPowerUser --user-name $USERNAME
+               # aws --profile $1 iam create-user --user-name $USERNAME
+               # aws --profile $1 iam create-login-profile --user-name $2 --password ONETWOthreefour1234!!!!  --password-reset-required
+               # aws --profile $1 iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/CloudWatchFullAccess   --user-name $USERNAME
+               # aws --profile $1 iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/$ # awsCodeCommitPowerUser --user-name $USERNAME
 
