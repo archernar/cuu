@@ -11,9 +11,10 @@ COMMAND=""
 USERNAME=""
 ACCOUNT=""
 CREATEUSER=""
+THING=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
-while getopts "c:u:a:p:t" arg
+while getopts "c:u:a:p:t:z" arg
 do
 	case $arg in
             c)
@@ -29,6 +30,9 @@ do
                PASSWORD=$OPTARG
                ;;
             t)
+               THING=$OPTARG
+               ;;
+            z)
                exit 0
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -91,7 +95,7 @@ if [ "$COMMAND" == "LISTPOLICIES" ] ; then
                     print "account not specified"
                     exit 1
                fi
-               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk '{print $2}'
+               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk '{print $0}'
 fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
                if [ "$USERNAME" == "" ] ; then
@@ -131,7 +135,6 @@ if [ "$COMMAND" == "DETACHPOLICIES" ] ; then
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
-                   print sz
                    system(sz)
                }'
 fi
@@ -147,6 +150,27 @@ if [ "$COMMAND" == "DELETEUSER" ] ; then
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
-
+if [ "$COMMAND" == "ATTACHPOLICY" ] ; then
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               if [ "$THING" == "" ] ; then
+                    print "thing not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
+fi
+if [ "$COMMAND" == "GETPOLICYARN" ] ; then
+               if [ "$ACCOUNT" == "" ] ; then
+                    print "account not specified"
+                    exit 1
+               fi
+               if [ "$THING" == "" ] ; then
+                    print "thing not specified"
+                    exit 1
+               fi
+               aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | grep $THING
+fi
 
 exit 1
