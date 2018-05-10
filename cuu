@@ -29,6 +29,7 @@ usage(){
      print "                     deleteuser         -a -u"
      print "                     attachpolicy       -a -u -t"
      print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex (-t)"
+     print "                     cloudtrail         -a <-n> <-t>"
      print "       -h  display usage"
 }
 
@@ -229,16 +230,19 @@ if [ "$COMMAND" == "GETPOLICYARN" ] ; then
                fi
                aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
 fi
-if [ "$COMMAND" == "TEST" ] ; then
+
+if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
                if [ "$ACCOUNT" == "" ] ; then
                     print "account not specified"
                     exit 1
                fi
+               if [ "$THING" == "" ] ; then
+                    THING="ConsoleLogin"
+               fi
                if [ "$COUNT" == "" ] ; then
                     COUNT=6
                fi
-               aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=ConsoleLogin | gawk '
-               /^EVE/{print ""}
+               aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | gawk '
                      {print $0}
               ' | tee /tmp/cuu.out
 fi
@@ -247,6 +251,7 @@ exit 1
 
 
 
+               # /^EVE/{print ""}
                # aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                # aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                # aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/CloudWatchFullAccess   --user-name $USERNAME
