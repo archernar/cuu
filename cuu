@@ -251,20 +251,3 @@ fi
 
 
 exit 1
-
-
-
-
-               #aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING 
-               #aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | gawk '
-               #      {print $0}
-               # ' | tee /tmp/cuu.out
-               # ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
-               # /^EVE/{print ""}
-               # aws --profile $ACCOUNT iam create-user --user-name $USERNAME
-               # aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               # aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/CloudWatchFullAccess   --user-name $USERNAME
-               # aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/$ # awsCodeCommitPowerUser --user-name $USERNAME
-               # aws --profile $1 iam create-user --user-name $USERNAME
-               # aws --profile $1 iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/CloudWatchFullAccess   --user-name $USERNAME
-               # aws --profile $1 iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/$ # awsCodeCommitPowerUser --user-name $USERNAME
