@@ -21,14 +21,15 @@ usage(){
      print "                     createuser         -a -u"
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
      print "                     changepassword     -a -u -p"
+     print "                     deleteuser         -a -u"
      print "                     listusers          -a" 
      print "                     listgroups         -a" 
-     print "                     listpolicies       -a -u"
+     print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex in -t"
+     print "                     listuserpolicies   -a -u"
      print "                     listusergroups     -a -u"
-     print "                     detachpolicies     -a -u"
-     print "                     deleteuser         -a -u"
-     print "                     attachpolicy       -a -u -t"
-     print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex (-t)"
+     print "                     detachuserpolicies -a -u"
+     print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
+     print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
      print "                     cloudtrail         -a <-n> <-t>"
      print "       -h  display usage"
 }
@@ -84,11 +85,15 @@ done
 shift $(($OPTIND - 1))
 
 if [ "$COMMAND" == "TEST" ] ; then
-     assert "$ACCOUNT" "Account not specified"
+     assert "$ACCOUNT" "Account not specified" "Default Value"
 fi
+# ----------------------------------------------------
+# Fundamental User Commands
+#       Create User, Change Password, Delete User
+# ----------------------------------------------------
 if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT"  "Account not specified"
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -98,7 +103,7 @@ if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
 fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT"  "Account not specified"
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -108,10 +113,19 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT"  "Account not specified"
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
+if [ "$COMMAND" == "DELETEUSER" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
+               aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
+               aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
+fi
+# ----------------------------------------------------
+# These commands operate on accounts
+# ----------------------------------------------------
 if [ "$COMMAND" == "LISTUSERS" ] ; then
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-users | gawk '{printf("%-44s %s\n",$6,$2)}'
@@ -120,7 +134,15 @@ if [ "$COMMAND" == "LISTGROUPS" ] ; then
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-groups | gawk '{printf("%-44s %s\n",$5,$2)}'
 fi
-if [ "$COMMAND" == "LISTPOLICIES" ] ; then
+if [ "$COMMAND" == "GETPOLICYARN" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               assert "$THING" "Thing not specified"
+               aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
+fi
+# ----------------------------------------------------
+# These commands operate on users
+# ----------------------------------------------------
+if [ "$COMMAND" == "LISTUSERPOLICIES" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk '{print $0}'
@@ -130,7 +152,7 @@ if [ "$COMMAND" == "LISTUSERGROUPS" ] ; then
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk '{print $5}'
 fi
-if [ "$COMMAND" == "DETACHGROUPS" ] ; then
+if [ "$COMMAND" == "DETACHUSERGROUPS" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
@@ -139,7 +161,7 @@ if [ "$COMMAND" == "DETACHGROUPS" ] ; then
                    print sz
                }'
 fi
-if [ "$COMMAND" == "DETACHPOLICIES" ] ; then
+if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
@@ -148,21 +170,15 @@ if [ "$COMMAND" == "DETACHPOLICIES" ] ; then
                    system(sz)
                }'
 fi
-if [ "$COMMAND" == "DELETEUSER" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
-               aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
-fi
-if [ "$COMMAND" == "ATTACHPOLICY" ] ; then
+if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
 fi
-if [ "$COMMAND" == "GETPOLICYARN" ] ; then
+if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$THING" "Thing not specified"
-               aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
+               aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
@@ -173,9 +189,10 @@ if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
                if [ "$COUNT" == "" ] ; then
                     COUNT=6
                fi
-               aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | gawk '
-                     {print $0}
-              ' | tee /tmp/cuu.out
+               aws --profile $ACCOUNT --output json cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING 
+               #aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | gawk '
+               #      {print $0}
+               # ' | tee /tmp/cuu.out
 fi
 exit 1
 
@@ -191,4 +208,3 @@ exit 1
                # aws --profile $1 iam create-login-profile --user-name $2 --password ONETWOthreefour1234!!!!  --password-reset-required
                # aws --profile $1 iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/CloudWatchFullAccess   --user-name $USERNAME
                # aws --profile $1 iam attach-user-policy --policy-arn arn:$ # aws:iam::$ # aws:policy/$ # awsCodeCommitPowerUser --user-name $USERNAME
-
