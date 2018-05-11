@@ -47,6 +47,7 @@ ACCOUNT=""
 CREATEUSER=""
 THING=""
 COUNT=""
+ACCTNUMBER=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
 while getopts "n:c:u:a:p:t:zhb" arg
@@ -85,7 +86,14 @@ done
 shift $(($OPTIND - 1))
 
 if [ "$COMMAND" == "TEST" ] ; then
-     assert "$ACCOUNT" "Account not specified" "Default Value"
+               assert "$ACCOUNT" "Account not specified"
+               if [ "$THING" == "" ] ; then
+                    THING="ConsoleLogin"
+               fi
+               if [ "$COUNT" == "" ] ; then
+                    COUNT=6
+               fi
+       aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --lookup-attributes AttributeKey=EventName,AttributeValue=$THING 
 fi
 # ----------------------------------------------------
 # Fundamental User Commands
@@ -123,12 +131,17 @@ if [ "$COMMAND" == "DELETEUSER" ] ; then
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
+if [ "$COMMAND" == "ACCOUNTNUMBER" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               print $ACCTNUMBER
+fi
 # ----------------------------------------------------
 # These commands operate on accounts
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTUSERS" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT iam list-users | gawk '{printf("%-44s %s\n",$6,$2)}'
+               aws --profile $ACCOUNT iam list-users | gawk '
+               {if (NF==6) printf("%-40s %-24s %s\n",$NF,"",$2); else printf("%-40s %-24s %s\n",$NF,$4, $2)}'
 fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
                assert "$ACCOUNT" "Account not specified"
@@ -173,6 +186,7 @@ fi
 if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$THING" "Thing not specified"
+               ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
 fi
 if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
@@ -189,16 +203,63 @@ if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
                if [ "$COUNT" == "" ] ; then
                     COUNT=6
                fi
-               aws --profile $ACCOUNT --output json cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING 
-               #aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | gawk '
-               #      {print $0}
-               # ' | tee /tmp/cuu.out
+       aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | tee /tmp/zed | gawk -v ACCT=$ACCOUNT '
+/^EVENTS/ {
+i=NF
+$i=""; i--; $i=""; i--; $i=""; i--; $i=""; i--;
+sz=$0
+sub(/^EVENTS.[ ]*/, "", sz);
+sub(/^.*["]userIdentity["]:/, "", sz);
+j=sz
+arn="NONE";
+m = match(sz, /^.*["]arn["]:/);
+if (m != 0) {
+    sub(/^.*["]arn["]:/, "", sz);
+    n=split(sz,a,",")
+    arn = a[1];
+    delete a
+} else {
+    sub(/^.*["]userName["]:/, "", sz);
+    n=split(sz,a,",")
+    sub(/[}]$/, "", a[1]);
+    arn = a[1];
+    delete a
+}
+sub(/^.*["]eventTime["]:/, "", sz);
+n=split(sz,a,",")
+time = a[1];
+delete a
+sub(/^.*["]eventName["]:/, "", sz);
+n=split(sz,a,",")
+event = a[1];
+delete a
+sub(/^.*["]sourceIPAddress["]:/, "", sz);
+n=split(sz,a,",")
+ip = a[1];
+delete a
+
+state = "";
+sub(/^.*["]responseElements["]:[{]/, "", sz);
+n=split(sz,a,",")
+sub(/[}]$/, "", a[1]);
+state = a[1];
+delete a
+
+printf("%-5s %-70s %-20s %-12s %-18s %s\n",ACCT,arn,time,event,ip,state);
+}'
 fi
+
+
 exit 1
 
 
 
 
+               #aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING 
+               #aws --profile $ACCOUNT cloudtrail lookup-events --max-items $COUNT --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | gawk '
+               #      {print $0}
+               # ' | tee /tmp/cuu.out
+               # ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                # /^EVE/{print ""}
                # aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                # aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
