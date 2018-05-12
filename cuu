@@ -12,13 +12,14 @@ rm $Tmp  >/dev/null 2>&1
 # ----------------------------------------------------
 
 usage(){
-     print "Usage: cuu [-a][-u][-t][-c][-z][-h]"
+     print "Usage: cuu [-a][-u][-p][-t][-s][-z][-c][-h]"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
      print "       -p  operand:  password    (default set in .cuu.txt)"
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
      print "       -s  operand:  start date  (default set in .cuu.txt)"
      print "       -z  shadow file reset     (/tmp/cuu.out)"
+     print "       -d  show detail"
      print "       -c  command:"
      print "                     createuser         -a -u"
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
@@ -54,9 +55,12 @@ ACCTNUMBER=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
-while getopts "s:n:c:u:a:p:t:zhb" arg
+while getopts "ds:n:c:u:a:p:t:zhb" arg
 do
 	case $arg in
+            d)
+               DETAIL="yes"
+               ;;
             s)
                STARTDATE=$OPTARG
                ;;
@@ -211,9 +215,13 @@ fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$USERNAME" "Account not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
-               cat $Tmp > /tmp/zed
-               cat $Tmp | gawk '
+               if [ "$USERNAME" == "ALL" ] ; then
+                    aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE  > $Tmp
+               else
+                    aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+               fi
+               cat $Tmp > /tmp/zed 
+               cat $Tmp | gawk -v ACCT=$ACCOUNT -v DETAIL=$DETAIL '
                /^EVENTS/ {
                     sz=$0;
                     time="";  sz=$0;sub(/^.*["]eventTime["]:/, "",sz); n=split(sz,a,","); time=a[1]; sub(/["]/, "", time); sub(/["]/, "",time);delete a
@@ -224,12 +232,35 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                               }
                     extra=fun;
                     if (match(extra, /^NA/) != 0) 
-                    if (match($0, /^.*["]requestParameters["]:null/) == 0) 
-                    if (match($0, /^.*["]requestParameters["]:/) != 0) {
-                                   sz=$0;sub(/^.*["]requestParameters["]:/, "", sz); sub(/[}].*$/, "}", sz); extra=sz;
+                    if (match($0, /^.*["]requestParameters["]:null/) == 0) {
+                         if (match($0, /^.*["]requestParameters["]:/) != 0) {
+                                        sz=$0;sub(/^.*["]requestParameters["]:/, "", sz); sub(/[}].*$/, "}", sz); extra=sz;
+                         }
+                    }
+                    else {
+                        extra = "NA";
+                    }
+                    resp="NA"; if (match($0, /^.*["]responseElements["]:/) != 0) {
+                                    if (match($0, /^.*["]responseElements["]:null/) == 0)
+                                         sz=$0;sub(/^.*["]responseElements["]:/, "", sz); sub(/[}].*$/, "}", sz); resp=sz;
                               }
-                    print time, $(NF), $(NF-2), ty, ip, extra;
-               }' | column -t
+                    extra = extra 
+                    gsub(/[ ]/, "", extra);
+                    name=$NF;
+                    prog=$(NF-2);
+                    if (match(name, /^[0-9]+/) != 0) {name="HIDDEN";prog=$(NF-1);}
+                    sub(/HIDDEN_DUE_TO_SECURITY_REASONS/,"HIDDEN",name);
+                    if (match(DETAIL,/^yes/) == 0) {
+                         if (length(name) > 10) name =substr(name,1,10);
+                         if (length(prog) > 10) prog =substr(prog,1,10);
+                         sub(/^Aws/, "", ty);
+                         sub(/^Console/, "Con", prog);
+                         sub(/^Console/, "Con", ty);
+                         if (length(ty) > 10) ty =substr(ty,1,10);
+                    }
+                    #print ACCT, time, name, prog, ty , extra;
+                    print ACCT, time, name, prog, ty;
+               }' | column -c 200 -t
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
