@@ -34,7 +34,7 @@ usage(){
      print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
      print "                     cloudtrail-active  -a -s                     Lists active users since start date (-s)"
-     print "                     cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s)"
+     print "                     cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s), Use -u ALL for all users"
      print "       -h  display usage"
 }
 
