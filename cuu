@@ -49,10 +49,14 @@ THING=""
 COUNT=""
 ACCTNUMBER=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
+STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
-while getopts "n:c:u:a:p:t:zhb" arg
+while getopts "s:n:c:u:a:p:t:zhb" arg
 do
 	case $arg in
+            s)
+               STARTDATE=$OPTARG
+               ;;
             n)
                COUNT=$OPTARG
                ;;
@@ -198,7 +202,7 @@ fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$THING" "Account not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time 2018-03-01 --lookup-attributes AttributeKey=Username,AttributeValue=$THING > /tmp/zed
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$THING > /tmp/zed
                cat /tmp/zed | gawk '
                /^EVENTS/ {
                     sz=$0;
@@ -208,7 +212,13 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     fun="NA"; if (match($0, /^.*["]functionName["]:/) != 0) {
                                    sz=$0;sub(/^.*["]functionName["]:/, "", sz); n=split(sz,a,","); fun=a[1]; gsub(/["]/,"",fun);delete a
                               }
-                    print time, $(NF), $(NF-2), ty, ip, fun;
+                    extra=fun;
+                    if (match(extra, /^NA/) != 0) 
+                    if (match($0, /^.*["]requestParameters["]:null/) == 0) 
+                    if (match($0, /^.*["]requestParameters["]:/) != 0) {
+                                   sz=$0;sub(/^.*["]requestParameters["]:/, "", sz); sub(/[}].*$/, "}", sz); extra=sz;
+                              }
+                    print time, $(NF), $(NF-2), ty, ip, extra;
                }' | column -t
 fi
 
