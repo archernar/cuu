@@ -13,10 +13,12 @@ rm $Tmp  >/dev/null 2>&1
 
 usage(){
      print "Usage: cuu [-a][-u][-t][-c][-z][-h]"
-     print "       -a  cli profile name  (from .aws/config)"
+     print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
+     print "       -p  operand:  password    (default set in .cuu.txt)"
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
-     print "       -z  shadow file reset (/tmp/cuu.out)"
+     print "       -s  operand:  start date  (default set in .cuu.txt)"
+     print "       -z  shadow file reset     (/tmp/cuu.out)"
      print "       -c  command:"
      print "                     createuser         -a -u"
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
@@ -30,7 +32,8 @@ usage(){
      print "                     detachuserpolicies -a -u"
      print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
-     print "                     cloudtrail         -a <-n> <-t>"
+     print "                     cloudtrail-active  -a -s"                    Lists active users since start date
+     print "                     cloudtrail-user    -a -u"
      print "       -h  display usage"
 }
 
@@ -197,6 +200,12 @@ if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+fi
+
+if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE  > /tmp/zed
+               cat /tmp/zed | gawk '/^EVENTS/ { print $NF }' | sort | uniq
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
