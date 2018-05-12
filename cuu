@@ -32,8 +32,8 @@ usage(){
      print "                     detachuserpolicies -a -u"
      print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
-     print "                     cloudtrail-active  -a -s"                    Lists active users since start date
-     print "                     cloudtrail-user    -a -u"
+     print "                     cloudtrail-active  -a -s                     Lists active users since start date (-s)"
+     print "                     cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s)"
      print "       -h  display usage"
 }
 
@@ -210,9 +210,10 @@ fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               assert "$THING" "Account not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$THING > /tmp/zed
-               cat /tmp/zed | gawk '
+               assert "$USERNAME" "Account not specified"
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+               cat $Tmp > /tmp/zed
+               cat $Tmp | gawk '
                /^EVENTS/ {
                     sz=$0;
                     time="";  sz=$0;sub(/^.*["]eventTime["]:/, "",sz); n=split(sz,a,","); time=a[1]; sub(/["]/, "", time); sub(/["]/, "",time);delete a
