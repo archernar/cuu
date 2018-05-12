@@ -195,6 +195,23 @@ if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
 fi
 
+if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               assert "$THING" "Account not specified"
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time 2018-03-01 --lookup-attributes AttributeKey=Username,AttributeValue=$THING > /tmp/zed
+               cat /tmp/zed | gawk '
+               /^EVENTS/ {
+                    sz=$0;
+                    sub(/^.*["]eventTime["]:/, "", sz);
+                    n=split(sz,a,",");
+                    time=a[1];
+                    sub(/["]/, "", time);i
+                    sub(/["]/, "", time);i
+                    delete a
+                    print time, $(NF), $(NF-2);
+               }'
+fi
+
 if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
                assert "$ACCOUNT" "Account not specified"
                if [ "$THING" == "" ] ; then
@@ -203,7 +220,11 @@ if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
                if [ "$COUNT" == "" ] ; then
                     COUNT=6
                fi
-       aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --lookup-attributes AttributeKey=EventName,AttributeValue=$THING | tee /tmp/zed | gawk -v ACCT=$ACCOUNT '
+
+               # EventId, EventName, EventSource, ResourceName, ResourceType, Username
+               # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events-supported-resource-types.html
+       aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time 2018-03-01 --lookup-attributes AttributeKey=EventName,AttributeValue=$THING > /tmp/zed 
+       cat /tmp/zed | gawk -v ACCT=$ACCOUNT '
 /^EVENTS/ {
 i=NF
 $i=""; i--; $i=""; i--; $i=""; i--; $i=""; i--;
