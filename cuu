@@ -26,16 +26,24 @@ usage(){
      print "       -c  command:"
      print "                     createuser         -a -u"
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
+     print "                     createreadonlyuser -a -u                     Creates a user with AdministorAccess"
      print "                     changepassword     -a -u -p"
-     print "                     deleteuser         -a -u"
      print "                     listusers          -a" 
+     print " "
+     print "                     listusergroups     -a -u"
+     print "                     createaccesskey    -a -u                     Creates an accesskey for the user (-u)"
+     print "                     listaccesskeys     -a -u                     Lists the users (-u) access keys)"
+     print "                     deleteaccesskeys   -a -u                     Deletes the users (-u) access keys)"
+     print " "
+     print "                     deleteuser         -a -u"
      print "                     listgroups         -a" 
+     print " "
      print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex in -t"
      print "                     listuserpolicies   -a -u"
-     print "                     listusergroups     -a -u"
      print "                     detachuserpolicies -a -u"
      print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
+     print " "
      print "                     cloudtrail-active  -a -s                     Lists active users since start date (-s)"
      print "                     cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s), Use -u ALL for all users"
      print ""
@@ -138,6 +146,14 @@ if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
                print $USERNAME
                print $PASSWORD
 fi
+if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT"  "Account not specified"
+               assert "$PASSWORD" "Password not specified"
+               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
+fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT"  "Account not specified"
@@ -157,11 +173,22 @@ fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
+               aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
+               {
+                   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
+                   system(sz)
+               }'
+               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
+               {
+                   sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
+                   system(sz)
+               }'
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
 if [ "$COMMAND" == "ACCOUNTNUMBER" ] ; then
                assert "$ACCOUNT" "Account not specified"
+               ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                print $ACCTNUMBER
 fi
 # ----------------------------------------------------
@@ -228,6 +255,27 @@ if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
                assert "$ACCOUNT" "Account not specified"
                aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE > /tmp/zed
                cat /tmp/zed | gawk '/^EVENTS/ { print $NF }' | sort | uniq
+fi
+
+if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               assert "$USERNAME" "Account not specified"
+               aws --profile $ACCOUNT --output json iam create-access-key --user-name $USERNAME
+fi
+if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               assert "$USERNAME" "Account not specified"
+               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+fi
+if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Account not specified"
+               aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
+               {
+                   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
+                   print sz
+                   system(sz)
+               }'
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
