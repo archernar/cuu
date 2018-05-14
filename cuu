@@ -42,7 +42,8 @@ usage(){
      print ""
      print "Note: abbreviations are applied to many fields in t output of cuu. This is done to limit line length where possible"
      print "      -d will turn off all abbreviations"
-     print ""
+     print ".cuu.txt    can contain defaults for these settings"
+     print "            STARTDATE=YYYY-MM-DD"
      print ""
 }
 
