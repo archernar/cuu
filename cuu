@@ -52,12 +52,21 @@ CREATEUSER=""
 THING=""
 COUNT=""
 ACCTNUMBER=""
+IN=""
+OUT=""
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
-while getopts "ds:n:c:u:a:p:t:zhb" arg
+
+while getopts "ds:n:c:u:a:p:t:iozhb" arg
 do
 	case $arg in
+            o)
+               OUT="yes"
+               ;;
+            i)
+               IN="yes"
+               ;;
             d)
                DETAIL="yes"
                ;;
@@ -208,7 +217,7 @@ fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE  > /tmp/zed
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE > /tmp/zed
                cat /tmp/zed | gawk '/^EVENTS/ { print $NF }' | sort | uniq
 fi
 
@@ -218,49 +227,53 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                if [ "$USERNAME" == "ALL" ] ; then
                     aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE  > $Tmp
                else
-                    aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                     aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                     # cat  test.data  > $Tmp
                fi
-               cat $Tmp > /tmp/zed 
-               cat $Tmp | gawk -v ACCT=$ACCOUNT -v DETAIL=$DETAIL '
+               #cat $Tmp > /tmp/zed 
+               cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v IN=$IN -v OUT=$OUT '
+               @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
-                    time="";  sz=$0;sub(/^.*["]eventTime["]:/, "",sz); n=split(sz,a,","); time=a[1]; sub(/["]/, "", time); sub(/["]/, "",time);delete a
-                    ip="";    sz=$0;sub(/^.*["]sourceIPAddress["]:/, "", sz); n=split(sz,a,","); ip=a[1]; gsub(/["]/,"",ip);delete a
-                    ty="";    sz=$0;sub(/^.*["]eventType["]:/, "", sz); n=split(sz,a,","); ty=a[1]; gsub(/["]/,"",ty);delete a
-                    fun="NA"; if (match($0, /^.*["]functionName["]:/) != 0) {
-                                   sz=$0;sub(/^.*["]functionName["]:/, "", sz); n=split(sz,a,","); fun=a[1]; gsub(/["]/,"",fun);delete a
-                              }
-                    extra=fun;
-                    if (match(extra, /^NA/) != 0) 
-                    if (match($0, /^.*["]requestParameters["]:null/) == 0) {
-                         if (match($0, /^.*["]requestParameters["]:/) != 0) {
-                                        sz=$0;sub(/^.*["]requestParameters["]:/, "", sz); sub(/[}].*$/, "}", sz); extra=sz;
-                         }
-                    }
-                    else {
-                        extra = "NA";
-                    }
-                    resp="NA"; if (match($0, /^.*["]responseElements["]:/) != 0) {
-                                    if (match($0, /^.*["]responseElements["]:null/) == 0)
-                                         sz=$0;sub(/^.*["]responseElements["]:/, "", sz); sub(/[}].*$/, "}", sz); resp=sz;
-                              }
-                    extra = extra 
+                    time=jget($0, "^.*[\"]eventTime[\"]:","NA");
+                    ip=  jget($0, "^.*[\"]sourceIPAddress[\"]:","NA");
+                    ty=  jget($0, "^.*[\"]eventType[\"]:","NA");
+                    en=  jget($0, "^.*[\"]eventName[\"]:","NA");
+                    req= jget($0, "^.*[\"]requestParameters[\"]:","NA");
+                    resp= jget($0, "^.*[\"]responseElements[\"]:","NA");
+
                     gsub(/[ ]/, "", extra);
                     name=$NF;
-                    prog=$(NF-2);
-                    if (match(name, /^[0-9]+/) != 0) {name="HIDDEN";prog=$(NF-1);}
                     sub(/HIDDEN_DUE_TO_SECURITY_REASONS/,"HIDDEN",name);
                     if (match(DETAIL,/^yes/) == 0) {
                          if (length(name) > 10) name =substr(name,1,10);
-                         if (length(prog) > 10) prog =substr(prog,1,10);
                          sub(/^Aws/, "", ty);
-                         sub(/^Console/, "Con", prog);
                          sub(/^Console/, "Con", ty);
+                         gsub(/["]/, "", extra);
+                         gsub(/Validation/, "Valid", extra);
+                         gsub(/Region/, "Reg", extra);
+                         gsub(/Required/, "Req", extra);
+                         gsub(/Bucket/, "Bk", extra);
+                         gsub(/Service/, "Sv", extra);
+                         gsub(/[ ]/, "", resp);
+                         gsub(/createDate/, "cD", resp);
+                         gsub(/userName/, "uN", resp);
+                         gsub(/userId/, "uID", resp);
+                         gsub(/AIDA................/, "AIDA..", resp);
+                         gsub(/Jan/,"01",resp);
+                         gsub(/Feb/,"02",resp);
+                         gsub(/Mar/,"03",resp);
+                         gsub(/Apr/,"04",resp);
+                         gsub(/May/,"05",resp);
+                         gsub(/Jun/,"06",resp);
+                         gsub(/,2018/,"2018",resp);
                          if (length(ty) > 10) ty =substr(ty,1,10);
                     }
-                    #print ACCT, time, name, prog, ty , extra;
-                    print ACCT, time, name, prog, ty;
-               }' | column -c 200 -t
+                    # print "-"
+                    # print "acct","time","name","eventtype","eventname","req","resp"
+                    print ACCT, time, name, ty , en, "IN-" req
+                    print ACCT, time, name, ty , en, "OU-" resp
+               }' | column -t
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
