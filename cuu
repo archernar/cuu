@@ -276,41 +276,5 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                }' | column -t
 fi
 
-if [ "$COMMAND" == "CLOUDTRAIL" ] ; then
-               assert "$ACCOUNT" "Account not specified"
-               if [ "$THING" == "" ] ; then
-                    THING="ConsoleLogin"
-               fi
-               if [ "$COUNT" == "" ] ; then
-                    COUNT=6
-               fi
-
-               # EventId, EventName, EventSource, ResourceName, ResourceType, Username
-               # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events-supported-resource-types.html
-       aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time 2018-03-01 --lookup-attributes AttributeKey=EventName,AttributeValue=$THING > /tmp/zed 
-       cat /tmp/zed | gawk -v ACCT=$ACCOUNT '
-/^EVENTS/ {
-i=NF
-$i=""; i--; $i=""; i--; $i=""; i--; $i=""; i--;
-sz=$0
-sub(/^EVENTS.[ ]*/, "", sz);
-sub(/^.*["]userIdentity["]:/, "", sz);
-j=sz
-arn="NONE";
-m = match(sz, /^.*["]arn["]:/);
-if (m != 0) {
-    arn="";sub(/^.*["]arn["]:/, "", sz); n=split(sz,a,",") arn = a[1]; delete a
-} else {
-    arn="";sub(/^.*["]userName["]:/, "", sz); n=split(sz,a,",") sub(/[}]$/, "", a[1]); arn = a[1]; delete a
-}
-time="";  sub(/^.*["]eventTime["]:/, "", sz); n=split(sz,a,",");time=a[1]; delete a;
-event=""; sub(/^.*["]eventName["]:/, "", sz); n=split(sz,a,",");event=a[1]; delete a;
-ip="";    sub(/^.*["]sourceIPAddress["]:/, "", sz); n=split(sz,a,","; ip=a[1]; delete a;
-state=""; sub(/^.*["]responseElements["]:[{]/, "", sz); n=split(sz,a,",");sub(/[}]$/, "", a[1]); state=a[1]; delete a;
-
-printf("%-5s %-70s %-20s %-12s %-18s %s\n",ACCT,arn,time,event,ip,state);
-}'
-fi
-
 
 exit 1
