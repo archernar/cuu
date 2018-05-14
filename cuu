@@ -275,6 +275,10 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/May/,"05",resp);
                          gsub(/Jun/,"06",resp);
                          gsub(/,2018/,"2018",resp);
+                         gsub(/GroupName/,"GName",req);
+                         gsub(/StreamName/,"SName",req);
+                         gsub(/GroupName/,"GName",resp);
+                         gsub(/StreamName/,"SName",resp);
                          gsub(/Configuration/,"Config",en);
                          gsub(/Config/,"Cfg",en);
                          gsub(/Permission/,"Perm",en);
@@ -284,11 +288,13 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/Create/,"Cr",en);
                          if (length(ty) > 10) ty =substr(ty,1,10);
                     }
+                    if (length(req) > 256) req=substr(req,1,256) "(TRUNCATED)";
+                    if (length(resp) > 256) resp=substr(resp,1,256) "(TRUNCATED)";
                     # print "-"
                     # print "acct","time","name","eventtype","eventname","req","resp"
-                    print ACCT, time, name, ty , en, "IN-" req
-                    print ACCT, time, name, ty , en, "OU-" resp
-               }' | column -t
+                    print trim(ACCT), time, name, ty , en, "IN-" req
+                    print trim(ACCT), time, name, ty , en, "OU-" resp
+               }' | tee /tmp/raw | column -t | tee /tmp/out
 fi
 
 
