@@ -12,6 +12,8 @@ rm $Tmp  >/dev/null 2>&1
 # ----------------------------------------------------
 
 usage(){
+     print ""
+     print ""
      print "Usage: cuu [-a][-u][-p][-t][-s][-z][-c][-h]"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
@@ -36,6 +38,12 @@ usage(){
      print "                     cloudtrail-active  -a -s                     Lists active users since start date (-s)"
      print "                     cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s), Use -u ALL for all users"
      print "       -h  display usage"
+     print ""
+     print ""
+     print "Note: abbreviations are applied to many fields in t output of cuu. This is done to limit line length where possible"
+     print "      -d will turn off all abbreviations"
+     print ""
+     print ""
 }
 
 assert() {
