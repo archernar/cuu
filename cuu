@@ -225,9 +225,9 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$USERNAME" "Account not specified"
                if [ "$USERNAME" == "ALL" ] ; then
-                    aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE  > $Tmp
+                 aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE  > $Tmp
                else
-                     aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                 aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                      # cat  test.data  > $Tmp
                fi
                #cat $Tmp > /tmp/zed 
@@ -242,19 +242,18 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     req= jget($0, "^.*[\"]requestParameters[\"]:","NA");
                     resp= jget($0, "^.*[\"]responseElements[\"]:","NA");
 
-                    gsub(/[ ]/, "", extra);
                     name=$NF;
                     sub(/HIDDEN_DUE_TO_SECURITY_REASONS/,"HIDDEN",name);
                     if (match(DETAIL,/^yes/) == 0) {
                          if (length(name) > 10) name =substr(name,1,10);
                          sub(/^Aws/, "", ty);
                          sub(/^Console/, "Con", ty);
-                         gsub(/["]/, "", extra);
-                         gsub(/Validation/, "Valid", extra);
-                         gsub(/Region/, "Reg", extra);
-                         gsub(/Required/, "Req", extra);
-                         gsub(/Bucket/, "Bk", extra);
-                         gsub(/Service/, "Sv", extra);
+                         gsub(/["]/, "", resp);
+                         gsub(/Validation/, "Valid", resp);
+                         gsub(/Region/, "Reg", resp);
+                         gsub(/Required/, "Req", resp);
+                         gsub(/Bucket/, "Bk", resp);
+                         gsub(/Service/, "Sv", resp);
                          gsub(/[ ]/, "", resp);
                          gsub(/createDate/, "cD", resp);
                          gsub(/userName/, "uN", resp);
@@ -267,6 +266,11 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/May/,"05",resp);
                          gsub(/Jun/,"06",resp);
                          gsub(/,2018/,"2018",resp);
+                         gsub(/Configuration/,"Config",en);
+                         gsub(/Function/,"Func",en);
+                         gsub(/Resource/,"Res",en);
+                         gsub(/Update/,"Upd",en);
+                         gsub(/Create/,"Cr",en);
                          if (length(ty) > 10) ty =substr(ty,1,10);
                     }
                     # print "-"
