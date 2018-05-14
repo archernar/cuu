@@ -260,7 +260,11 @@ fi
 if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$USERNAME" "Account not specified"
-               aws --profile $ACCOUNT --output json iam create-access-key --user-name $USERNAME
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk '
+               @include "cuu.awk"
+               {
+               print configrecord($0);
+               }'
 fi
 if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
                assert "$ACCOUNT" "Account not specified"

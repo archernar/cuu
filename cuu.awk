@@ -29,6 +29,22 @@ function jget(szIn, re, def,          sz,szOut,a) {
 }
 
 
+function configrecord(szIn,               sz,a,n,newline) {
+     n = split(szIn,a," ");
+     newline="\n"
+     sz = sz newline
+     sz = sz szIn newline
+     sz = sz newline
+     sz = sz "[profile " a[6] "]" newline
+     sz = sz "output = text" newline
+     sz = sz "region = us-east-1" newline
+     sz = sz "aws_access_key_id=" a[2] newline
+     sz = sz "aws_secret_access_key=" a[4] newline
+     sz = sz newline
+     return sz
+}
+
+
 
 
 
