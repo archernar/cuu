@@ -275,6 +275,8 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/Jun/,"06",resp);
                          gsub(/,2018/,"2018",resp);
                          gsub(/Configuration/,"Config",en);
+                         gsub(/Config/,"Cfg",en);
+                         gsub(/Permission/,"Perm",en);
                          gsub(/Function/,"Func",en);
                          gsub(/Resource/,"Res",en);
                          gsub(/Update/,"Upd",en);
