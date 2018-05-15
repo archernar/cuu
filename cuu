@@ -4,12 +4,17 @@ TmpDir="/tmp/dir$$"
 trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
-# ----------------------------------------------------
-#  | |/ / ___|| | | | |  _ \ _   _| | ___  ___| | | |
-#  | ' /\___ \| |_| | | |_) | | | | |/ _ \/ __| | | |
-#  | . \ ___) |  _  | |  _ <| |_| | |  __/\__ \_|_|_|
-#  |_|\_\____/|_| |_| |_| \_\\__,_|_|\___||___(_|_|_)
-# ----------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------
+#   / ___| | | | | | |            / \   _ __      / \ \      / / ___|   / ___| |   |_ _| |_   _|__   ___ | |
+#  | |   | | | | | | |  _____    / _ \ | '_ \    / _ \ \ /\ / /\___ \  | |   | |    | |    | |/ _ \ / _ \| |
+#  | |___| |_| | |_| | |_____|  / ___ \| | | |  / ___ \ V  V /  ___) | | |___| |___ | |    | | (_) | (_) | |
+#   \____|\___/ \___/          /_/   \_\_| |_| /_/   \_\_/\_/  |____/   \____|_____|___|   |_|\___/ \___/|_|
+# -----------------------------------------------------------------------------------------------------------
+#                                | |/ / ___|| | | | |  _ \ _   _| | ___  ___| | | |
+#                                | ' /\___ \| |_| | | |_) | | | | |/ _ \/ __| | | |
+#                                | . \ ___) |  _  | |  _ <| |_| | |  __/\__ \_|_|_|
+#                                |_|\_\____/|_| |_| |_| \_\\__,_|_|\___||___(_|_|_)
+# -----------------------------------------------------------------------------------------------------------
 
 usage(){
      print ""
@@ -28,6 +33,7 @@ usage(){
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
      print "                     createreadonlyuser -a -u                     Creates a user with AdministorAccess"
      print "                     changepassword     -a -u -p"
+     print "                     scrampassword      -a -u                     Assign an unknown (scrammed) password"
      print "                     listusers          -a" 
      print " "
      print "                     listusergroups     -a -u"
@@ -73,6 +79,7 @@ COUNT=""
 ACCTNUMBER=""
 IN=""
 OUT=""
+RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
@@ -125,14 +132,7 @@ done
 shift $(($OPTIND - 1))
 
 if [ "$COMMAND" == "TEST" ] ; then
-               assert "$ACCOUNT" "Account not specified"
-               if [ "$THING" == "" ] ; then
-                    THING="ConsoleLogin"
-               fi
-               if [ "$COUNT" == "" ] ; then
-                    COUNT=6
-               fi
-       aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --lookup-attributes AttributeKey=EventName,AttributeValue=$THING 
+    print $RAN
 fi
 # ----------------------------------------------------
 # Fundamental User Commands
@@ -172,6 +172,13 @@ if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
+if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT"  "Account not specified"
+               RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+               assert "$PASSWORD" "Password not specified"
+               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
+fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
@@ -198,12 +205,11 @@ fi
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTUSERS" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT iam list-users | gawk '
-               {if (NF==6) printf("%-40s %-24s %s\n",$NF,"",$2); else printf("%-40s %-24s %s\n",$NF,$4, $2)}'
+               aws --profile $ACCOUNT iam list-users | gawk '{if (NF==6) printf("%-40s %-24s %s\n",$NF,"",$2); else printf("%-40s %-24s %s\n",$NF,$4, $2)}' | sort
 fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT iam list-groups | gawk '{printf("%-44s %s\n",$5,$2)}'
+               aws --profile $ACCOUNT iam list-groups | gawk '{printf("%-44s %s\n",$5,$2)}' | sort
 fi
 if [ "$COMMAND" == "GETPOLICYARN" ] ; then
                assert "$ACCOUNT" "Account not specified"
@@ -229,7 +235,7 @@ if [ "$COMMAND" == "DETACHUSERGROUPS" ] ; then
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " remove-user-from-group --user-name " U " --group-name " $5
-                   print sz
+                   system(sz)
                }'
 fi
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
@@ -263,9 +269,9 @@ if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
                assert "$ACCOUNT" "Account not specified"
                assert "$USERNAME" "Account not specified"
                aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk '
-               @include "cuu.awk"
-               {
-               print configrecord($0);
+               @include "cuu.awk" 
+               { 
+                   print configrecord($0); 
                }'
 fi
 if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
@@ -279,7 +285,6 @@ if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
                aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
-                   print sz
                    system(sz)
                }'
 fi
@@ -290,6 +295,7 @@ if [ "$COMMAND" == "EC2" ] ; then
 fi
 
 
+# aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
 
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT" "Account not specified"
