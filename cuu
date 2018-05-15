@@ -146,12 +146,6 @@ shift $(($OPTIND - 1))
 
 if [ "$COMMAND" == "TEST" ] ; then
                assert "$ACCOUNT"  "Account not specified"
-               aws --profile $ACCOUNT iam list-policies --scope Local | gawk -v A=$ACCOUNT '
-               {
-                   printf("%-4s %s\n",$5,$2);
-                   sz = "aws --profile " A " --output json iam get-policy-version --policy-arn " $2 " --version-id " $5 " > policies/" A "---" $9 "_" $5
-                   system(sz)
-               }'
 
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
