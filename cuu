@@ -48,6 +48,7 @@ usage(){
      print " "
      print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex in -t"
      print "                     listuserpolicies   -a -u"
+     print "                     getpolicies        -a -t                     Get the policy documents assciates with the regex in -t"
      print "                     detachuserpolicies -a -u"
      print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
@@ -131,8 +132,38 @@ do
 done
 shift $(($OPTIND - 1))
 
+# -----------------------------------------------------------------------------------------------------------------------
+# Notes
+# https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
+# aws --profile ECD3 iam get-account-authorization-details > zed
+#   aws --profile ECD3 iam list-policies
+#   aws --profile ECD3 iam list-policies |  grep SAND
+#   aws --profile ECD3 iam list-policies --scope Local
+#   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
+#   sz = "aws --profile " A " iam list-policy-versions --policy-arn " $2
+#
+# -----------------------------------------------------------------------------------------------------------------------
+
 if [ "$COMMAND" == "TEST" ] ; then
-    print $RAN
+               assert "$ACCOUNT"  "Account not specified"
+               aws --profile $ACCOUNT iam list-policies --scope Local | gawk -v A=$ACCOUNT '
+               {
+                   printf("%-4s %s\n",$5,$2);
+                   sz = "aws --profile " A " --output json iam get-policy-version --policy-arn " $2 " --version-id " $5 " > policies/" A "---" $9 "_" $5
+                   system(sz)
+               }'
+
+fi
+if [ "$COMMAND" == "GETPOLICIES" ] ; then
+               assert "$ACCOUNT"  "Account not specified"
+               assert "$THING"  "Account not specified"
+               aws --profile $ACCOUNT iam list-policies --scope Local | egrep $THING | gawk -v A=$ACCOUNT '
+               {
+                   printf("%-4s %s\n",$5,$2);
+                   sz = "aws --profile " A " --output json iam get-policy-version --policy-arn " $2 " --version-id " $5 " > policies/" A "-" $5 "-" $9 
+                   system(sz)
+               }'
+
 fi
 # ----------------------------------------------------
 # Fundamental User Commands
