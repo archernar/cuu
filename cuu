@@ -19,7 +19,8 @@ rm $Tmp  >/dev/null 2>&1
 usage(){
      print ""
      print ""
-     print "Usage: cuu [-a][-u][-p][-t][-s][-z][-c][-h]"
+     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]"
+     print "       -h  display usage"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
      print "       -p  operand:  password    (default set in .cuu.txt)"
@@ -27,7 +28,8 @@ usage(){
      print "       -s  operand:  start date  (default set in .cuu.txt)"
      print "       -z  shadow file reset     (/tmp/cuu.out)"
      print "       -d  show detail/do not apply abbreviations fields"
-     print "       -h  display usage"
+     print "       -F  force mode, do not confirm any command (e.g. deletes)"
+     print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
      print "                     createuser         -a -u"
      print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
@@ -70,6 +72,16 @@ assert() {
          exit 1
     fi
 }
+confirm() {
+     if [ "$FORCE" != "yes" ] ; then
+          print -n "   Enter '10111' to confirm >> "
+          read STRIN
+          if [ "$STRIN" != "10111" ] ; then
+               print "   Exiting - No Match"
+               exit 1
+          fi
+     fi
+}
 typeset -u COMMAND
 COMMAND=""
 USERNAME=""
@@ -80,15 +92,19 @@ COUNT=""
 ACCTNUMBER=""
 IN=""
 OUT=""
+FORCE=""
 LOOP="no"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
 
-while getopts "f:ds:n:c:u:a:p:t:izhb" arg
+while getopts "Ff:ds:n:c:u:a:p:t:izhb" arg
 do
 	case $arg in
+            F)
+               FORCE="yes"
+               ;;
             f)
                FILE=$OPTARG
                ;;
@@ -144,15 +160,12 @@ while [[ 0 -eq 0 ]];do
 #   aws --profile ECD3 iam list-policies --scope Local
 #   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
 #   sz = "aws --profile " A " iam list-policy-versions --policy-arn " $2
+#   aws --profile $ACCOUNT -output json iam create-policy-version --policy-arn $T --policy-document file://$FILE --set-as-default
 #
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-               assert "$ACCOUNT"  "Account not specified"
-               assert "$THING  "  "Account not specified"
-               assert "$FILE"     "File not specified"
-               aws --profile $ACCOUNT -output json iam create-policy-version --policy-arn $T --policy-document file://$FILE --set-as-default
-
+               confirm
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
                assert "$ACCOUNT"  "Account not specified"
@@ -201,6 +214,7 @@ if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT"  "Account not specified"
                assert "$PASSWORD" "Password not specified"
+               confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
 if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
@@ -208,11 +222,13 @@ if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
                assert "$ACCOUNT"  "Account not specified"
                RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
                assert "$PASSWORD" "Password not specified"
+               confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
 fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
+               confirm
                aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
@@ -263,6 +279,7 @@ fi
 if [ "$COMMAND" == "DETACHUSERGROUPS" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
+               confirm
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " remove-user-from-group --user-name " U " --group-name " $5
@@ -272,6 +289,7 @@ fi
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
+               confirm
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
@@ -313,6 +331,7 @@ fi
 if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Account not specified"
+               confirm
                aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
                    sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
