@@ -414,17 +414,24 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                }' | tee /tmp/raw | column -t | tee /tmp/out
 fi
 
-if [ "$COMMAND" == "EXIT" ] ; then
-               exit 0
-fi
-if [ "$COMMAND" == "QUIT" ] ; then
-               exit 0
-fi
-if [ "$COMMAND" == "Q" ] ; then
-               exit 0
-fi
-if [ "$LOOP" != "yes" ] ; then
-               exit 0
+if [ "$LOOP" == "yes" ] ; then
+     if [ "$COMMAND" == "EXIT" ] ; then
+                    exit 0
+     fi
+     if [ "$COMMAND" == "QUIT" ] ; then
+                    exit 0
+     fi
+     if [ "$COMMAND" == "Q" ] ; then
+                    exit 0
+     fi
+     if [ "$COMMAND" == "h" ] ; then
+                    usage
+     fi
+     if [ "$COMMAND" == "H" ] ; then
+                    usage
+     fi
+else
+     exit 0
 fi
 
 print -n "cuu "$ACCOUNT" "$USERNAME" "$THING">> "
