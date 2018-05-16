@@ -80,19 +80,20 @@ COUNT=""
 ACCTNUMBER=""
 IN=""
 OUT=""
+LOOP="no"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
 
-while getopts "ds:n:c:u:a:p:t:iozhb" arg
+while getopts "f:ds:n:c:u:a:p:t:izhb" arg
 do
 	case $arg in
-            o)
-               OUT="yes"
+            f)
+               FILE=$OPTARG
                ;;
             i)
-               IN="yes"
+               LOOP="yes"
                ;;
             d)
                DETAIL="yes"
@@ -132,6 +133,8 @@ do
 done
 shift $(($OPTIND - 1))
 
+while [[ 0 -eq 0 ]];do
+
 # -----------------------------------------------------------------------------------------------------------------------
 # Notes
 # https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
@@ -146,6 +149,9 @@ shift $(($OPTIND - 1))
 
 if [ "$COMMAND" == "TEST" ] ; then
                assert "$ACCOUNT"  "Account not specified"
+               assert "$THING  "  "Account not specified"
+               assert "$FILE"     "File not specified"
+               aws --profile $ACCOUNT -output json iam create-policy-version --policy-arn $T --policy-document file://$FILE --set-as-default
 
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
@@ -323,8 +329,8 @@ fi
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
 
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
-               assert "$ACCOUNT" "Account not specified"
-               assert "$USERNAME" "Account not specified"
+               assert "$ACCOUNT"  "Account not specified"
+               assert "$USERNAME" "Username not specified"
                if [ "$USERNAME" == "ALL" ] ; then
                  aws --profile $ACCOUNT --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE  > $Tmp
                else
@@ -332,7 +338,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                      # cat  test.data  > $Tmp
                fi
                #cat $Tmp > /tmp/zed 
-               cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v IN=$IN -v OUT=$OUT '
+               cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
@@ -389,5 +395,31 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                }' | tee /tmp/raw | column -t | tee /tmp/out
 fi
 
+if [ "$COMMAND" == "EXIT" ] ; then
+               exit 0
+fi
+if [ "$COMMAND" == "QUIT" ] ; then
+               exit 0
+fi
+if [ "$COMMAND" == "Q" ] ; then
+               exit 0
+fi
+if [ "$LOOP" != "yes" ] ; then
+               exit 0
+fi
+
+print -n "cuu "$ACCOUNT" "$USERNAME" "$THING">> "
+read COMMAND
+          set -A array $COMMAND
+          if [ "${array[0]}" == "ACCOUNT" ] ; then
+              ACCOUNT="${array[1]}"
+          fi
+          if [ "${array[0]}" == "USERNAME" ] ; then
+              USERNAME="${array[1]}"
+          fi
+          if [ "${array[0]}" == "THING" ] ; then
+              THING="${array[1]}"
+          fi
+done
 
 exit 1
