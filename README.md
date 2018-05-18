@@ -1,5 +1,4 @@
-## The second largest heading
-cuu
+## cuu
  
 <pre> 
 Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
