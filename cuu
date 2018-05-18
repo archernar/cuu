@@ -22,7 +22,6 @@ rm $Tmp  >/dev/null 2>&1
 # -----------------------------------------------------------------------------------------------------------
 usage(){
      print ""
-     print ""
      print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]"
      print "       -h  display usage"
      print "       -a  cli profile name      (from .aws/config)"
@@ -40,39 +39,30 @@ usage(){
      print "                     changepassword       -a -u -p                  Changes a users password, Will use PASSWORD var in .cuu.txt"
      print "                                                                    NOTE: for commands above, User will need to change password"
      print "                                                                          after first login.  Password may be set in .cuu.txt"
-     print " "
      print "                     scrampassword        -a -u                     Assign an unknown (scrammed) password"
      print "           ls        listusers            -a" 
-     print " "
      print "                     listusergroups       -a -u"
      print "                     createaccesskey      -a -u                     Creates an accesskey for the user (-u)"
      print "                     listaccesskeys       -a -u                     Lists the users (-u) access keys)"
      print "                     deleteaccesskeys     -a -u                     Deletes the users (-u) access keys)"
-     print " "
      print "                     deleteuser           -a -u"
      print "           lg        listgroups           -a" 
-     print " "
      print "                     ec2                  -a                        List instances and securitygroups"
-     print " "
      print "                     getpolicyarn         -a -t                     Lists all defined policies filter with a regex in -t"
      print "                     listuserpolicies     -a -u"
      print "                     getpolicies          -a -t                     Get the policy documents assciates with the regex in -t"
      print "                     detachuserpolicies   -a -u"
      print "                     attachpolicytouser   -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup       -a -u -t                  Specify the group name with -t"
-     print " "
      print "           ca        cloudtrail-active    -a -s                     Lists active users since start date (-s)"
      print "           cu        cloudtrail-user      -a -u -s                  Lists user (-u) activity since start date (-s) "
      print "           cz        cloudtrail-allusers  -a -s                     Runs cloudtrail-users for all users"
-     print "           cw        cloudtrail-watch     -a -s                     Runs cloudtrail-users for the WATCHACCOUNT and WATCHUSER in .cuu.txt"
-     print ""
+     print "           cw        cloudtrail-watch     -s                        Runs cloudtrail-users for each account in ACCOUNTLIST on the in WATCHUSER in .cuu.txt"
      print ""
      print "Note: Abbreviations are applied to many fields in the output of cuu. This is done to limit line length where possible"
      print "      -d will turn off all abbreviations"
-     print ""
      print ".cuu.txt    can contain defaults for these settings"
-     print "            STARTDATE=YYYY-MM-DD"
-     print "            PASSWORD=XYXYXYXYXYX"
+     print "            STARTDATE=YYYY-MM-DD    PASSWORD=XYXYXYXYXYX    WATCHUSER=username    ACCOUNTLIST=A1 A2 A3"
      print ""
 }
 assert() {
@@ -109,6 +99,7 @@ PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
+ACCOUNTLIST=`gawk -v w=ACCOUNTLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
 
 while getopts "r:Ff:ds:n:c:u:a:p:t:ihb" arg
@@ -190,12 +181,10 @@ while [[ 0 -eq 0 ]];do
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-               assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT '{
-                    sz = "cuu -a " A " -c cu -u " $NF
-                    print sz
-                    system(sz)
-               }' 
+               print $ACCOUNTLIST
+               for sz in $ACCOUNTLIST; do
+                   print $sz
+               done
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
                assert "$ACCOUNT"  "Account not specified"
@@ -390,9 +379,11 @@ if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
-               assert "WATCHACCOUNT" "Account not specified"
+               assert "ACCOUNTLIST" "Account List not specified"
                assert "WATCHUSER"    "User not specified"
-               cuu -a $WATCHACCOUNT -c CU -u $WATCHUSER 
+               for sz in $ACCOUNTLIST; do
+                    cuu -a $sz -c CU -u $WATCHUSER 
+               done
 fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT"  "Account not specified"
