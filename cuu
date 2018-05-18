@@ -40,7 +40,7 @@ usage(){
      print "                     createreadonlyuser -a -u                     Creates a user with AdministorAccess"
      print "                     changepassword     -a -u -p"
      print "                     scrampassword      -a -u                     Assign an unknown (scrammed) password"
-     print "                     listusers          -a" 
+     print "           ls        listusers          -a" 
      print " "
      print "                     listusergroups     -a -u"
      print "                     createaccesskey    -a -u                     Creates an accesskey for the user (-u)"
@@ -48,7 +48,7 @@ usage(){
      print "                     deleteaccesskeys   -a -u                     Deletes the users (-u) access keys)"
      print " "
      print "                     deleteuser         -a -u"
-     print "                     listgroups         -a" 
+     print "           lg        listgroups         -a" 
      print " "
      print "                     ec2                -a                        List instances and securitygroups"
      print " "
@@ -59,8 +59,8 @@ usage(){
      print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
      print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
      print " "
-     print "                     cloudtrail-active  -a -s                     Lists active users since start date (-s)"
-     print "                     cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s), Use -u ALL for all users"
+     print "           ca        cloudtrail-active  -a -s                     Lists active users since start date (-s)"
+     print "           cu        cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s), Use -u ALL for all users"
      print ""
      print ""
      print "Note: abbreviations are applied to many fields in t output of cuu. This is done to limit line length where possible"
@@ -161,7 +161,8 @@ while [[ 0 -eq 0 ]];do
 
 	case "$COMMAND" in
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
-            CT)                    COMMAND="CLOUDTRAIL-USER" ;;
+            CU)                    COMMAND="CLOUDTRAIL-USER" ;;
+            CS)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
@@ -181,7 +182,12 @@ while [[ 0 -eq 0 ]];do
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-               confirm
+               assert "$ACCOUNT" "Account not specified"
+               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT '{
+                    sz = "cuu -a " A " -c cu -u " $NF
+                    print sz
+                    system(sz)
+               }' 
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
                assert "$ACCOUNT"  "Account not specified"
@@ -368,6 +374,13 @@ fi
 
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
 
+if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
+               assert "$ACCOUNT" "Account not specified"
+               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT '{
+                    sz = "cuu -a " A " -c cu -u " $NF
+                    system(sz)
+               }' 
+fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT"  "Account not specified"
                assert "$USERNAME" "Username not specified"
@@ -404,6 +417,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/[ ]/, "", resp);
                          gsub(/createDate/, "cD", resp);
                          gsub(/userName/, "uN", resp);
+                         gsub(/userName/, "uN", req);
                          gsub(/userId/, "uID", resp);
                          gsub(/AIDA................/, "AIDA..", resp);
                          gsub(/Jan/,"01",resp);
@@ -424,6 +438,11 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/Port/,"P",req);
                          gsub(/request/,"req",req);
                          gsub(/request/,"req",resp);
+
+                         gsub(/[Ss]ecurity/,"Sec",resp);
+                         gsub(/[Ss]ecurity/,"Sec",req);
+                         gsub(/functionName/,"fName",resp);
+                         gsub(/functionName/,"fName",req);
 
                          gsub(/instance/,"inst",req);
                          gsub(/instance/,"inst",resp);
@@ -476,16 +495,16 @@ fi
 
 print -n "cuu "$ACCOUNT" "$USERNAME" "$THING">> "
 read COMMAND
-          set -A array $COMMAND
-          if [ "${array[0]}" == "ACCOUNT" ] ; then
-              ACCOUNT="${array[1]}"
-          fi
-          if [ "${array[0]}" == "USERNAME" ] ; then
-              USERNAME="${array[1]}"
-          fi
-          if [ "${array[0]}" == "THING" ] ; then
-              THING="${array[1]}"
-          fi
+     set -A array $COMMAND
+     if [ "${array[0]}" == "ACCOUNT" ] ; then
+          ACCOUNT="${array[1]}"
+     fi
+     if [ "${array[0]}" == "USERNAME" ] ; then
+         USERNAME="${array[1]}"
+     fi
+     if [ "${array[0]}" == "THING" ] ; then
+         THING="${array[1]}"
+     fi
 done
 
 exit 1
