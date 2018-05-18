@@ -1,5 +1,6 @@
 cuu
  
+<pre> 
 Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]  
        -h  display usage  
        -a  cli profile name      (from .aws/config)  
@@ -43,3 +44,4 @@ Note: Abbreviations are applied to many fields in the output of cuu. This is don
             STARTDATE=YYYY-MM-DD    PASSWORD=XYXYXYXYXYX    WATCHUSER=username    ACCOUNTLIST=A1 A2 A3  
   
   
+</pre>
