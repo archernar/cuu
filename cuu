@@ -64,6 +64,7 @@ usage(){
      print "           ca        cloudtrail-active    -a -s                     Lists active users since start date (-s)"
      print "           cu        cloudtrail-user      -a -u -s                  Lists user (-u) activity since start date (-s) "
      print "           cz        cloudtrail-allusers  -a -s                     Runs cloudtrail-users for all users"
+     print "           cw        cloudtrail-watch     -a -s                     Runs cloudtrail-users for the WATCHACCOUNT and WATCHUSER in .cuu.txt"
      print ""
      print ""
      print "Note: Abbreviations are applied to many fields in the output of cuu. This is done to limit line length where possible"
@@ -106,6 +107,8 @@ REGION="us-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
+WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
+WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
 
 while getopts "r:Ff:ds:n:c:u:a:p:t:ihb" arg
@@ -163,6 +166,7 @@ while [[ 0 -eq 0 ]];do
 	case "$COMMAND" in
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
             CU)                    COMMAND="CLOUDTRAIL-USER" ;;
+            CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
             CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
@@ -383,6 +387,12 @@ if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
                     sz = "cuu -a " A " -c cu -u " $NF
                     system(sz)
                }' 
+fi
+
+if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
+               assert "WATCHACCOUNT" "Account not specified"
+               assert "WATCHUSER"    "User not specified"
+               cuu -a $WATCHACCOUNT -c CU -u $WATCHUSER 
 fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT"  "Account not specified"
