@@ -65,6 +65,7 @@ usage(){
      print "            STARTDATE=YYYY-MM-DD    PASSWORD=XYXYXYXYXYX    WATCHUSER=username    ACCOUNTLIST=A1 A2 A3"
      print ""
 }
+#ENDUSAGE
 assert() {
     if [ "$1" == "" ] ; then
          print $2
