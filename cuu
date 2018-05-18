@@ -34,10 +34,13 @@ usage(){
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
-     print "                     createuser           -a -u"
-     print "                     createadminuser      -a -u                     Creates a user with AdministorAccess"
-     print "                     createreadonlyuser   -a -u                     Creates a user with AdministorAccess"
+     print "                     createuser           -a -u -p                  Creates with no privledges"
+     print "                     createadminuser      -a -u -p                  Creates a user with Administor Access"
+     print "                     createreadonlyuser   -a -u -p                  Creates a user with Read Only"
      print "                     changepassword       -a -u -p                  Changes a users password, Will use PASSWORD var in .cuu.txt"
+     print "                                                                    NOTE: for commands above, User will need to change password"
+     print "                                                                          after first login.  Password may be set in .cuu.txt"
+     print " "
      print "                     scrampassword        -a -u                     Assign an unknown (scrammed) password"
      print "           ls        listusers            -a" 
      print " "
@@ -63,14 +66,14 @@ usage(){
      print "           cz        cloudtrail-allusers  -a -s                     Runs cloudtrail-users for all users"
      print ""
      print ""
-     print "Note: abbreviations are applied to many fields in t output of cuu. This is done to limit line length where possible"
+     print "Note: Abbreviations are applied to many fields in the output of cuu. This is done to limit line length where possible"
      print "      -d will turn off all abbreviations"
+     print ""
      print ".cuu.txt    can contain defaults for these settings"
      print "            STARTDATE=YYYY-MM-DD"
      print "            PASSWORD=XYXYXYXYXYX"
      print ""
 }
-
 assert() {
     if [ "$1" == "" ] ; then
          print $2
