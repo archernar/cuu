@@ -181,10 +181,7 @@ while [[ 0 -eq 0 ]];do
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-               print $ACCOUNTLIST
-               for sz in $ACCOUNTLIST; do
-                   print $sz
-               done
+                   print "" 
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
                assert "$ACCOUNT"  "Account not specified"
@@ -380,10 +377,17 @@ fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
                assert "ACCOUNTLIST" "Account List not specified"
-               assert "WATCHUSER"    "User not specified"
-               for sz in $ACCOUNTLIST; do
-                    cuu -a $sz -c CU -u $WATCHUSER 
-               done
+               if [ "$USERNAME" == "" ] ; then
+                    assert "$WATCHUSER"    "User not specified"
+                    for sz in $ACCOUNTLIST; do
+                         cuu -a $sz -c CU -u $WATCHUSER
+                    done
+               else
+                    assert "$USERNAME"    "User not specified"
+                    for sz in $ACCOUNTLIST; do
+                         cuu -a $sz -c CU -u $USERNAME 
+                    done
+               fi
 fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT"  "Account not specified"
