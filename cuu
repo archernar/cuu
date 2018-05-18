@@ -30,43 +30,44 @@ usage(){
      print "       -p  operand:  password    (default set in .cuu.txt)"
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
      print "       -s  operand:  start date  (default set in .cuu.txt)"
-     print "       -z  shadow file reset     (/tmp/cuu.out)"
      print "       -d  show detail/do not apply abbreviations fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
-     print "                     createuser         -a -u"
-     print "                     createadminuser    -a -u                     Creates a user with AdministorAccess"
-     print "                     createreadonlyuser -a -u                     Creates a user with AdministorAccess"
-     print "                     changepassword     -a -u -p"
-     print "                     scrampassword      -a -u                     Assign an unknown (scrammed) password"
-     print "           ls        listusers          -a" 
+     print "                     createuser           -a -u"
+     print "                     createadminuser      -a -u                     Creates a user with AdministorAccess"
+     print "                     createreadonlyuser   -a -u                     Creates a user with AdministorAccess"
+     print "                     changepassword       -a -u -p                  Changes a users password, Will use PASSWORD var in .cuu.txt"
+     print "                     scrampassword        -a -u                     Assign an unknown (scrammed) password"
+     print "           ls        listusers            -a" 
      print " "
-     print "                     listusergroups     -a -u"
-     print "                     createaccesskey    -a -u                     Creates an accesskey for the user (-u)"
-     print "                     listaccesskeys     -a -u                     Lists the users (-u) access keys)"
-     print "                     deleteaccesskeys   -a -u                     Deletes the users (-u) access keys)"
+     print "                     listusergroups       -a -u"
+     print "                     createaccesskey      -a -u                     Creates an accesskey for the user (-u)"
+     print "                     listaccesskeys       -a -u                     Lists the users (-u) access keys)"
+     print "                     deleteaccesskeys     -a -u                     Deletes the users (-u) access keys)"
      print " "
-     print "                     deleteuser         -a -u"
-     print "           lg        listgroups         -a" 
+     print "                     deleteuser           -a -u"
+     print "           lg        listgroups           -a" 
      print " "
-     print "                     ec2                -a                        List instances and securitygroups"
+     print "                     ec2                  -a                        List instances and securitygroups"
      print " "
-     print "                     getpolicyarn       -a -t                     Lists all defined policies filter with a regex in -t"
-     print "                     listuserpolicies   -a -u"
-     print "                     getpolicies        -a -t                     Get the policy documents assciates with the regex in -t"
-     print "                     detachuserpolicies -a -u"
-     print "                     attachpolicytouser -a -u -t                  Specify the policy arn with -t"
-     print "                     addusertogroup     -a -u -t                  Specify the group name with -t"
+     print "                     getpolicyarn         -a -t                     Lists all defined policies filter with a regex in -t"
+     print "                     listuserpolicies     -a -u"
+     print "                     getpolicies          -a -t                     Get the policy documents assciates with the regex in -t"
+     print "                     detachuserpolicies   -a -u"
+     print "                     attachpolicytouser   -a -u -t                  Specify the policy arn with -t"
+     print "                     addusertogroup       -a -u -t                  Specify the group name with -t"
      print " "
-     print "           ca        cloudtrail-active  -a -s                     Lists active users since start date (-s)"
-     print "           cu        cloudtrail-user    -a -u -s                  Lists user (-u) activity since start date (-s), Use -u ALL for all users"
+     print "           ca        cloudtrail-active    -a -s                     Lists active users since start date (-s)"
+     print "           cu        cloudtrail-user      -a -u -s                  Lists user (-u) activity since start date (-s) "
+     print "           cz        cloudtrail-allusers  -a -s                     Runs cloudtrail-users for all users"
      print ""
      print ""
      print "Note: abbreviations are applied to many fields in t output of cuu. This is done to limit line length where possible"
      print "      -d will turn off all abbreviations"
      print ".cuu.txt    can contain defaults for these settings"
      print "            STARTDATE=YYYY-MM-DD"
+     print "            PASSWORD=XYXYXYXYXYX"
      print ""
 }
 
@@ -104,7 +105,7 @@ PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 
 
-while getopts "r:Ff:ds:n:c:u:a:p:t:izhb" arg
+while getopts "r:Ff:ds:n:c:u:a:p:t:ihb" arg
 do
 	case $arg in
             r)
@@ -143,9 +144,6 @@ do
             t)
                THING=$OPTARG
                ;;
-            z)
-               rm -rf /tmp/cuu.out
-               ;;
 	    h)
                usage
 	       exit 0
@@ -162,7 +160,7 @@ while [[ 0 -eq 0 ]];do
 	case "$COMMAND" in
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
             CU)                    COMMAND="CLOUDTRAIL-USER" ;;
-            CS)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
+            CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
@@ -171,13 +169,16 @@ while [[ 0 -eq 0 ]];do
 # -----------------------------------------------------------------------------------------------------------------------
 # Notes
 # https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
-# aws --profile ECD3 iam get-account-authorization-details > zed
+# aws --profile ECD3 iam get-account-authorization-details 
 #   aws --profile ECD3 iam list-policies
 #   aws --profile ECD3 iam list-policies |  grep SAND
 #   aws --profile ECD3 iam list-policies --scope Local
 #   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
 #   sz = "aws --profile " A " iam list-policy-versions --policy-arn " $2
 #   aws --profile $ACCOUNT -output json iam create-policy-version --policy-arn $T --policy-document file://$FILE --set-as-default
+#   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
+#   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
+#   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
 #
 # -----------------------------------------------------------------------------------------------------------------------
 
@@ -228,9 +229,6 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
@@ -337,8 +335,10 @@ fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE > /tmp/zed
-               cat /tmp/zed | gawk '/^EVENTS/ { print $NF }' | sort | uniq
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE | gawk '
+               /^EVENTS/ {
+                    print $NF 
+               }' | sort | uniq
 fi
 
 if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
@@ -388,9 +388,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE  > $Tmp
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
-                     # cat  test.data  > $Tmp
                fi
-               #cat $Tmp > /tmp/zed 
                cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL '
                @include "cuu.awk"
                /^EVENTS/ {
@@ -466,7 +464,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     # print "acct","time","name","eventtype","eventname","req","resp"
                     print trim(ACCT), time, name, ty , en, "IN-" req
                     print trim(ACCT), time, name, ty , en, "OU-" resp
-               }' | tee /tmp/raw | column -t | tee /tmp/out
+               }' |  column -t
 fi
 
 if [ "$LOOP" == "yes" ] ; then
