@@ -15,9 +15,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
                  createuser           -a -u -p    Creates with no privledges  
                  createadminuser      -a -u -p    Creates a user with Administor Access  
                  createreadonlyuser   -a -u -p    Creates a user with Read Only  
-                 changepassword       -a -u -p    Changes a users password, Will use PASSWORD var in .cuu.txt  
-                                                  NOTE: for commands above, User will need to change password  
-                                                        after first login.  Password may be set in .cuu.txt  
+                 changepassword       -a -u -p    Changes a users pwd, Will use PASSWORD in .cuu.txt  
+                                                  NOTE: for commands above, User will change password  
+                                                  after first login.  Password may be set in .cuu.txt  
                  scrampassword        -a -u       Assign an unknown (scrammed) password  
        ls        listusers            -a"   
                  listusergroups       -a -u  
