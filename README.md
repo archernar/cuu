@@ -1,7 +1,7 @@
 # cuu
  
-<pre> 
 # CUU - An AWS CLI Wrapper
+ <pre>
 # ---------------------------------------------------------------------------------------------------------
 #  / ___| | | | | | |            / \   _ __      / \ \      / / ___|   / ___| |   |_ _| |_   _|__   ___ | |
 # | |   | | | | | | |  _____    / _ \ | '_ \    / _ \ \ /\ / /\___ \  | |   | |    | |    | |/ _ \ / _ \| |
@@ -59,4 +59,4 @@ Note: Abbrev are applied to fields in the output of cuu. This is done to limit l
       -d will turn off all abbreviations
 .cuu.txt  can contain defaults for these setting
           STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3
-</pre>
+ </pre>

@@ -1,7 +1,6 @@
 BEGIN {
          print "# cuu"
          print " "
-         print "<pre> "
          pr = 1
 }
 
@@ -9,6 +8,7 @@ BEGIN {
      sz = $0
      sub(/^.*print ["]/,"",sz);
      sub(/["]$/,"",sz);
+     sub(/^[#] M/,"",sz);
      if (sz ~ /^[#] README[.]md.*/) pr=0;
      if (sz ~ /^usage[(].*/) pr=0;
      if (sz ~ /^$/)          pr=0;
@@ -18,5 +18,4 @@ BEGIN {
 }
 
 END {
-     print "</pre>"
 }
