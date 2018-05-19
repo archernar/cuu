@@ -4,6 +4,7 @@ TmpDir="/tmp/dir$$"
 trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
+
 # -----------------------------------------------------------------------------------------------------------
 #   / ___| | | | | | |            / \   _ __      / \ \      / / ___|   / ___| |   |_ _| |_   _|__   ___ | |
 #  | |   | | | | | | |  _____    / _ \ | '_ \    / _ \ \ /\ / /\___ \  | |   | |    | |    | |/ _ \ / _ \| |
@@ -49,24 +50,23 @@ usage(){
      print "       lg        listgroups           -a" 
      print "                 ec2                  -a          List instances and securitygroups"
      print "                 getpolicyarn         -a -t       Lists all defined policies filter with a regex in -t"
-     print "                 listuserpolicies     -a -u
+     print "                 listuserpolicies     -a -u"
      print "                 getpolicies          -a -t       Get the policy docs assocaiated with the regex in -t"
      print "                 detachuserpolicies   -a -u"
      print "                 attachpolicytouser   -a -u -t    Specify the policy arn with -t"
      print "                 addusertogroup       -a -u -t    Specify the group name with -t"
      print "       ca        cloudtrail-active    -a -s       Lists active users since start date (-s)"
-     print "       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s) "
+     print "       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)"
      print "       cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users"
      print "       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST"
      print "                                                  on the WATCHUSER in .cuu.txt"
      print ""
      print "Note: Abbrev are applied to fields in the output of cuu. This is done to limit line length"
      print "      -d will turn off all abbreviations"
-     print ".cuu.txt  can contain defaults for these setting
+     print ".cuu.txt  can contain defaults for these setting"
      print "          STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3"
      print ""
 }
-#ENDUSAGE
 assert() {
     if [ "$1" == "" ] ; then
          print $2
@@ -153,6 +153,10 @@ do
 	esac
 done
 shift $(($OPTIND - 1))
+
+
+
+
 
 while [[ 0 -eq 0 ]];do
 

@@ -34,7 +34,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
                  attachpolicytouser   -a -u -t    Specify the policy arn with -t
                  addusertogroup       -a -u -t    Specify the group name with -t
        ca        cloudtrail-active    -a -s       Lists active users since start date (-s)
-       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s) 
+       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)
        cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users
        cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST
                                                   on the WATCHUSER in .cuu.txt
