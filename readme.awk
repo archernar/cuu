@@ -1,6 +1,4 @@
 BEGIN {
-         print "# cuu"
-         print " "
          pr = 1
 }
 
