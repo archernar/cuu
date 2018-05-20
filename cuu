@@ -417,7 +417,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v LD=$LONGDATES '
+               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v LD=$LONGDATES '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
