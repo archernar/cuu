@@ -107,7 +107,7 @@ STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w)
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 ACCOUNTLIST=`gawk -v w=ACCOUNTLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
-
+DETAILFLAG=""
 
 while getopts "r:Ff:ds:n:c:u:a:p:t:ihb" arg
 do
@@ -126,6 +126,7 @@ do
                ;;
             d)
                DETAIL="yes"
+               DETAILFLAG=" -d "
                ;;
             s)
                STARTDATE=$OPTARG
@@ -380,8 +381,11 @@ fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
                assert "$ACCOUNT" "Account not specified"
-               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT '{
-                    sz = "cuu -a " A " -c cu -u " $NF
+               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT -v D=$DETAIL '{
+                    if (D=="yes")
+                         sz = "cuu -d -a " A " -c cu -u " $NF;
+                    else
+                         sz = "cuu  -a " A " -c cu -u " $NF;
                     system(sz)
                }' 
 fi
@@ -391,12 +395,12 @@ if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
                if [ "$USERNAME" == "" ] ; then
                     assert "$WATCHUSER"    "User not specified"
                     for sz in $ACCOUNTLIST; do
-                         cuu -a $sz -c CU -u $WATCHUSER
+                         cuu -a $sz -c CU -u $WATCHUSER $DETAILFLAG
                     done
                else
                     assert "$USERNAME"    "User not specified"
                     for sz in $ACCOUNTLIST; do
-                         cuu -a $sz -c CU -u $USERNAME 
+                         cuu -a $sz -c CU -u $USERNAME $DETAILFLAG
                     done
                fi
 fi
@@ -422,7 +426,6 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     name=$NF;
                     sub(/HIDDEN_DUE_TO_SECURITY_REASONS/,"HIDDEN",name);
                     if (match(DETAIL,/^yes/) == 0) {
-                         if (length(name) > 10) name =substr(name,1,10);
                          sub(/^Aws/, "", ty);
                          sub(/^Console/, "Con", ty);
                          gsub(/["]/, "", resp);
@@ -475,15 +478,17 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/Resource/,"Res",en);
                          gsub(/Update/,"Upd",en);
                          gsub(/Create/,"Cr",en);
-                         if (length(ty) > 10) ty =substr(ty,1,10);
+                         name=cutpad(name,10);
+                         ty=cutpad(ty,10);
+                         en=cutpad(en,10);
                     }
                     if (length(req) > 256) req=substr(req,1,256) "(TRUNCATED)";
                     if (length(resp) > 256) resp=substr(resp,1,256) "(TRUNCATED)";
                     # print "-"
                     # print "acct","time","name","eventtype","eventname","req","resp"
-                    print trim(ACCT), time, name, ty , en, "IN-" req
-                    print trim(ACCT), time, name, ty , en, "OU-" resp
-               }' |  column -t
+                    print trim(ACCT), time, name, ty, en, "IN-" req
+                    print trim(ACCT), time, name, ty, en, "OU-" resp
+               }' 
 fi
 
 if [ "$LOOP" == "yes" ] ; then
