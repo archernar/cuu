@@ -32,7 +32,7 @@ usage(){
      print "       -p  operand:  password    (default set in .cuu.txt)"
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
      print "       -s  operand:  start date  (default set in .cuu.txt)"
-     print "       -d  show detail/do not apply abbreviations fields"
+     print "       -d  limits abbreviations"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
@@ -63,10 +63,10 @@ usage(){
      print "       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST"
      print "                                                  on the WATCHUSER in .cuu.txt"
      print ""
-     print "Note: Abbrev are applied to fields in the output of cuu. This is done to limit line length"
-     print "      -d will turn off all abbreviations"
+     print "Note: Abbreviations are applied to output fields to limit line length"
+     print "       -d will limit abbreviations"
      print ".cuu.txt  can contain defaults for these setting"
-     print "          STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3"
+     print "       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3"
      print ""
 }
 # M </pre>
@@ -481,6 +481,11 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          name=cutpad(name,10);
                          ty=cutpad(ty,10);
                          en=cutpad(en,10);
+                    }
+                    else {
+                         name=cutpad(name,18);
+                         ty=cutpad(ty,18);
+                         en=cutpad(en,18);
                     }
                     if (length(req) > 256) req=substr(req,1,256) "(TRUNCATED)";
                     if (length(resp) > 256) resp=substr(resp,1,256) "(TRUNCATED)";

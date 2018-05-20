@@ -7,7 +7,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
        -p  operand:  password    (default set in .cuu.txt)
        -t  operand:  thing name  (used to specify a resource or object name)
        -s  operand:  start date  (default set in .cuu.txt)
-       -d  show detail/do not apply abbreviations fields
+       -d  limits abbreviations
        -F  force mode, do not confirm any command (e.g. deletes)
        -i  interactive mode ('q' to quit)
        -c  command:
@@ -37,8 +37,8 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
        cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users
        cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST
                                                   on the WATCHUSER in .cuu.txt
-Note: Abbrev are applied to fields in the output of cuu. This is done to limit line length
-      -d will turn off all abbreviations
+Note: Abbreviations are applied to output fields to limit line length
+       -d will limit abbreviations
 .cuu.txt  can contain defaults for these setting
-          STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3
+       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3
 </pre>
