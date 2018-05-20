@@ -497,7 +497,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          name=cutpad(name,10);
                          ty=cutpad(ty,10);
                          en=cutpad(en,10);
-print ">>> " LD
+
                          if (match(LD,/^yes/) == 0) {
                               sub(/^....-/,"",time);
                               sub(/..........$/,"",time);
