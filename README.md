@@ -4,9 +4,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
        -h  display usage
        -a  cli profile name      (from .aws/config)
        -u  operand:  username
-       -p  operand:  password    (default set in .cuu.txt)
+       -p  operand:  password    (default set in ~/.cuu.txt)
        -t  operand:  thing name  (used to specify a resource or object name)
-       -s  operand:  start date  (default set in .cuu.txt)
+       -s  operand:  start date  (default set in ~/.cuu.txt)
        -d  limits abbreviations
        -j  use long datetime fields
        -F  force mode, do not confirm any command (e.g. deletes)
@@ -15,9 +15,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
                  createuser           -a -u -p    Creates with no privledges
                  createadminuser      -a -u -p    Creates a user with Administor Access
                  createreadonlyuser   -a -u -p    Creates a user with Read Only
-                 changepassword       -a -u -p    Changes a users pwd, Will use PASSWORD in .cuu.txt
+                 changepassword       -a -u -p    Changes a users pwd, Will use PASSWORD in ~/.cuu.txt
                                                   NOTE: for commands above, User will change password
-                                                  after first login.  Password may be set in .cuu.txt
+                                                  after first login.  Password may be set in ~/.cuu.txt
                  scrampassword        -a -u       Assign an unknown (scrammed) password
        ls        listusers            -a" 
                  listusergroups       -a -u
@@ -37,9 +37,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
        cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)
        cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users
        cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST
-                                                  on the WATCHUSER in .cuu.txt
+                                                  on the WATCHUSER in ~/.cuu.txt
 Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
-.cuu.txt  can contain defaults for these setting
+~/.cuu.txt  can contain defaults for these setting
        STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3
 </pre>

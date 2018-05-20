@@ -29,9 +29,9 @@ usage(){
      print "       -h  display usage"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
-     print "       -p  operand:  password    (default set in .cuu.txt)"
+     print "       -p  operand:  password    (default set in ~/.cuu.txt)"
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
-     print "       -s  operand:  start date  (default set in .cuu.txt)"
+     print "       -s  operand:  start date  (default set in ~/.cuu.txt)"
      print "       -d  limits abbreviations"
      print "       -j  use long datetime fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
@@ -40,9 +40,9 @@ usage(){
      print "                 createuser           -a -u -p    Creates with no privledges"
      print "                 createadminuser      -a -u -p    Creates a user with Administor Access"
      print "                 createreadonlyuser   -a -u -p    Creates a user with Read Only"
-     print "                 changepassword       -a -u -p    Changes a users pwd, Will use PASSWORD in .cuu.txt"
+     print "                 changepassword       -a -u -p    Changes a users pwd, Will use PASSWORD in ~/.cuu.txt"
      print "                                                  NOTE: for commands above, User will change password"
-     print "                                                  after first login.  Password may be set in .cuu.txt"
+     print "                                                  after first login.  Password may be set in ~/.cuu.txt"
      print "                 scrampassword        -a -u       Assign an unknown (scrammed) password"
      print "       ls        listusers            -a" 
      print "                 listusergroups       -a -u"
@@ -62,11 +62,11 @@ usage(){
      print "       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)"
      print "       cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users"
      print "       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST"
-     print "                                                  on the WATCHUSER in .cuu.txt"
+     print "                                                  on the WATCHUSER in ~/.cuu.txt"
      print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "       -d will limit abbreviations"
-     print ".cuu.txt  can contain defaults for these setting"
+     print "~/.cuu.txt  can contain defaults for these setting"
      print "       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3"
      print ""
 }
@@ -103,11 +103,11 @@ FORCE=""
 LOOP="no"
 REGION="us-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
-PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
-STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
-WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
-WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
-ACCOUNTLIST=`gawk -v w=ACCOUNTLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
+PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+ACCOUNTLIST=`gawk -v w=ACCOUNTLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
 LONGDATES="no" 
 
