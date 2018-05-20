@@ -1,6 +1,6 @@
 # CUU - An AWS CLI Wrapper
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
+Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
        -h  display usage
        -a  cli profile name      (from .aws/config)
        -u  operand:  username
@@ -8,6 +8,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]
        -t  operand:  thing name  (used to specify a resource or object name)
        -s  operand:  start date  (default set in .cuu.txt)
        -d  limits abbreviations
+       -j  use long datetime fields
        -F  force mode, do not confirm any command (e.g. deletes)
        -i  interactive mode ('q' to quit)
        -c  command:

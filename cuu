@@ -25,7 +25,7 @@ rm $Tmp  >/dev/null 2>&1
 # M <pre>
 usage(){
      print ""
-     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-F][-i][-c]"
+     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]"
      print "       -h  display usage"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
@@ -33,6 +33,7 @@ usage(){
      print "       -t  operand:  thing name  (used to specify a resource or object name)"
      print "       -s  operand:  start date  (default set in .cuu.txt)"
      print "       -d  limits abbreviations"
+     print "       -j  use long datetime fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
@@ -108,10 +109,14 @@ WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w)
 WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 ACCOUNTLIST=`gawk -v w=ACCOUNTLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' .cuu.txt`
 DETAILFLAG=""
+LONGDATES="no" 
 
-while getopts "r:Ff:ds:n:c:u:a:p:t:ihb" arg
+while getopts "jr:Ff:ds:n:c:u:a:p:t:ihb" arg
 do
 	case $arg in
+            j)
+               LONGDATES="yes" 
+               ;;
             r)
                REGION=$OPTARG  
                ;;
@@ -412,7 +417,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL '
+               cat $Tmp | gawk  -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v LD=$LONGDATES '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
@@ -427,7 +432,6 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     sub(/HIDDEN_DUE_TO_SECURITY_REASONS/,"HIDDEN",name);
                     if (match(DETAIL,/^yes/) == 0) {
                          sub(/^Aws/, "", ty);
-                         sub(/^Console/, "Con", ty);
                          gsub(/["]/, "", resp);
                          gsub(/Validation/, "Valid", resp);
                          gsub(/Region/, "Reg", resp);
@@ -454,8 +458,20 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/Port/,"P",req);
                          gsub(/request/,"req",req);
                          gsub(/request/,"req",resp);
-
+                         gsub(/vpcConfig/,"vpcCfg",req);
+                         gsub(/vpcConfig/,"vpcCfg",resp);
+                         gsub(/memorySize/,"memSz",req);
+                         gsub(/memorySize/,"memSz",resp);
+                         gsub(/revisionId/,"revId",req);
+                         gsub(/revisionId/,"revId",resp);
+                         gsub(/........-....-....-....-............/,"...",req);
+                         gsub(/........-....-....-....-............/,"...",resp);
+                         gsub(/[Cc]onsole/,"Con",en);
+                         gsub(/[Cc]onsole/,"Con",ty);
+                         gsub(/[Cc]onsole/,"Con",resp);
+                         gsub(/[Cc]onsole/,"Con",req);
                          gsub(/[Ss]ecurity/,"Sec",resp);
+
                          gsub(/[Ss]ecurity/,"Sec",req);
                          gsub(/functionName/,"fName",resp);
                          gsub(/functionName/,"fName",req);
@@ -481,6 +497,12 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          name=cutpad(name,10);
                          ty=cutpad(ty,10);
                          en=cutpad(en,10);
+print ">>> " LD
+                         if (match(LD,/^yes/) == 0) {
+                              sub(/^....-/,"",time);
+                              sub(/..........$/,"",time);
+                         }
+
                     }
                     else {
                          name=cutpad(name,18);
