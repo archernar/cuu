@@ -41,5 +41,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
 Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
 ~/.cuu.txt  can contain defaults for these setting
-       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  PROFILELIST=A1 A2 A3
 </pre>
+PASSWORD=<PASSWORD>
+STARTDATE=<2018-05-01T00:00:00Z>
+WATCHPROFILE=<PROFILE NAME>
+WATCHUSER=<USER NAME>
+PROFILELIST=<LIST OF PROFILES, SPACE SEPERATED>

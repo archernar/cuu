@@ -67,8 +67,6 @@ usage(){
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "       -d will limit abbreviations"
      print "~/.cuu.txt  can contain defaults for these setting"
-     print "       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  PROFILELIST=A1 A2 A3"
-     print ""
 }
 # M </pre>
 # README.md End
