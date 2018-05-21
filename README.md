@@ -42,8 +42,10 @@ Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
 ~/.cuu.txt  can contain defaults for these setting
 </pre>
+<pre>
 PASSWORD=<PASSWORD>
 STARTDATE=<2018-05-01T00:00:00Z>
 WATCHPROFILE=<PROFILE NAME>
 WATCHUSER=<USER NAME>
 PROFILELIST=<LIST OF PROFILES, SPACE SEPERATED>
+</pre>
