@@ -36,10 +36,10 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
        ca        cloudtrail-active    -a -s       Lists active users since start date (-s)
        cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)
        cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users
-       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST
+       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each profile in PROFILELIST
                                                   on the WATCHUSER in ~/.cuu.txt
 Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
 ~/.cuu.txt  can contain defaults for these setting
-       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3
+       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  PROFILELIST=A1 A2 A3
 </pre>

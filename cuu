@@ -61,13 +61,13 @@ usage(){
      print "       ca        cloudtrail-active    -a -s       Lists active users since start date (-s)"
      print "       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)"
      print "       cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users"
-     print "       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each acct in ACCOUNTLIST"
+     print "       cw        cloudtrail-watch     -s          Runs cloudtrail-users for each profile in PROFILELIST"
      print "                                                  on the WATCHUSER in ~/.cuu.txt"
      print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "       -d will limit abbreviations"
      print "~/.cuu.txt  can contain defaults for these setting"
-     print "       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  ACCOUNTLIST=A1 A2 A3"
+     print "       STARTDATE=YYYY-MM-DD  PASSWORD=XYXYXYXYXYX  WATCHUSER=username  PROFILELIST=A1 A2 A3"
      print ""
 }
 # M </pre>
@@ -106,8 +106,8 @@ RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-WATCHACCOUNT=`gawk -v w=WATCHACCOUNT -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-ACCOUNTLIST=`gawk -v w=ACCOUNTLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
 LONGDATES="no" 
 
@@ -201,8 +201,8 @@ if [ "$COMMAND" == "TEST" ] ; then
                    print "" 
 fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
-               assert "$ACCOUNT"  "Account not specified"
-               assert "$THING"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
+               assert "$THING"  "Policy not specified"
                aws --profile $ACCOUNT iam list-policies --scope Local | egrep $THING | gawk -v A=$ACCOUNT '
                {
                    printf("%-4s %s\n",$5,$2);
@@ -217,7 +217,7 @@ fi
 # ----------------------------------------------------
 if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -227,7 +227,7 @@ if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
 fi
 if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -235,21 +235,21 @@ if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
 fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
                assert "$PASSWORD" "Password not specified"
                confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
 if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
                RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
                assert "$PASSWORD" "Password not specified"
                confirm
@@ -257,7 +257,7 @@ if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
 fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                confirm
                aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
@@ -273,7 +273,7 @@ if [ "$COMMAND" == "DELETEUSER" ] ; then
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
 if [ "$COMMAND" == "ACCOUNTNUMBER" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                print $ACCTNUMBER
 fi
@@ -281,20 +281,20 @@ fi
 # These commands operate on accounts
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTROLES" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT --no-paginate iam list-roles 
                # | gawk '/^ROLES/ {printf("%s\n",$2);}' | sort
 fi
 if [ "$COMMAND" == "LISTUSERS" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT iam list-users | gawk '{if (NF==6) printf("%-40s %-24s %s\n",$NF,"",$2); else printf("%-40s %-24s %s\n",$NF,$4, $2)}' | sort
 fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT iam list-groups | gawk '{printf("%-44s %s\n",$5,$2)}' | sort
 fi
 if [ "$COMMAND" == "GETPOLICYARN" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
 fi
@@ -303,17 +303,17 @@ fi
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTUSERPOLICIES" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk '{print $0}'
 fi
 if [ "$COMMAND" == "LISTUSERGROUPS" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk '{print $5}'
 fi
 if [ "$COMMAND" == "DETACHUSERGROUPS" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                confirm
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
@@ -323,7 +323,7 @@ if [ "$COMMAND" == "DETACHUSERGROUPS" ] ; then
 fi
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                confirm
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
@@ -332,19 +332,19 @@ if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
                }'
 fi
 if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
 fi
 if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE | gawk '
                /^EVENTS/ {
                     print $NF 
@@ -352,8 +352,8 @@ if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
 fi
 
 if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
-               assert "$ACCOUNT" "Account not specified"
-               assert "$USERNAME" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Profile not specified"
                aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk '
                @include "cuu.awk" 
                { 
@@ -361,13 +361,13 @@ if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
                }'
 fi
 if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
-               assert "$ACCOUNT" "Account not specified"
-               assert "$USERNAME" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Profile not specified"
                aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
 fi
 if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
                assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                confirm
                aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
@@ -377,7 +377,7 @@ if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
 fi
 
 if [ "$COMMAND" == "EC2" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {print "\n\n\n"}/INSTANCES/{print $0}/SECURITYGROUPS/{print $0 "\n\n\n"}'
 fi
 
@@ -385,7 +385,7 @@ fi
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
 
 if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
-               assert "$ACCOUNT" "Account not specified"
+               assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT -v D=$DETAIL '{
                     if (D=="yes")
                          sz = "cuu -d -a " A " -c cu -u " $NF;
@@ -396,21 +396,21 @@ if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
-               assert "ACCOUNTLIST" "Account List not specified"
+               assert "PROFILELIST"  "Profile  not specified"
                if [ "$USERNAME" == "" ] ; then
                     assert "$WATCHUSER"    "User not specified"
-                    for sz in $ACCOUNTLIST; do
+                    for sz in $PROFILELIST; do
                          cuu -a $sz -c CU -u $WATCHUSER $DETAILFLAG
                     done
                else
                     assert "$USERNAME"    "User not specified"
-                    for sz in $ACCOUNTLIST; do
+                    for sz in $PROFILELIST; do
                          cuu -a $sz -c CU -u $USERNAME $DETAILFLAG
                     done
                fi
 fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
-               assert "$ACCOUNT"  "Account not specified"
+               assert "$ACCOUNT"  "Profile not specified"
                assert "$USERNAME" "Username not specified"
                if [ "$USERNAME" == "ALL" ] ; then
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE  > $Tmp
