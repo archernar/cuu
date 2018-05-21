@@ -40,9 +40,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
                                                   on the WATCHUSER in ~/.cuu.txt
 Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
-~/.cuu.txt  can contain defaults for these setting
 </pre>
 <pre>
+~/.cuu.txt  can contain defaults for these settings
 PASSWORD=<PASSWORD>
 STARTDATE=<2018-05-01T00:00:00Z>
 WATCHPROFILE=<PROFILE NAME>
