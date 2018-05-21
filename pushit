@@ -1,0 +1,12 @@
+gawk -f readme.awk cuu  > README.md
+echo "<pre>" >> README.md
+echo "~/.cuu.txt  can contain defaults for these settings" >> README.md
+cat .cuu.txt >> README.md
+echo "</pre>" >> README.md
+git add readme.awk
+git add README.md 
+git add cuu
+
+git commit -m "Update"
+git push -u origin master
+
