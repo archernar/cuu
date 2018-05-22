@@ -163,8 +163,11 @@ done
 shift $(($OPTIND - 1))
 
 
-
-
+if [ $# -eq 1 ] ; then
+     if [ "$COMMAND" == "" ] ; then
+          COMMAND=$1
+     fi
+fi
 
 while [[ 0 -eq 0 ]];do
 
@@ -502,7 +505,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
 
                     }
                     else {
-                         name=cutpad(name,18);
+                 #        name=cutpad(name,18);
                          ty=cutpad(ty,18);
                          en=cutpad(en,18);
                     }
