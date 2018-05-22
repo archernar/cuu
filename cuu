@@ -114,56 +114,22 @@ ISOTIME="no"
 while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZ" arg
 do
 	case $arg in
-            Z)
-               ISOTIME="yes" 
-               ;;
-            r)
-               REGION=$OPTARG  
-               ;;
-            F)
-               FORCE="yes"
-               ;;
-            f)
-               FILE=$OPTARG
-               ;;
-            i)
-               LOOP="yes"
-               ;;
-            d)
-               DETAIL="yes"
-               DETAILFLAG=" -d "
-               ;;
-            s)
-               STARTDATE=$OPTARG
-               ;;
-            n)
-               COUNT=$OPTARG
-               ;;
-            c)
-               COMMAND=$OPTARG
-               ;;
-            u)
-               USERNAME=$OPTARG  
-               ;;
-            R)
-               SHOWRAW="yes" 
-               ;;
-            a)
-               ACCOUNT=$OPTARG
-               ;;
-            p)
-               PASSWORD=$OPTARG
-               ;;
-            t)
-               THING=$OPTARG
-               ;;
-	    h)
-               usage
-	       exit 0
-               ;;
-	    *)
-	       exit 0
-	       ;;
+            Z) ISOTIME="yes" ;;
+            r) REGION=$OPTARG  ;;
+            F) FORCE="yes" ;;
+            f) FILE=$OPTARG ;;
+            i) LOOP="yes" ;;
+            d) DETAIL="yes"; DETAILFLAG=" -d " ;;
+            s) STARTDATE=$OPTARG ;;
+            n) COUNT=$OPTARG ;;
+            c) COMMAND=$OPTARG ;;
+            u) USERNAME=$OPTARG  ;;
+            R) SHOWRAW="yes" ;;
+            a) ACCOUNT=$OPTARG ;;
+            p) PASSWORD=$OPTARG ;;
+            t) THING=$OPTARG ;;
+	    h) usage; exit 0 ;;
+	    *) exit 0 ;;
 	esac
 done
 shift $(($OPTIND - 1))
@@ -423,7 +389,6 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cp $Tmp zed
                cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
@@ -476,6 +441,10 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/memorySize/,"memSz",resp);
                          gsub(/revisionId/,"revId",req);
                          gsub(/revisionId/,"revId",resp);
+
+
+                         gsub(/AKIA........./,"AKIA..",req);
+                         gsub(/AKIA........./,"AKIA..",resp);
                          gsub(/........-....-....-....-............/,"...",req);
                          gsub(/........-....-....-....-............/,"...",resp);
                          gsub(/[Cc]onsole/,"Con",en);
