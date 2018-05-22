@@ -36,6 +36,7 @@ usage(){
      print "       -j  use long datetime fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
      print "       -R  show raw records in output"
+     print "       -Z  user iso time"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
      print "                 createuser           -a -u -p    Creates with no privledges"
@@ -107,14 +108,14 @@ WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w)
 WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
-LONGDATES="no" 
 SHOWRAW="no" 
+ISOTIME="no" 
 
-while getopts "jr:Ff:ds:n:c:Ru:a:p:t:ihb" arg
+while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZ" arg
 do
 	case $arg in
-            j)
-               LONGDATES="yes" 
+            Z)
+               ISOTIME="yes" 
                ;;
             r)
                REGION=$OPTARG  
@@ -422,17 +423,23 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v LD=$LONGDATES  -v RAW=$SHOWRAW '
+               cp $Tmp zed
+               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
-                    time=jget($0, "^.*[\"]eventTime[\"]:","NA");
+                    timepre=jget($0, "^.*[\"]eventTime[\"]:","NA");
                     ip=  jget($0, "^.*[\"]sourceIPAddress[\"]:","NA");
                     ty=  jget($0, "^.*[\"]eventType[\"]:","NA");
                     en=  jget($0, "^.*[\"]eventName[\"]:","NA");
                     req= jget($0, "^.*[\"]requestParameters[\"]:","NA");
                     resp= jget($0, "^.*[\"]responseElements[\"]:","NA");
-
+                    time=isotolocal(timepre, "%m/%d/%Y %H:%M:%S");
+                    shorttime=isotolocal(timepre, "%m/%d/%Y");
+                    if (match(ISOTIME,/^yes/) > 0 ) {
+                         time=timepre;
+                         shorttime=timepre;
+                    }
                     name=$NF;
                     sub(/HIDDEN_DUE_TO_SECURITY_REASONS/,"HIDDEN",name);
                     if (match(DETAIL,/^yes/) == 0) {
@@ -505,10 +512,6 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
 
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",req);
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",resp);
-                         if (match(LD,/^yes/) == 0) {
-                              sub(/^....-/,"",time);
-                              sub(/..........$/,"",time);
-                         }
 
                     }
                     else {

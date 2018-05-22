@@ -11,6 +11,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
        -j  use long datetime fields
        -F  force mode, do not confirm any command (e.g. deletes)
        -R  show raw records in output
+       -Z  user iso time
        -i  interactive mode ('q' to quit)
        -c  command:
                  createuser           -a -u -p    Creates with no privledges
@@ -52,5 +53,5 @@ PROFILELIST=
 </pre>
 <pre>
   
-Mon May 21 23:59:50 EDT 2018
+Tue May 22 12:53:58 EDT 2018
 </pre>
