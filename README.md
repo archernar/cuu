@@ -1,6 +1,6 @@
 # CUU - An AWS CLI Wrapper
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
+Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
        -h  display usage
        -a  cli profile name      (from .aws/config)
        -u  operand:  username
@@ -10,6 +10,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]
        -d  limits abbreviations
        -j  use long datetime fields
        -F  force mode, do not confirm any command (e.g. deletes)
+       -R  show raw records in output
        -i  interactive mode ('q' to quit)
        -c  command:
                  createuser           -a -u -p    Creates with no privledges
@@ -48,4 +49,8 @@ STARTDATE=2018-05-01T00:00:00Z
 WATCHPROFILE=
 WATCHUSER=
 PROFILELIST=
+  
+  
+Mon May 21 23:57:51 EDT 2018
+  
 </pre>

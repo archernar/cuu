@@ -25,7 +25,7 @@ rm $Tmp  >/dev/null 2>&1
 # M <pre>
 usage(){
      print ""
-     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-i][-c]"
+     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]"
      print "       -h  display usage"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
@@ -35,6 +35,7 @@ usage(){
      print "       -d  limits abbreviations"
      print "       -j  use long datetime fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
+     print "       -R  show raw records in output"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
      print "                 createuser           -a -u -p    Creates with no privledges"
@@ -107,8 +108,9 @@ WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if (
 PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
 LONGDATES="no" 
+SHOWRAW="no" 
 
-while getopts "jr:Ff:ds:n:c:u:a:p:t:ihb" arg
+while getopts "jr:Ff:ds:n:c:Ru:a:p:t:ihb" arg
 do
 	case $arg in
             j)
@@ -141,6 +143,9 @@ do
                ;;
             u)
                USERNAME=$OPTARG  
+               ;;
+            R)
+               SHOWRAW="yes" 
                ;;
             a)
                ACCOUNT=$OPTARG
@@ -417,7 +422,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v LD=$LONGDATES '
+               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v LD=$LONGDATES  -v RAW=$SHOWRAW '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
@@ -498,6 +503,8 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          ty=cutpad(ty,10);
                          en=cutpad(en,10);
 
+                         sub(/arn:aws:iam::......../,"arn:aws:iam::",req);
+                         sub(/arn:aws:iam::......../,"arn:aws:iam::",resp);
                          if (match(LD,/^yes/) == 0) {
                               sub(/^....-/,"",time);
                               sub(/..........$/,"",time);
@@ -506,6 +513,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     }
                     else {
                  #        name=cutpad(name,18);
+
                          ty=cutpad(ty,18);
                          en=cutpad(en,18);
                     }
@@ -515,6 +523,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     # print "acct","time","name","eventtype","eventname","req","resp"
                     print trim(ACCT), time, name, ty, en, "IN-" req
                     print trim(ACCT), time, name, ty, en, "OU-" resp
+                    if (match(RAW,/^yes/) != 0) print $0 "\n\n"
                }' 
 fi
 
