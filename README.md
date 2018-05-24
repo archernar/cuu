@@ -29,6 +29,8 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
                  deleteuser           -a -u
        lg        listgroups           -a" 
                  ec2                  -a          List instances and securitygroups
+                 ec2-sg               -a          Security groups detail listing
+                 ec2-sgsum            -a          Security groups summary listing (incl. empty SGs)
                  getpolicyarn         -a -t       Lists all defined policies filter with a regex in -t
                  listuserpolicies     -a -u
                  getpolicies          -a -t       Get the policy docs assocaiated with the regex in -t
@@ -53,5 +55,5 @@ PROFILELIST=
 </pre>
 <pre>
   
-Tue May 22 13:48:21 EDT 2018
+Thu May 24 15:30:37 EDT 2018
 </pre>
