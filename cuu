@@ -123,11 +123,13 @@ DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
 BIGNAMES="no" 
+BIGEVENTS="no" 
 
-while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZB" arg
+while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZBE" arg
 do
 	case $arg in
             B) BIGNAMES="yes" ;;
+            E) BIGEVENTS="yes" ;;
             Z) ISOTIME="yes" ;;
             r) REGION=$OPTARG  ;;
             F) FORCE="yes" ;;
@@ -503,7 +505,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
+               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
@@ -620,10 +622,13 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/[Nn]etwork/,"net",resp);
                          gsub(/[Ii]nterface/,"inter",req);
                          gsub(/[Ii]nterface/,"inter",resp);
-
-                         if (match(BN,/no/) > 0) {
+                         if (match(BE,/no/) > 0) {
                              gsub(/Configuration/,"Config",en);
                              gsub(/Config/,"Cfg",en);
+                             gsub(/[Dd]elete/,"Del",en);
+                             gsub(/[Ll]aunch/,"Lnch",en);
+                             gsub(/[Cc]hange/,"Chg",en);
+                             gsub(/[Ss]caling/,"Scl",en);
                              gsub(/Permission/,"Perm",en);
                              gsub(/Function/,"Func",en);
                              gsub(/Resource/,"Res",en);
@@ -641,12 +646,19 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                              gsub(/[Aa]llocate/,"Alloc",en);
                              gsub(/[Ss]ecurity/,"Sec",en);
                              gsub(/[Rr]oute/,"Rte",en);
-                             en=cutpad(en,10);
+                             en=cutpad(en,11);
+                         }
+                         else {
+                             en=cutpad(en,18);
+                         }
+
+                         if (match(BN,/no/) > 0) {
                              name=cutpad(name,10);
                          }
                          else {
                              en=cutpad(en,28);
                          }
+
                          ty=cutpad(ty,10);
 
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",req);
@@ -654,10 +666,8 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
 
                     }
                     else {
-                 #        name=cutpad(name,18);
 
                          ty=cutpad(ty,18);
-                         en=cutpad(en,18);
                     }
                     if (length(req) > 256) req=substr(req,1,256) "(TRUNCATED)";
                     if (length(resp) > 256) resp=substr(resp,1,256) "(TRUNCATED)";
