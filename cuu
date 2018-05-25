@@ -569,7 +569,6 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/[Aa]llocation/,"Alloc",resp);
                          gsub(/[Aa]llocate/,"Alloc",req);
                          gsub(/[Aa]llocate/,"Alloc",resp);
-                         gsub(/[Aa]llocate/,"Alloc",en);
                          gsub(/[Aa]llocate/,"Alloc",ty);
                          
                          
@@ -577,33 +576,23 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          
                          gsub(/[Aa]ssociation/,"Assoc",req);
                          gsub(/[Aa]ssociation/,"Assoc",resp);
-                         gsub(/[Aa]ssociation/,"Assoc",en);
                          gsub(/[Aa]ssociation/,"Assoc",ty);
                          gsub(/[Aa]ssociate/,"Assoc",req);
                          gsub(/[Aa]ssociate/,"Assoc",resp);
-                         gsub(/[Aa]ssociate/,"Assoc",en);
                          gsub(/[Aa]ssociate/,"Assoc",ty);
 
-                         gsub(/[Mm]odify/,"Mod",en);
                          gsub(/[Mm]odify/,"Mod",ty);
-                         gsub(/[Ii]nstance/,"Inst",en);
                          gsub(/[Ii]nstance/,"Inst",ty);
-                         gsub(/[Ss]ecurity/,"Sec",en);
                          gsub(/[Ss]ecurity/,"Sec",ty);
-                         gsub(/[Aa]uthorize/,"Auth",en);
                          gsub(/[Aa]uthorize/,"Auth",ty);
-                         gsub(/[Aa]ttach/,"Atch",en);
                          gsub(/[Aa]ttach/,"Atch",ty);
-                         gsub(/[Gg]roup/,"Grp",en);
                          gsub(/[Gg]roup/,"Grp",ty);
 
                          gsub(/[Rr]oute/,"Rte",req);
                          gsub(/[Rr]oute/,"Rte",resp);
-                         gsub(/[Rr]oute/,"Rte",en);
                          gsub(/[Rr]oute/,"Rte",ty);
                          gsub(/[Gg]ateway/,"Gtwy",req);
                          gsub(/[Gg]ateway/,"Gtwy",resp);
-                         gsub(/[Gg]ateway/,"Gtwy",en);
                          gsub(/[Gg]ateway/,"Gtwy",ty);
 
                          gsub(/keyFingerprint:..:..:..:..:..:..:..:..:..:..:..:..:..:../,"keyFngPrnt..",req);
@@ -612,7 +601,6 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/AKIA........./,"AKIA..",resp);
                          gsub(/........-....-....-....-............/,"...",req);
                          gsub(/........-....-....-....-............/,"...",resp);
-                         gsub(/[Cc]onsole/,"Con",en);
                          gsub(/[Cc]onsole/,"Con",ty);
                          gsub(/[Cc]onsole/,"Con",resp);
                          gsub(/[Cc]onsole/,"Con",req);
@@ -633,18 +621,33 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/[Ii]nterface/,"inter",req);
                          gsub(/[Ii]nterface/,"inter",resp);
 
-                         gsub(/Configuration/,"Config",en);
-                         gsub(/Config/,"Cfg",en);
-                         gsub(/Permission/,"Perm",en);
-                         gsub(/Function/,"Func",en);
-                         gsub(/Resource/,"Res",en);
-                         gsub(/Update/,"Upd",en);
-                         gsub(/Create/,"Cr",en);
-                         if (match(BN,/yes/) > 0) {
+                         if (match(BN,/no/) > 0) {
+                             gsub(/Configuration/,"Config",en);
+                             gsub(/Config/,"Cfg",en);
+                             gsub(/Permission/,"Perm",en);
+                             gsub(/Function/,"Func",en);
+                             gsub(/Resource/,"Res",en);
+                             gsub(/Update/,"Upd",en);
+                             gsub(/Create/,"Cr",en);
+                             gsub(/[Cc]onsole/,"Con",en);
+                             gsub(/[Ii]nstance/,"Inst",en);
+                             gsub(/[Aa]ssociation/,"Assoc",en);
+                             gsub(/[Mm]odify/,"Mod",en);
+                             gsub(/[Aa]ssociate/,"Assoc",en);
+                             gsub(/[Gg]roup/,"Grp",en);
+                             gsub(/[Aa]uthorize/,"Auth",en);
+                             gsub(/[Gg]ateway/,"Gtwy",en);
+                             gsub(/[Aa]ttach/,"Atch",en);
+                             gsub(/[Aa]llocate/,"Alloc",en);
+                             gsub(/[Ss]ecurity/,"Sec",en);
+                             gsub(/[Rr]oute/,"Rte",en);
+                             en=cutpad(en,10);
                              name=cutpad(name,10);
                          }
+                         else {
+                             en=cutpad(en,28);
+                         }
                          ty=cutpad(ty,10);
-                         en=cutpad(en,10);
 
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",req);
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",resp);
