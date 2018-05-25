@@ -1,6 +1,6 @@
 # CUU - An AWS CLI Wrapper
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
+Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
        -h  display usage
        -a  cli profile name      (from .aws/config)
        -u  operand:  username
@@ -11,6 +11,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
        -j  use long datetime fields
        -F  force mode, do not confirm any command (e.g. deletes)
        -B  show full user names
+       -E  show event names
        -R  show raw records in output
        -Z  user iso time
        -i  interactive mode ('q' to quit)
@@ -59,5 +60,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Fri May 25 13:11:22 EDT 2018
+Fri May 25 13:15:51 EDT 2018
 </pre>

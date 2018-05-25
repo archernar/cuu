@@ -25,7 +25,7 @@ rm $Tmp  >/dev/null 2>&1
 # M <pre>
 usage(){
      print ""
-     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]"
+     print "Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]"
      print "       -h  display usage"
      print "       -a  cli profile name      (from .aws/config)"
      print "       -u  operand:  username"
@@ -36,6 +36,7 @@ usage(){
      print "       -j  use long datetime fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
      print "       -B  show full user names"
+     print "       -E  show event names"
      print "       -R  show raw records in output"
      print "       -Z  user iso time"
      print "       -i  interactive mode ('q' to quit)"
