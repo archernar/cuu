@@ -646,7 +646,8 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                              gsub(/[Aa]llocate/,"Alloc",en);
                              gsub(/[Ss]ecurity/,"Sec",en);
                              gsub(/[Rr]oute/,"Rte",en);
-                             en=cutpad(en,11);
+                             gsub(/[aeiou]/,"",en);
+                             en=cutpad(en,12);
                          }
                          else {
                              en=cutpad(en,18);
@@ -655,11 +656,8 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          if (match(BN,/no/) > 0) {
                              name=cutpad(name,10);
                          }
-                         else {
-                             en=cutpad(en,28);
-                         }
 
-                         ty=cutpad(ty,10);
+                         ty=cutpad(ty,8);
 
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",req);
                          sub(/arn:aws:iam::......../,"arn:aws:iam::",resp);
