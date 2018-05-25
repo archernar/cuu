@@ -10,6 +10,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
        -d  limits abbreviations
        -j  use long datetime fields
        -F  force mode, do not confirm any command (e.g. deletes)
+       -B  show full user names
        -R  show raw records in output
        -Z  user iso time
        -i  interactive mode ('q' to quit)
@@ -22,21 +23,23 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-z][-c][-d][-j][-F][-R][-i][-c]
                                                   after first login.  Password may be set in ~/.cuu.txt
                  scrampassword        -a -u       Assign an unknown (scrammed) password
        ls        listusers            -a" 
+                 describeusers        -a          Lists users and their attached groups and policies" 
                  listusergroups       -a -u
                  createaccesskey      -a -u       Creates an accesskey for the user (-u)
                  listaccesskeys       -a -u       Lists the users (-u) access keys)
                  deleteaccesskeys     -a -u       Deletes the users (-u) access keys)
                  deleteuser           -a -u
        lg        listgroups           -a" 
-                 ec2                  -a          List instances and securitygroups
-                 ec2-sg               -a          Security groups detail listing
-                 ec2-sgsum            -a          Security groups summary listing (incl. empty SGs)
+       lp        listpolicies         -a          Lists all defined policies
                  getpolicyarn         -a -t       Lists all defined policies filter with a regex in -t
                  listuserpolicies     -a -u
                  getpolicies          -a -t       Get the policy docs assocaiated with the regex in -t
                  detachuserpolicies   -a -u
                  attachpolicytouser   -a -u -t    Specify the policy arn with -t
                  addusertogroup       -a -u -t    Specify the group name with -t
+                 ec2                  -a          List instances and securitygroups
+                 ec2-sg               -a          Security groups detail listing
+                 ec2-sgsum            -a          Security groups summary listing (incl. empty SGs)
        ca        cloudtrail-active    -a -s       Lists active users since start date (-s)
        cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)
        cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users
@@ -52,8 +55,9 @@ STARTDATE=2018-05-01T00:00:00Z
 WATCHPROFILE=
 WATCHUSER=
 PROFILELIST=
+POLICYLIST=
 </pre>
 <pre>
   
-Thu May 24 15:30:37 EDT 2018
+Fri May 25 11:09:59 EDT 2018
 </pre>

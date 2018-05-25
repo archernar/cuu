@@ -35,6 +35,7 @@ usage(){
      print "       -d  limits abbreviations"
      print "       -j  use long datetime fields"
      print "       -F  force mode, do not confirm any command (e.g. deletes)"
+     print "       -B  show full user names"
      print "       -R  show raw records in output"
      print "       -Z  user iso time"
      print "       -i  interactive mode ('q' to quit)"
@@ -47,21 +48,23 @@ usage(){
      print "                                                  after first login.  Password may be set in ~/.cuu.txt"
      print "                 scrampassword        -a -u       Assign an unknown (scrammed) password"
      print "       ls        listusers            -a" 
+     print "                 describeusers        -a          Lists users and their attached groups and policies" 
      print "                 listusergroups       -a -u"
      print "                 createaccesskey      -a -u       Creates an accesskey for the user (-u)"
      print "                 listaccesskeys       -a -u       Lists the users (-u) access keys)"
      print "                 deleteaccesskeys     -a -u       Deletes the users (-u) access keys)"
      print "                 deleteuser           -a -u"
      print "       lg        listgroups           -a" 
-     print "                 ec2                  -a          List instances and securitygroups"
-     print "                 ec2-sg               -a          Security groups detail listing"
-     print "                 ec2-sgsum            -a          Security groups summary listing (incl. empty SGs)"
+     print "       lp        listpolicies         -a          Lists all defined policies"
      print "                 getpolicyarn         -a -t       Lists all defined policies filter with a regex in -t"
      print "                 listuserpolicies     -a -u"
      print "                 getpolicies          -a -t       Get the policy docs assocaiated with the regex in -t"
      print "                 detachuserpolicies   -a -u"
      print "                 attachpolicytouser   -a -u -t    Specify the policy arn with -t"
      print "                 addusertogroup       -a -u -t    Specify the group name with -t"
+     print "                 ec2                  -a          List instances and securitygroups"
+     print "                 ec2-sg               -a          Security groups detail listing"
+     print "                 ec2-sgsum            -a          Security groups summary listing (incl. empty SGs)"
      print "       ca        cloudtrail-active    -a -s       Lists active users since start date (-s)"
      print "       cu        cloudtrail-user      -a -u -s    Lists user (-u) activity since start date (-s)"
      print "       cz        cloudtrail-allusers  -a -s       Runs cloudtrail-users for all users"
@@ -74,6 +77,12 @@ usage(){
 # M </pre>
 # README.md End
 
+awsnull() {
+    NOTHING=0;
+}
+awsdbg() {
+     printf "DBGOUT:   aws %s %s %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12
+}
 assert() {
     if [ "$1" == "" ] ; then
          print $2
@@ -109,13 +118,16 @@ STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w)
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+POLICYLIST=`gawk -v w=POLICYLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
+BIGNAMES="no" 
 
-while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZ" arg
+while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZB" arg
 do
 	case $arg in
+            B) BIGNAMES="yes" ;;
             Z) ISOTIME="yes" ;;
             r) REGION=$OPTARG  ;;
             F) FORCE="yes" ;;
@@ -153,6 +165,7 @@ while [[ 0 -eq 0 ]];do
             LU)                    COMMAND="LISTUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
+            LP)                    COMMAND="LISTPOLICIES" ;;
             LA)                    COMMAND="LISTACCESSKEYS" ;;
 	esac
 # -----------------------------------------------------------------------------------------------------------------------
@@ -171,6 +184,23 @@ while [[ 0 -eq 0 ]];do
 #
 # -----------------------------------------------------------------------------------------------------------------------
 
+if [ "$COMMAND" == "TEST" ] ; then
+               for sz in $POLICYLIST; do
+                    assert "$USERNAME" "Username not specified"
+                    assert "$ACCOUNT"  "Profile not specified"
+                    assert "$PASSWORD" "Password not specified"
+                    awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
+                    awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+                    awsdbg --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/$sz --user-name $USERNAME
+               done
+fi
+
+if [ "$COMMAND" == "UPDATEPOLICY" ] ; then
+               assert "$ACCOUNT"  "Profile not specified"
+               assert "$THING"  "Policy not specified"
+               confirm
+               aws --profile $ACCOUNT iam create-policy-version --policy-arn $THING --policy-document ./policy 
+fi
 if [ "$COMMAND" == "GETPOLICIES" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$THING"  "Policy not specified"
@@ -269,6 +299,10 @@ if [ "$COMMAND" == "GETPOLICYARN" ] ; then
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
 fi
+if [ "$COMMAND" == "LISTPOLICIES" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               aws --profile $ACCOUNT iam list-policies 
+fi
 # ----------------------------------------------------
 # These commands operate on users
 # ----------------------------------------------------
@@ -281,6 +315,14 @@ if [ "$COMMAND" == "LISTUSERGROUPS" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME | gawk '{print $5}'
+fi
+if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT '{
+                    printf("\n%s\n", $NF)
+                    system("aws --profile " A " iam list-groups-for-user --user-name " $NF " --query 'Groups[*].{ARN:Arn}'")
+                    system("aws --profile " A " iam list-attached-user-policies --user-name " $NF " --query 'AttachedPolicies[*].{ARN:PolicyArn}'")
+               }'
 fi
 if [ "$COMMAND" == "DETACHUSERGROUPS" ] ; then
                assert "$USERNAME" "Username not specified"
@@ -461,7 +503,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                else
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
-               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
+               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
                     sz=$0;
@@ -598,7 +640,9 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                          gsub(/Resource/,"Res",en);
                          gsub(/Update/,"Upd",en);
                          gsub(/Create/,"Cr",en);
-                         name=cutpad(name,10);
+                         if (match(BN,/yes/) > 0) {
+                             name=cutpad(name,10);
+                         }
                          ty=cutpad(ty,10);
                          en=cutpad(en,10);
 
