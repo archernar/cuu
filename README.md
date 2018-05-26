@@ -50,6 +50,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
        cw        cloudtrail-watch         -s               Runs cloudtrail-users for each profile in PROFILELIST
                                                            on the WATCHUSER in ~/.cuu.txt
 Specific Policy Commands
+------------------------
                  iamuserchangepassword-add    -a -u <LIST> Adds Policy
                  iamuserchangepassword-remove -a -u <LIST> Adds Policy
 Note: Abbreviations are applied to output fields to limit line length
@@ -66,5 +67,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sat May 26 10:00:51 EDT 2018
+Sat May 26 10:02:33 EDT 2018
 </pre>

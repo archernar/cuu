@@ -75,9 +75,9 @@ usage(){
      print "       cw        cloudtrail-watch         -s               Runs cloudtrail-users for each profile in PROFILELIST"
      print "                                                           on the WATCHUSER in ~/.cuu.txt"
      print "Specific Policy Commands"
-     print "                 iamuserchangepassword-add    -a -u <LIST> Adds Policy
-     print "                 iamuserchangepassword-remove -a -u <LIST> Adds Policy
-
+     print "------------------------"
+     print "                 iamuserchangepassword-add    -a -u <LIST> Adds Policy"
+     print "                 iamuserchangepassword-remove -a -u <LIST> Adds Policy"
      print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "       -d will limit abbreviations"
