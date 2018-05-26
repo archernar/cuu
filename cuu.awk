@@ -12,6 +12,9 @@ function cutpad(s,n,             i,l) {
 
 # // https://stackoverflow.com/questions/18851914/how-to-pass-a-regular-expression-to-a-function-in-awk?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 
+function indent(sz) {
+    print "     " sz $0
+}
 
 function jget(szIn, re, def,          sz,szOut,a) {
      szOut = def;
@@ -65,6 +68,7 @@ function isotolocal(sz,                      fmt,yr,mo,dy,hr,mn,se,zu) {
 
      # mktime(YYYY MM DD HH MM SS)
      fmt = "%m/%d/%Y %H:%M:%S";
+     fmt = "%m/%d/%Y %I:%M:%S%p";
      return strftime(fmt, mktime(yr " " mo " " dy " " hr " " mn " " se) - (4 * 3600) )
 }
 
