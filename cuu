@@ -41,6 +41,9 @@ usage(){
      print "       -Z  user iso time"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
+     print "                 <USERLIST> may specify a single user, a list of users, or the special keyword ALLUSERS"
+     print "                 <ACCTLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES"
+     print "                 ----------------------------------------------------------------------------------------------"
      print "                 createuser               -a -u -p         Creates with no privledges"
      print "                 createadminuser          -a -u -p         Creates a user with Administor Access"
      print "                 createreadonlyuser       -a -u -p         Creates a user with Read Only"
@@ -48,8 +51,9 @@ usage(){
      print "                                                           NOTE: for commands above, User will change password"
      print "                                                           after first login.  Password may be set in ~/.cuu.txt"
      print "                 scrampassword            -a -u            Assign an unknown (scrammed) password"
-     print "       lu        listusers                -a <LIST>        Lists users" 
-     print "       du        describeusers            -a <LIST>        Lists users and their attached groups and policies" 
+     print "       lu        listusers                -a <ACCTLIST>    Lists users" 
+     print "       du        describeusers            -a <ACCTLIST>    Lists users and their attached groups and policies" 
+     print ""
      print "                 listusergroups           -a -u"
      print "                 removeuserfromallgroups  -a -u            Remove the user from attach attached groups"
      print "                 createaccesskey          -a -u            Creates an accesskey for the user (-u)"
@@ -60,7 +64,6 @@ usage(){
      print "       lp        listpolicies             -a               Lists all defined policies"
      print "       lpl       listpolicies-local       -a               Lists local (user managed) policies"
      print "       lpa       listpolicies-aws         -a               Lists aws policies"
-     print "                 getpolicyarn             -a -t            Lists all defined policies filter with a regex in -t"
      print "                 listuserpolicies         -a -u"
      print "                 getpolicies              -a -t            Get the policy docs assocaiated with the regex in -t"
      print "                 detachuserpolicies       -a -u"
@@ -76,8 +79,8 @@ usage(){
      print "                                                           on the WATCHUSER in ~/.cuu.txt"
      print "Specific Policy Commands"
      print "------------------------"
-     print "                 iamuserchangepassword-add    -a -u <LIST> Adds Policy"
-     print "                 iamuserchangepassword-remove -a -u <LIST> Adds Policy"
+     print "                 iamuserchangepassword-add    -a -u <USERLIST> Adds Policy"
+     print "                 iamuserchangepassword-remove -a -u <USERLIST> Adds Policy"
      print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "       -d will limit abbreviations"
@@ -85,6 +88,9 @@ usage(){
 # M </pre>
 # README.md End
 
+clean() {
+    rm -rf $Tmp
+}
 awsnull() {
     NOTHING=0;
 }
@@ -176,7 +182,7 @@ do
             t) THING=$OPTARG ;;
 	    h) usage; exit 0 ;;
             a) ACCOUNT=$OPTARG
-               if [ "$ACCOUNT" == "ALL" ] ; then
+               if [ "$ACCOUNT" == "ALLACCOUNTS" ] ; then
                    ACCOUNT=$PROFILELIST
                fi
                if [ "$ACCOUNT" == "LIST" ] ; then
@@ -337,17 +343,54 @@ fi
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTROLES" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --no-paginate iam list-roles 
-               # | gawk '/^ROLES/ {printf("%s\n",$2);}' | sort
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
 if [ "$COMMAND" == "LISTUSERS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
+               clean
                for ITEM in $ACCOUNT; do
-                    aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f noindent.awk
+                    aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+fi
+if [ "$COMMAND" == "LISTGROUPS" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+fi
+if [ "$COMMAND" == "LISTPOLICIES" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM --output text iam list-policies --scope All --query "Policies[*].[Arn]" | sort
                done
 fi
+if [ "$COMMAND" == "LISTPOLICIES-LOCAL" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                   aws --profile $ITEM --output text iam list-policies --scope Local --query "Policies[*].[PolicyName,UpdateDate,DefaultVersionId,Arn]" | column -t
+               done
+fi
+if [ "$COMMAND" == "LISTPOLICIES-AWS" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM --output text iam list-policies --scope AWS --query "Policies[*].[PolicyName,UpdateDate,DefaultVersionId,Arn]" | column -t
+               done
+fi
+
+
 if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
+               clean
                for ITEM in $ACCOUNT; do
                     LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
                     for USER in $LIST; do
@@ -356,27 +399,6 @@ if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
                          aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" | gawk -v A=$ITEM -f indent.awk 
                     done 
                done 
-fi
-if [ "$COMMAND" == "LISTGROUPS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT iam list-groups | gawk '{printf("%-44s %s\n",$5,$2)}' | sort
-fi
-if [ "$COMMAND" == "GETPOLICYARN" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
-               aws --profile $ACCOUNT iam list-policies | gawk '{print $2}' | egrep -i $THING
-fi
-if [ "$COMMAND" == "LISTPOLICIES" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text iam list-policies --scope All --query "Policies[*].[Arn]" | sort
-fi
-if [ "$COMMAND" == "LISTPOLICIES-LOCAL" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text iam list-policies --scope Local --query "Policies[*].[PolicyName,UpdateDate,DefaultVersionId,Arn]" | column -t
-fi
-if [ "$COMMAND" == "LISTPOLICIES-AWS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text iam list-policies --scope AWS --query "Policies[*].[PolicyName,UpdateDate,DefaultVersionId,Arn]" | column -t
 fi
 # ----------------------------------------------------
 # These commands operate on users

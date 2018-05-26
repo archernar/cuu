@@ -16,6 +16,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
        -Z  user iso time
        -i  interactive mode ('q' to quit)
        -c  command:
+                 <USERLIST> may specify a single user, a list of users, or the special keyword ALLUSERS
+                 <ACCTLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES
+                 ----------------------------------------------------------------------------------------------
                  createuser               -a -u -p         Creates with no privledges
                  createadminuser          -a -u -p         Creates a user with Administor Access
                  createreadonlyuser       -a -u -p         Creates a user with Read Only
@@ -23,8 +26,8 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
                                                            NOTE: for commands above, User will change password
                                                            after first login.  Password may be set in ~/.cuu.txt
                  scrampassword            -a -u            Assign an unknown (scrammed) password
-       lu        listusers                -a <LIST>        Lists users" 
-       du        describeusers            -a <LIST>        Lists users and their attached groups and policies" 
+       lu        listusers                -a <ACCTLIST>    Lists users" 
+       du        describeusers            -a <ACCTLIST>    Lists users and their attached groups and policies" 
                  listusergroups           -a -u
                  removeuserfromallgroups  -a -u            Remove the user from attach attached groups
                  createaccesskey          -a -u            Creates an accesskey for the user (-u)
@@ -35,7 +38,6 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
        lp        listpolicies             -a               Lists all defined policies
        lpl       listpolicies-local       -a               Lists local (user managed) policies
        lpa       listpolicies-aws         -a               Lists aws policies
-                 getpolicyarn             -a -t            Lists all defined policies filter with a regex in -t
                  listuserpolicies         -a -u
                  getpolicies              -a -t            Get the policy docs assocaiated with the regex in -t
                  detachuserpolicies       -a -u
@@ -51,8 +53,8 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
                                                            on the WATCHUSER in ~/.cuu.txt
 Specific Policy Commands
 ------------------------
-                 iamuserchangepassword-add    -a -u <LIST> Adds Policy
-                 iamuserchangepassword-remove -a -u <LIST> Adds Policy
+                 iamuserchangepassword-add    -a -u <USERLIST> Adds Policy
+                 iamuserchangepassword-remove -a -u <USERLIST> Adds Policy
 Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
 </pre>
@@ -67,5 +69,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sat May 26 10:02:33 EDT 2018
+Sat May 26 11:27:08 EDT 2018
 </pre>
