@@ -16,9 +16,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
        -Z  user iso time
        -i  interactive mode ('q' to quit)
        -c  command:
-                 Optional :ULIST: may specify a single user, a list of users, or the special keyword ALLUSERS
-                 Optional :PLIST: may specify a single profile, a list ofi profiles, or the special keyword ALLPROFILES
-                 ------------------------------------------------------------------------------------------------------
+           Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS
+           Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
+           ----------------------------------------------------------------------------------------------
 User Commands
       lu     listusers                -a :PLIST:      Lists users" 
              deleteuser               -a -u
@@ -74,5 +74,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sun May 27 12:08:51 EDT 2018
+Sun May 27 12:09:55 EDT 2018
 </pre>
