@@ -16,13 +16,13 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
        -Z  user iso time
        -i  interactive mode ('q' to quit)
        -c  command:
-                 <ULIST> may specify a single user, a list of users, or the special keyword ALLUSERS
-                 <PLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES
-                 ----------------------------------------------------------------------------------------------
+                 Optional :ULIST: may specify a single user, a list of users, or the special keyword ALLUSERS
+                 Optional :PLIST: may specify a single profile, a list ofi profiles, or the special keyword ALLPROFILES
+                 ------------------------------------------------------------------------------------------------------
 User Commands
-      lu     listusers                -a PLIST        Lists users" 
+      lu     listusers                -a :PLIST:      Lists users" 
              deleteuser               -a -u
-      du     describeusers            -a <PLIST>      Lists users and their attached groups and policies" 
+      du     describeusers            -a :PLIST:      Lists users and their attached groups and policies" 
              createuser               -a -u -p        Creates with no privledges
              createadminuser          -a -u -p        Creates a user with Administor Access
              createreadonlyuser       -a -u -p        Creates a user with Read Only
@@ -58,8 +58,8 @@ CloudTrail Commands
       cw     cloudtrail-watch         -s              Runs cloudtrail-users for each profile in PROFILELIST
                                                       on the WATCHUSER in ~/.cuu.txt
 Specific Policy Commands
-             iamuserchangepassword-add    -a -u <ULIST> Adds Policy
-             iamuserchangepassword-remove -a -u <ULIST> Removes Policy
+             iamuserchangepassword-add    -a -u :ULIST: Adds Policy
+             iamuserchangepassword-remove -a -u :ULIST: Removes Policy
 Note: Abbreviations are applied to output fields to limit line length
        -d will limit abbreviations
 </pre>
@@ -74,5 +74,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sun May 27 12:05:40 EDT 2018
+Sun May 27 12:08:51 EDT 2018
 </pre>
