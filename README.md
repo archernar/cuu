@@ -1,24 +1,24 @@
 # CUU - An AWS CLI Wrapper
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
-       -h  display usage
-       -a  cli profile name      (from .aws/config)
-       -u  operand:  username
-       -p  operand:  password    (default set in ~/.cuu.txt)
-       -t  operand:  thing name  (used to specify a resource or object name)
-       -s  operand:  start date  (default set in ~/.cuu.txt)
-       -d  limits abbreviations
-       -j  use long datetime fields
-       -F  force mode, do not confirm any command (e.g. deletes)
-       -B  show full user names
-       -E  show event names
-       -R  show raw records in output
-       -Z  user iso time
-       -i  interactive mode ('q' to quit)
-       -c  command:
-           Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS
-           Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
-           ----------------------------------------------------------------------------------------------
+      -h  display usage
+      -a  cli profile name      (from .aws/config)
+      -u  operand:  username
+      -p  operand:  password    (default set in ~/.cuu.txt)
+      -t  operand:  thing name  (used to specify a resource or object name)
+      -s  operand:  start date  (default set in ~/.cuu.txt)
+      -d  limits abbreviations
+      -j  use long datetime fields
+      -F  force mode, do not confirm any command (e.g. deletes)
+      -B  show full user names
+      -E  show event names
+      -R  show raw records in output
+      -Z  user iso time
+      -i  interactive mode ('q' to quit)
+      -c  command:
+          Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS
+          Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
+          ----------------------------------------------------------------------------------------------
 User Commands
       lu     listusers                -a :PLIST:      Lists users" 
              deleteuser               -a -u
@@ -74,5 +74,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sun May 27 12:09:55 EDT 2018
+Sun May 27 12:10:57 EDT 2018
 </pre>
