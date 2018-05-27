@@ -41,8 +41,8 @@ usage(){
      print "       -Z  user iso time"
      print "       -i  interactive mode ('q' to quit)"
      print "       -c  command:"
-     print "                 <USERLIST> may specify a single user, a list of users, or the special keyword ALLUSERS"
-     print "                 <ACCTLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES"
+     print "                 <ULIST> may specify a single user, a list of users, or the special keyword ALLUSERS"
+     print "                 <PLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES"
      print "                 ----------------------------------------------------------------------------------------------"
      print "                 createuser               -a -u -p         Creates with no privledges"
      print "                 createadminuser          -a -u -p         Creates a user with Administor Access"
@@ -51,8 +51,8 @@ usage(){
      print "                                                           NOTE: for commands above, User will change password"
      print "                                                           after first login.  Password may be set in ~/.cuu.txt"
      print "                 scrampassword            -a -u            Assign an unknown (scrammed) password"
-     print "       lu        listusers                -a <ACCTLIST>    Lists users" 
-     print "       du        describeusers            -a <ACCTLIST>    Lists users and their attached groups and policies" 
+     print "       lu        listusers                -a <PLIST>       Lists users" 
+     print "       du        describeusers            -a <PLIST>       Lists users and their attached groups and policies" 
      print ""
      print "                 listusergroups           -a -u"
      print "                 removeuserfromallgroups  -a -u            Remove the user from attach attached groups"
@@ -65,7 +65,7 @@ usage(){
      print "       lpl       listpolicies-local       -a               Lists local (user managed) policies"
      print "       lpa       listpolicies-aws         -a               Lists aws policies"
      print "                 listuserpolicies         -a -u"
-     print "                 getpolicies              -a -t            Get the policy docs assocaiated with the regex in -t"
+     print "       gap       getallpolicies           -a               Get all local policy docs defined for this account"
      print "                 detachuserpolicies       -a -u"
      print "                 attachpolicytouser       -a -u -t         Specify the policy arn with -t"
      print "                 addusertogroup           -a -u -t         Specify the group name with -t"
@@ -79,8 +79,8 @@ usage(){
      print "                                                           on the WATCHUSER in ~/.cuu.txt"
      print "Specific Policy Commands"
      print "------------------------"
-     print "                 iamuserchangepassword-add    -a -u <USERLIST> Adds Policy"
-     print "                 iamuserchangepassword-remove -a -u <USERLIST> Adds Policy"
+     print "                 iamuserchangepassword-add    -a -u <ULIST> Adds Policy"
+     print "                 iamuserchangepassword-remove -a -u <ULIST> Removes Policy"
      print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "       -d will limit abbreviations"
@@ -88,6 +88,12 @@ usage(){
 # M </pre>
 # README.md End
 
+changeop() {
+     CHANGEOPERATION="YES" 
+}
+nochangeop() {
+     CHANGEOPERATION="NO" 
+}
 clean() {
     rm -rf $Tmp
 }
@@ -110,8 +116,7 @@ antiassert() {
     fi
 }
 confirmprompt() {
-     print $1
-     print "" 
+     print "   "$1
      confirm
 }
 confirm() {
@@ -149,6 +154,8 @@ SHOWRAW="no"
 ISOTIME="no" 
 BIGNAMES="no" 
 BIGEVENTS="no" 
+CHANGEOPERATION="YES" 
+changeop
 
 while getopts "jr:Ff:Dds:n:c:Ru:a:p:t:ihbZBE" arg
 do
@@ -166,15 +173,15 @@ do
             c) COMMAND=$OPTARG ;;
             u) USERNAME=$OPTARG
                if [ "$USERNAME" == "ALLUSERS" ] ; then
-                   assert "$ACCOUNT"  "Profile not specified"
-                   USERNAME=`aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text`
-                   print "" 
-                   print "   You want operate on all the users in the account?"
-                   print "" 
-                   print "  " $USERNAME
-                   print "" 
-                   confirm
-                   print "" 
+                  assert "$ACCOUNT"  "Profile not specified"
+                  USERNAME=`aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text`
+                  print "" 
+                  print "   You are operating on all the users in the account"
+                  print "" 
+                  echo $USERNAME
+                  print "" 
+                  confirm
+                  print "" 
                fi
                ;;
             R) SHOWRAW="yes" ;;
@@ -182,6 +189,9 @@ do
             t) THING=$OPTARG ;;
 	    h) usage; exit 0 ;;
             a) ACCOUNT=$OPTARG
+               if [ "$ACCOUNT" == "ALL" ] ; then
+                   ACCOUNT=$PROFILELIST
+               fi
                if [ "$ACCOUNT" == "ALLACCOUNTS" ] ; then
                    ACCOUNT=$PROFILELIST
                fi
@@ -204,6 +214,8 @@ fi
 while [[ 0 -eq 0 ]];do
 
 	case "$COMMAND" in
+            GLP)                   COMMAND="GETLOCALPOLICIES" ;;
+            GAP)                   COMMAND="GETALLPOLICIES" ;;
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
             CU)                    COMMAND="CLOUDTRAIL-USER" ;;
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
@@ -261,16 +273,45 @@ if [ "$COMMAND" == "UPDATEPOLICY" ] ; then
                confirm
                aws --profile $ACCOUNT iam create-policy-version --policy-arn $THING --policy-document ./policy 
 fi
-if [ "$COMMAND" == "GETPOLICIES" ] ; then
+if [ "$COMMAND" == "GETALLPOLICIES" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
-               assert "$THING"  "Policy not specified"
-               aws --profile $ACCOUNT iam list-policies --scope Local | egrep $THING | gawk -v A=$ACCOUNT '
-               {
-                   printf("%-4s %s\n",$5,$2);
-                   sz = "aws --profile " A " --output json iam get-policy-version --policy-arn " $2 " --version-id " $5 " > policies/" A "-" $5 "-" $9 
-                   system(sz)
-               }'
-
+               if [ "$THING" == "" ] ; then
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp`
+               else 
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp | grep $THING`
+               fi
+               CT=`cat $Tmp | wc -l`
+               confirmprompt $CT" Policy Document(s) will be retrieved"
+               mkdir -p ./policies
+               for ITEM in $LIST; do
+                    gNAME=`print "$ITEM" | gawk -F, '{print $1}'`
+                    gVER=`print "$ITEM" | gawk -F, '{print $3}'`
+                    gFILE="./policies/"$ACCOUNT"___"$gNAME"___"$gVER
+                    gARN=`print "$ITEM" | gawk -F, '{print $2}'`
+                    gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
+                    print $gARN" in "$gARNFILE
+                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER > $gARNFILE
+               done
+fi
+if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
+               assert "$ACCOUNT"  "Profile not specified"
+               if [ "$THING" == "" ] ; then
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |tee $Tmp`
+               else 
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
+               fi
+               CT=`cat $Tmp | wc -l`
+               confirmprompt $CT" Policy Document(s) will be retrieved"
+               mkdir -p ./policies
+               for ITEM in $LIST; do
+                    gNAME=`print "$ITEM" | gawk -F, '{print $1}'`
+                    gVER=`print "$ITEM" | gawk -F, '{print $3}'`
+                    gFILE="./policies/"$ACCOUNT"___"$gNAME"___"$gVER
+                    gARN=`print "$ITEM" | gawk -F, '{print $2}'`
+                    gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
+                    print $gARN" in "$gARNFILE
+                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER > $gARNFILE
+               done
 fi
 # ----------------------------------------------------
 # Fundamental User Commands
@@ -300,6 +341,13 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               aws --profile $ACCOUNT iam add-user-to-group --group-name ACCOUNT_USER_GROUP  --user-name $USERNAME
+               aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk '
+               @include "cuu.awk" 
+               { 
+                   print configrecord($0); 
+               }'
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
@@ -320,23 +368,25 @@ if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
                confirm
-               aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
-               {
-                   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
-                   system(sz)
-               }'
-               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
-               {
-                   sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
-                   system(sz)
-               }'
+               LIST=`aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text`
+               confirm
+               for ITEM in $LIST; do
+                   aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $ITEM 
+               done
+               LIST=`aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME  --query "AccessKeyMetadata[*].[AccessKeyId]" --output text`
+               for ITEM in $LIST; do
+                    aws --profile $ACCOUNT iam delete-access-key --user-name $USERNAME --access-key-id $ITEM
+               done
+               LIST=`aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyArn]" --output text`
+               for ITEM in $LIST; do
+                    aws --profile $ACCOUNT iam detach-user-policy --user-name $USERNAME --policy-arn $ITEM 
+               done
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
 if [ "$COMMAND" == "ACCOUNTNUMBER" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
-               print $ACCTNUMBER
+               aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
 fi
 # ----------------------------------------------------
 # These commands operate on accounts
@@ -387,16 +437,18 @@ if [ "$COMMAND" == "LISTPOLICIES-AWS" ] ; then
                done
 fi
 
-
 if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                clean
+               nochangeop
                for ITEM in $ACCOUNT; do
-                    LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
+                    # LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
+                    LIST=$USERNAME
                     for USER in $LIST; do
                          print $ITEM $USER
                          aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 | gawk -v A=$ITEM -f indent.awk
                          aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" | gawk -v A=$ITEM -f indent.awk 
+                         aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  | gawk -v A=$ITEM -f indent.awk 
                     done 
                done 
 fi
@@ -521,9 +573,19 @@ if [ "$COMMAND" == "EC2" ] ; then
 fi
 
 if [ "$COMMAND" == "EC2-LIST" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}'
+     assert "$ACCOUNT" "Profile not specified"
+     for ACCT in $ACCOUNT; do
+          LIST="us-east-1 us-east-2 us-west-1 us-west-2"
+          for ITEM in $LIST; do
+               aws --profile $ACCT ec2 describe-instances --output text --region $ITEM \
+                   --query "Reservations[*].Instances[*].[InstanceId,InstanceType,State.Name,Tags[?Key==Name].Value]" | gawk -v A=$ACCT -v B=$ITEM -f noindent.awk
+          done
+      done
 fi
+
+#          XLIST=`aws --profile $ACCOUNT ec2 describe-regions --query "Regions[*].RegionName" --output text`
+
+
 
 if [ "$COMMAND" == "EC2-SGSUM" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -577,12 +639,32 @@ if [ "$COMMAND" == "EC2-SG" ] ; then
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
 fi
-if [ "$COMMAND" == "EC2-UTIL" ] ; then
+if [ "$COMMAND" == "EC2-SPARK" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$STARTDATE -v A=$ACCOUNT '
                @include "cuu.awk"
                {
                sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 3600 --namespace AWS/EC2 --statistics Maximum \
+                   --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterday(1) " --end-time " isonow()
+               print "INSTANCE " $0
+               system(sz)
+           } ' | gawk '
+           @include "cuu.awk" 
+           BEGIN {ct=1;fc=0;file="file0"}
+           END {print ""}
+           /XXINSTANCE/ {printf("\n./spark ",$1)}
+           /INSTANCE/ {close(file);fc++;file="file" fc}
+           /INSTANCE/ {printf("%s\n",$0)}
+           /DATAPOINTS/ {ct++;printf("%5.2f\n", $2) >> file}
+           ' 
+           fi
+
+if [ "$COMMAND" == "EC2-UTIL" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$STARTDATE -v A=$ACCOUNT '
+               @include "cuu.awk"
+               {
+               sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 300 --namespace AWS/EC2 --statistics Maximum \
                    --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterday(1) " --end-time " isonow()
                print "INSTANCE " $0
                system(sz)
