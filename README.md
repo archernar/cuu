@@ -37,8 +37,9 @@ Policy Commands
      lp     listallpolicies          -a            Lists all defined policies
      lpl    listlocalpoliciesl       -a            Lists local (user managed) policies
      lpa    listawspolicies          -a            Lists aws policies
-     gap    getallpolicies           -a <-t arn>   Get all policy docs defined for this acct (-t arn for a specific policy)
-     glp    getlocalpolicies         -a <-t arn>   Get all local policy docs defined for this acct (-t arn for a specific policy)
+     gap    getallpolicies           -a <-t arn>   Get all policy docs defined for this profile
+     glp    getlocalpolicies         -a <-t arn>   Get all local policy docs defined for this profile
+                                                   Use -t arn for a specific policy
             listuserpolicies         -a -u
             detachuserpolicies       -a -u
             attachpolicytouser       -a -u -t      Specify the policy arn with -t
@@ -74,5 +75,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sun May 27 12:14:17 EDT 2018
+Sun May 27 12:16:24 EDT 2018
 </pre>
