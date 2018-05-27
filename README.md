@@ -20,7 +20,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
                  <PLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES
                  ----------------------------------------------------------------------------------------------
 User Commands
-      lu     listusers                -a <PLIST>      Lists users" 
+      lu     listusers                -a PLIST        Lists users" 
              deleteuser               -a -u
       du     describeusers            -a <PLIST>      Lists users and their attached groups and policies" 
              createuser               -a -u -p        Creates with no privledges
@@ -74,5 +74,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sun May 27 12:04:24 EDT 2018
+Sun May 27 12:05:40 EDT 2018
 </pre>

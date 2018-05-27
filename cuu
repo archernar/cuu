@@ -45,7 +45,7 @@ usage(){
      print "                 <PLIST> may specify a single profile, a list ofprofiles, or the special keyword ALLPROFILES"
      print "                 ----------------------------------------------------------------------------------------------"
      print "User Commands"
-     print "      lu     listusers                -a <PLIST>      Lists users" 
+     print "      lu     listusers                -a PLIST        Lists users" 
      print "             deleteuser               -a -u"
      print "      du     describeusers            -a <PLIST>      Lists users and their attached groups and policies" 
      print "             createuser               -a -u -p        Creates with no privledges"
