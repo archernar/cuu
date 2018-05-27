@@ -1,6 +1,6 @@
 # CUU - An AWS CLI Wrapper
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
+Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -h  display usage
       -a  cli profile name      (from .aws/config)
       -u  operand:  username
@@ -8,6 +8,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-j][-F][-B][-E][-R][-Z][-i][-c]
       -t  operand:  thing name  (used to specify a resource or object name)
       -s  operand:  start date  (default set in ~/.cuu.txt)
       -d  limits abbreviations
+      -D  Specify a document\file to upload (e.g. a policy document)
       -j  use long datetime fields
       -F  force mode, do not confirm any command (e.g. deletes)
       -B  show full user names
@@ -75,5 +76,5 @@ POLICYLIST=
 </pre>
 <pre>
   
-Sun May 27 12:16:24 EDT 2018
+Sun May 27 14:22:28 EDT 2018
 </pre>
