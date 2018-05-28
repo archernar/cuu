@@ -39,13 +39,15 @@ function jget(szIn, re, def,          sz,szOut,a) {
 }
 
 
-function configrecord(szIn,               sz,a,n,newline) {
+function configrecord(szIn,szProfile,szUser,szProfileName,               sz,a,n,newline) {
      n = split(szIn,a," ");
      newline="\n"
      sz = sz newline
      sz = sz szIn newline
      sz = sz newline
-     sz = sz "[profile " a[6] "]" newline
+     sz = sz "[profile " szProfileName "]" newline
+     sz = sz "iamuser = " szUser newline
+     sz = sz "iamprof = " szProfile newline
      sz = sz "output = text" newline
      sz = sz "region = us-east-1" newline
      sz = sz "aws_access_key_id=" a[2] newline

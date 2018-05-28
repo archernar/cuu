@@ -57,6 +57,7 @@ usage(){
      print "                                                   NOTE: for commands above, User will change password"
      print "                                                   after first login.  Password may be set in ~/.cuu.txt"
      print "            listaccesskeys           -a -u         Lists the users (-u) access keys)"
+     print "            replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key"
      print "            createaccesskey          -a -u         Creates an accesskey for the user (-u)"
      print "            deleteaccesskeys         -a -u         Deletes the users (-u) access keys)"
      print "Policy Commands"
@@ -93,7 +94,15 @@ usage(){
 }
 # M </pre>
 # README.md End
-
+wipeACCESSKEYS() {
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     ACCESSKEYLIST=`aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME  --query "AccessKeyMetadata[*].[AccessKeyId]" --output text`
+     for ITEM in $ACCESSKEYLIST; do
+          aws --profile $ACCOUNT iam delete-access-key --user-name $USERNAME --access-key-id $ITEM
+     done
+     ACCESSKEYLIST=""
+}
 buildUSERLIST() {
           USERLIST=""
           if [ "$USERNAME" == "" ] ; then
@@ -161,6 +170,10 @@ assert() {
          print $2
          exit 1
     fi
+}
+assertACCOUNTandUSERNAME() {
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$USERNAME" "User not specified"
 }
 antiassert() {
     if [ "$1" != "" ] ; then
@@ -420,12 +433,12 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam add-user-to-group --group-name ACCOUNT_USER_GROUP  --user-name $USERNAME
+               #  aws --profile $ACCOUNT iam add-user-to-group --group-name ACCOUNT_USER_GROUP  --user-name $USERNAME
                aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
-               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk '
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                @include "cuu.awk" 
                { 
-                   print configrecord($0); 
+                   print configrecord($0,A,U,A); 
                }'
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
@@ -448,7 +461,6 @@ if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                confirm
                LIST=`aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text`
-               confirm
                for ITEM in $LIST; do
                    aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $ITEM 
                done
@@ -634,29 +646,39 @@ if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
                }' | sort | uniq
 fi
 
+if [ "$COMMAND" == "REPLACEACCESSKEYS" ] ; then
+               assertACCOUNTandUSERNAME
+               confirm
+               wipeACCESSKEYS
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
+               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' 
+                    @include "cuu.awk" 
+                    { 
+                        print configrecord($0,A,U,A); 
+                    }'
+fi
 if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$USERNAME" "Username not specified"
-               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk '
-               @include "cuu.awk" 
-               { 
-                   print configrecord($0); 
-               }'
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
+               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' 
+                    @include "cuu.awk"i
+                    { 
+                        print configrecord($0,A,U); 
+                    }'
 fi
 if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Profile not specified"
+               assert "$USERNAME" "User not specified"
                aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
 fi
 if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
                confirm
-               aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
-               {
-                   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
-                   system(sz)
-               }'
+               wipeACCESSKEYS
 fi
 
 if [ "$COMMAND" == "EC2" ] ; then
