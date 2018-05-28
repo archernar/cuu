@@ -526,6 +526,12 @@ if [ "$COMMAND" == "CREATEGROUP" ] ; then
                aws --profile $ACCOUNT iam create-group --group-name $THING --output text
                aws --profile $ACCOUNT iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]"
 fi
+if [ "$COMMAND" == "DELETEGROUP" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING" "Group not specified"
+               aws --profile $ACCOUNT iam delete-group --group-name $THING
+fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                clean
@@ -639,7 +645,15 @@ if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-REMOVE" ] ; then
                done
 fi
 
-
+if [ "$COMMAND" == "LISTUSERSINGROUP" ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING" "Thing not specified"
+     USERLIST=`aws --profile $ACCOUNT iam get-group --output text --group-name $THING --query "Users[*].[UserName]"`
+     for USER in $USERLIST; do
+         print $USER
+     done
+     USERLIST=""
+fi
 if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
