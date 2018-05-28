@@ -28,7 +28,7 @@ User Commands
             createadminuser          -a -u -p      Creates a user with Administor Access
             createreadonlyuser       -a -u -p      Creates a user with Read Only
      scram  scrampassword            -a -u         Assignis the user an unknown (scrammed) password
-            changepassword           -a -u -p      Changes a user password
+     cp     changepassword           -a -u -p      Changes a user password
                                                    For commands above, User will change password
                                                    after first login.  Password may be set in ~/.cuu.txt
 Access Key Commands
@@ -48,8 +48,8 @@ Policy Commands
             attachpolicytouser       -a -u -t      Specify the policy arn with -t
 Group Commands
      lg     listgroups               -a            List all groups defined" 
-            addusertogroup           -a -u -t      Specify the group name with -t
             listusergroups           -a -u         Lists groups associated with user
+            addusertogroup           -a -u -t      Add user to group (-t)
             removeuserfromallgroups  -a -u         Remove the user from attach attached groups
 EC2 Commands
             ec2                      -a            List instances and securitygroups
@@ -80,5 +80,5 @@ POLICYADD=
 </pre>
 <pre>
   
-Mon May 28 11:23:29 EDT 2018
+Mon May 28 13:10:14 EDT 2018
 </pre>

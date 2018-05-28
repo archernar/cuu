@@ -53,7 +53,7 @@ usage(){
      print "            createadminuser          -a -u -p      Creates a user with Administor Access"
      print "            createreadonlyuser       -a -u -p      Creates a user with Read Only"
      print "     scram  scrampassword            -a -u         Assignis the user an unknown (scrammed) password"
-     print "            changepassword           -a -u -p      Changes a user password"
+     print "     cp     changepassword           -a -u -p      Changes a user password"
      print "                                                   For commands above, User will change password"
      print "                                                   after first login.  Password may be set in ~/.cuu.txt"
      print "Access Key Commands"
@@ -73,8 +73,8 @@ usage(){
      print "            attachpolicytouser       -a -u -t      Specify the policy arn with -t"
      print "Group Commands"
      print "     lg     listgroups               -a            List all groups defined" 
-     print "            addusertogroup           -a -u -t      Specify the group name with -t"
      print "            listusergroups           -a -u         Lists groups associated with user"
+     print "            addusertogroup           -a -u -t      Add user to group (-t)"
      print "            removeuserfromallgroups  -a -u         Remove the user from attach attached groups"
      print "EC2 Commands"
      print "            ec2                      -a            List instances and securitygroups"
@@ -106,20 +106,29 @@ commandABBREVIATIONS() {
             LAP)                   COMMAND="LISTALLPOLICIES" ;;
             LLP)                   COMMAND="LISTLOCALPOLICIES" ;;
             LAWSP)                 COMMAND="LISTAWSPOLICIES" ;;
+            CP)                    COMMAND="CHANGEPASSWORD" ;;
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
             CU)                    COMMAND="CLOUDTRAIL-USER" ;;
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
             CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
             DU)                    COMMAND="DESCRIBEUSERS" ;;
+            DESCRIBEUSER)          COMMAND="DESCRIBEUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
             SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
 	esac
 }
+wipeGROUPS() {
+     assertACCOUNTandUSERNAME
+     GROUPLIST=`aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text`
+     confirm
+     for ITEM in $GROUPLIST; do
+          aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $ITEM 
+     done
+}
 wipeACCESSKEYS() {
-     assert "$ACCOUNT" "Profile not specified"
-     assert "$USERNAME" "Username not specified"
+     assertACCOUNTandUSERNAME
      ACCESSKEYLIST=`aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME  --query "AccessKeyMetadata[*].[AccessKeyId]" --output text`
      for ITEM in $ACCESSKEYLIST; do
           aws --profile $ACCOUNT iam delete-access-key --user-name $USERNAME --access-key-id $ITEM
@@ -138,8 +147,7 @@ groupREMOVE() {
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
 }
 policyREMOVE() {
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+               assertACCOUNTandUSERNAME
                antiassert "$THING" "  Don't explicitly define the policy"
                THING="$1"
                LIST=$USERNAME
@@ -441,13 +449,16 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$PASSWORD" "Password not specified"
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               #  aws --profile $ACCOUNT iam add-user-to-group --group-name ACCOUNT_USER_GROUP  --user-name $USERNAME
                aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
+               if [ "$THING" != "" ] ; then
+                    aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+               fi
                aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                @include "cuu.awk" 
                { 
                    print configrecord($0,A,U,A); 
                }'
+               cuu -a $ACCOUNT -c DESCRIBEUSER -u $USERNAME
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
                assert "$USERNAME" "Username not specified"
@@ -505,6 +516,13 @@ if [ "$COMMAND" == "LISTUSERS" ] ; then
                     aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" >> $Tmp
                done
                cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+fi
+if [ "$COMMAND" == "CREATEGROUP" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING"   "Group not specified"
+               clean
+               aws --profile $ACCOUNT iam create-group --group-name $THING --output text
+               aws --profile $ACCOUNT iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]"
 fi
 if [ "$COMMAND" == "LISTGROUPS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -572,13 +590,7 @@ if [ "$COMMAND" == "LISTUSERGROUPS" ] ; then
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text
 fi
 if [ "$COMMAND" == "REMOVEUSERFROMALLGROUPS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
-               LIST=`aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text`
-               confirm
-               for ITEM in $LIST; do
-                   aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $ITEM 
-               done
+    wipeGROUPS
 fi
 
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
@@ -630,6 +642,8 @@ if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+               aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].{ARN:Arn}" |
+                                   gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f noindent.awk
 fi
 
 if [ "$COMMAND" == "SWAP" ] ; then
