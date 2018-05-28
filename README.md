@@ -21,9 +21,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
           Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
           ----------------------------------------------------------------------------------------------
 User Commands
-     lu     listusers                -a :PLIST:    Lists users" 
+     lu     listusers                -a :PLIST:    List users" 
             deleteuser               -a -u         Delete the user
-     du     describeusers            -a :PLIST:    Lists users and their attached groups and policies" 
+     du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
             createuser               -a -u -p      Creates with no privledges
             createadminuser          -a -u -p      Creates a user with Administor Access
             createreadonlyuser       -a -u -p      Creates a user with Read Only
@@ -80,5 +80,5 @@ POLICYADD=
 </pre>
 <pre>
   
-Mon May 28 10:43:51 EDT 2018
+Mon May 28 10:44:44 EDT 2018
 </pre>
