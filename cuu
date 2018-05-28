@@ -94,6 +94,14 @@ usage(){
 # M </pre>
 # README.md End
 
+buildUSERLIST() {
+          USERLIST=""
+          if [ "$USERNAME" == "" ] ; then
+              USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
+          else
+              USERLIST=$USERNAME
+          fi
+}
 groupREMOVE() {
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
 }
@@ -509,21 +517,16 @@ if [ "$COMMAND" == "LISTAWSPOLICIES" ] ; then
 fi
 
 if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
-     # aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out
      assert "$ACCOUNT" "Profile not specified"
      clean
      for ITEM in $ACCOUNT; do
-          if [ "$USERNAME" == "" ] ; then
-              LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
-          else
-              LIST=$USERNAME
-          fi
-          for USER in $LIST; do
+          buildUSERLIST $ITEM
+          for USER in $USERLIST; do
            print $ITEM $USER |tee -a cuu.out
-           LIST=`aws --profile $ITEM iam list-groups-for-user  --output text --user-name $USER --query "Groups[*].[GroupName]"`
+           GROUPLIST=`aws --profile $ITEM iam list-groups-for-user  --output text --user-name $USER --query "Groups[*].[GroupName]"`
            aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}" |
                                    gawk -v A=$USER -v B=$ITEM -v C="GRP" -f indent.awk |tee -a cuu.out
-           for G in $LIST; do
+           for G in $GROUPLIST; do
                 aws --profile $ITEM iam list-attached-group-policies --group-name $G --query "AttachedPolicies[*].{ARN:PolicyArn}" |
                                         gawk -v A=$USER -v B=$ITEM -v C="GPO" -f indent.awk |tee -a cuu.out 
            done
