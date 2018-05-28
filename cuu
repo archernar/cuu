@@ -94,6 +94,37 @@ usage(){
 # M </pre>
 # README.md End
 
+groupREMOVE() {
+               aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
+}
+policyREMOVE() {
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               antiassert "$THING" "  Don't explicitly define the policy"
+               THING="$1"
+               LIST=$USERNAME
+               print ""
+               print $THING
+               confirmprompt "Ready to remove policy"
+               for USER in $LIST; do
+                    print $USER $THING
+                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $THING --user-name $USER
+               done
+}
+policyADD() {
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               antiassert "$THING" "  Don't explicitly define the policy"
+               THING="$1"
+               LIST=$USERNAME
+               print ""
+               print $THING
+               confirmprompt "Ready to add policy"
+               for USER in $LIST; do
+                    print $USER $THING
+                    aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING --user-name $USER
+               done
+}
 changeop() {
      CHANGEOPERATION="YES" 
 }
@@ -102,6 +133,7 @@ nochangeop() {
 }
 clean() {
     rm -rf $Tmp
+    rm -rf ./cuu.out
 }
 awsnull() {
     NOTHING=0;
@@ -154,6 +186,8 @@ IN=""
 OUT=""
 FORCE=""
 LOOP="no"
+GROUPREMOVE="" 
+POLICYADD="" 
 REGION="us-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -161,7 +195,9 @@ STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w)
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-POLICYLIST=`gawk -v w=POLICYLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+POLICYLIST=`gawk -v  w=POLICYLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+GROUPREMOVE=`gawk -v w=GROUPREMOVE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+POLICYADD=`gawk -v   w=POLICYADD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
@@ -257,7 +293,7 @@ while [[ 0 -eq 0 ]];do
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
-#
+# arn:aws:iam::aws:policy/AWSCodeCommitPowerUser
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
@@ -282,6 +318,13 @@ if [ "$COMMAND" == "WWEC2" ] ; then
                     done
 
 fi
+if [ "$COMMAND" == "GETPOLICY" ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$THING"    "Policy not specified"
+     LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
+     cat $Tmp
+fi
+
 if [ "$COMMAND" == "UPDATEPOLICY" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$THING"    "Policy not specified"
@@ -298,27 +341,7 @@ if [ "$COMMAND" == "GETALLPOLICIES" ] ; then
                if [ "$THING" == "" ] ; then
                     LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp`
                else 
-                    LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp | grep $THING`
-               fi
-               CT=`cat $Tmp | wc -l`
-               confirmprompt $CT" Policy Document(s) will be retrieved"
-               mkdir -p ./policies
-               for ITEM in $LIST; do
-                    gNAME=`print "$ITEM" | gawk -F, '{print $1}'`
-                    gVER=`print "$ITEM" | gawk -F, '{print $3}'`
-                    gFILE="./policies/"$ACCOUNT"___"$gNAME"___"$gVER
-                    gARN=`print "$ITEM" | gawk -F, '{print $2}'`
-                    gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
-                    print $gARN" in "$gARNFILE
-                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER > $gARNFILE
-               done
-fi
-if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
-               assert "$ACCOUNT"  "Profile not specified"
-               if [ "$THING" == "" ] ; then
-                    LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |tee $Tmp`
-               else 
-                    LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |egrep $THING |tee $Tmp`
                fi
                CT=`cat $Tmp | wc -l`
                confirmprompt $CT" Policy Document(s) will be retrieved"
@@ -330,8 +353,35 @@ if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
                     gARN=`print "$ITEM" | gawk -F, '{print $2}'`
                     gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
                     print "\nUpdate with:"
-                    print "cuu -a "$ACCOUNT" -c updatepolicy -t "$THING" -D file://"$gARNFILE
-                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER > $gARNFILE
+                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D file://"
+                    print $gARNFILE
+                    print "this.json"
+                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER | jq .[].Document.Statement > $gARNFILE
+                    cp $gARNFILE this.json
+               done
+fi
+if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
+               assert "$ACCOUNT"  "Profile not specified"
+               if [ "$THING" == "" ] ; then
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |tee $Tmp`
+               else 
+                    LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |egrep $THING |tee $Tmp`
+               fi
+               CT=`cat $Tmp | wc -l`
+               confirmprompt $CT" Policy Document(s) will be retrieved"
+               mkdir -p ./policies
+               mkdir -p ./rawpolicies
+               for ITEM in $LIST; do
+                    gNAME=`print "$ITEM" | gawk -F, '{print $1}'`
+                    gVER=`print "$ITEM" | gawk -F, '{print $3}'`
+                    gARN=`print "$ITEM" | gawk -F, '{print $2}'`
+                    gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "policies/"$2}'`
+                    print "\nUpdate with:"
+                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D file://"
+                    print $gARNFILE
+                    print "this.json"
+                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER  > $gARNFILE
+                    cp $gARNFILE this.json
                done
 fi
 # ----------------------------------------------------
@@ -458,20 +508,33 @@ if [ "$COMMAND" == "LISTAWSPOLICIES" ] ; then
                done
 fi
 
+if [ "$COMMAND" == "DESCRIBEALLUSERS" ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     clean
+     for ITEM in $ACCOUNT; do
+          LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
+          for USER in $LIST; do
+             print $ITEM $USER |tee -a cuu.out
+             aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out
+             aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out 
+             aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out
+           done 
+     done 
+fi
 if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               clean
-               nochangeop
-               for ITEM in $ACCOUNT; do
-                    # LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
-                    LIST=$USERNAME
-                    for USER in $LIST; do
-                         print $ITEM $USER
-                         aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 | gawk -v A=$ITEM -f indent.awk
-                         aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" | gawk -v A=$ITEM -f indent.awk 
-                         aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  | gawk -v A=$ITEM -f indent.awk 
-                    done 
-               done 
+     assert "$ACCOUNT" "Profile not specified"
+     clean
+     nochangeop
+     for ITEM in $ACCOUNT; do
+          # LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
+          LIST=$USERNAME
+          for USER in $LIST; do
+               print $ITEM $USERa |tee -a cuu.out
+               aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out
+               aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out 
+               aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out 
+          done 
+     done 
 fi
 # ----------------------------------------------------
 # These commands operate on users
@@ -519,19 +582,11 @@ if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
                ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
 fi
+if [ "$COMMAND" == "IAMUSERCODECOMMITPOWERUSER-ADD" ] ; then
+               policyADD "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
+fi
 if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-ADD" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
-               antiassert "$THING" "  Don't explicitly define the policy"
-               THING="arn:aws:iam::aws:policy/IAMUserChangePassword"
-               LIST=$USERNAME
-               print ""
-               print $THING
-               confirmprompt "Ready to add policy"
-               for USER in $LIST; do
-                    print $USER $THING
-                    aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING --user-name $USER
-               done
+               policyADD "arn:aws:iam::aws:policy/IAMUserChangePassword"
 fi
 if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-REMOVE" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -553,6 +608,20 @@ if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+fi
+
+if [ "$COMMAND" == "SWAP" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               policyADD $POLICYADD
+               groupREMOVE $GROUPREMOVE
+fi
+if [ "$COMMAND" == "REMOVEUSERFROMGROUP" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               assert "$THING" "Group not specified"
+               confirm
+               aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $THING 
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
