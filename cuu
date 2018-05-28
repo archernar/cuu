@@ -119,6 +119,19 @@ commandABBREVIATIONS() {
             SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
 	esac
 }
+wipeUSER() {
+     wipePOLICIES
+     wipeGROUPS
+     wipeACCESSKEYS
+}
+wipePOLICIES() {
+     assertACCOUNTandUSERNAME
+     LISTPOLICIES=`aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyArn]" --output text`
+     for ITEM in $LISTPOLICIES; do
+          aws --profile $ACCOUNT iam detach-user-policy --user-name $USERNAME --policy-arn $ITEM 
+     done
+     LISTPOLICIES=""
+ }
 wipeGROUPS() {
      assertACCOUNTandUSERNAME
      GROUPLIST=`aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text`
@@ -126,6 +139,7 @@ wipeGROUPS() {
      for ITEM in $GROUPLIST; do
           aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $ITEM 
      done
+     GROUPLIST=""
 }
 wipeACCESSKEYS() {
      assertACCOUNTandUSERNAME
@@ -478,19 +492,7 @@ fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
-               confirm
-               LIST=`aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text`
-               for ITEM in $LIST; do
-                   aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $ITEM 
-               done
-               LIST=`aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME  --query "AccessKeyMetadata[*].[AccessKeyId]" --output text`
-               for ITEM in $LIST; do
-                    aws --profile $ACCOUNT iam delete-access-key --user-name $USERNAME --access-key-id $ITEM
-               done
-               LIST=`aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyArn]" --output text`
-               for ITEM in $LIST; do
-                    aws --profile $ACCOUNT iam detach-user-policy --user-name $USERNAME --policy-arn $ITEM 
-               done
+               wipeUSER
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
 fi
