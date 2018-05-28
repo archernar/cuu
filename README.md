@@ -32,10 +32,10 @@ User Commands
                                                    For commands above, User will change password
                                                    after first login.  Password may be set in ~/.cuu.txt
 Access Key Commands
-            listaccesskeys           -a -u         List the users access keys
-            replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key
-            createaccesskey          -a -u         Creates an access key for the user
-            deleteaccesskeys         -a -u         Deletes all the users access keys
+     lak    listaccesskeys           -a -u         List the users access keys
+     rak    replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key
+     cak    createaccesskey          -a -u         Creates an access key for the user
+     dak    deleteaccesskeys         -a -u         Deletes all the users access keys
 Policy Commands
      lp     listallpolicies          -a            Lists all defined policies
      lpl    listlocalpoliciesl       -a            Lists local (user managed) policies
@@ -80,5 +80,5 @@ POLICYADD=
 </pre>
 <pre>
   
-Mon May 28 11:19:46 EDT 2018
+Mon May 28 11:23:29 EDT 2018
 </pre>

@@ -57,10 +57,10 @@ usage(){
      print "                                                   For commands above, User will change password"
      print "                                                   after first login.  Password may be set in ~/.cuu.txt"
      print "Access Key Commands"
-     print "            listaccesskeys           -a -u         List the users access keys"
-     print "            replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key"
-     print "            createaccesskey          -a -u         Creates an access key for the user"
-     print "            deleteaccesskeys         -a -u         Deletes all the users access keys"
+     print "     lak    listaccesskeys           -a -u         List the users access keys"
+     print "     rak    replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key"
+     print "     cak    createaccesskey          -a -u         Creates an access key for the user"
+     print "     dak    deleteaccesskeys         -a -u         Deletes all the users access keys"
      print "Policy Commands"
      print "     lp     listallpolicies          -a            Lists all defined policies"
      print "     lpl    listlocalpoliciesl       -a            Lists local (user managed) policies"
@@ -97,6 +97,10 @@ usage(){
 # README.md End
 commandABBREVIATIONS() {
 	case "$COMMAND" in
+            CAK)                   COMMAND="CREATEACCESSKEYS" ;;
+            RAK)                   COMMAND="REPLACEACCESSKEYS" ;;
+            LAK)                   COMMAND="LISTACCESSKEYS" ;;
+            DAK)                   COMMAND="DELETEACCESSKEYS" ;;
             GLP)                   COMMAND="GETLOCALPOLICIES" ;;
             GAP)                   COMMAND="GETALLPOLICIES" ;;
             LAP)                   COMMAND="LISTALLPOLICIES" ;;
@@ -110,7 +114,6 @@ commandABBREVIATIONS() {
             DU)                    COMMAND="DESCRIBEUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
-            LA)                    COMMAND="LISTACCESSKEYS" ;;
             SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
 	esac
 }
