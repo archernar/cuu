@@ -274,7 +274,6 @@ while [[ 0 -eq 0 ]];do
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
             CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
-            DAU)                   COMMAND="DESCRIBEALLUSERS" ;;
             DU)                    COMMAND="DESCRIBEUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
@@ -509,32 +508,31 @@ if [ "$COMMAND" == "LISTAWSPOLICIES" ] ; then
                done
 fi
 
-if [ "$COMMAND" == "DESCRIBEALLUSERS" ] ; then
-     assert "$ACCOUNT" "Profile not specified"
-     clean
-     for ITEM in $ACCOUNT; do
-          LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
-          for USER in $LIST; do
-             print $ITEM $USER |tee -a cuu.out
-             aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out
-             aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out 
-             aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out
-           done 
-     done 
-fi
 if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
+     # aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 |gawk -v A=$USER -v B=$ITEM -f indent.awk |tee -a cuu.out
      assert "$ACCOUNT" "Profile not specified"
      clean
-     nochangeop
      for ITEM in $ACCOUNT; do
-          # LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
-          LIST=$USERNAME
+          if [ "$USERNAME" == "" ] ; then
+              LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
+          else
+              LIST=$USERNAME
+          fi
           for USER in $LIST; do
-               print $ITEM $USER |tee -a cuu.out
-               aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out
-               aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out 
-               aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out 
-          done 
+           print $ITEM $USER |tee -a cuu.out
+           LIST=`aws --profile $ITEM iam list-groups-for-user  --output text --user-name $USER --query "Groups[*].[GroupName]"`
+           aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}" |
+                                   gawk -v A=$USER -v B=$ITEM -v C="GRP" -f indent.awk |tee -a cuu.out
+           for G in $LIST; do
+                aws --profile $ITEM iam list-attached-group-policies --group-name $G --query "AttachedPolicies[*].{ARN:PolicyArn}" |
+                                        gawk -v A=$USER -v B=$ITEM -v C="GPO" -f indent.awk |tee -a cuu.out 
+           done
+           aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" |
+                                   gawk -v A=$USER -v B=$ITEM -v C="UPO" -f indent.awk |tee -a cuu.out 
+           aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  |
+                                   gawk -v A=$USER -v B=$ITEM -v C="KEY" -f indent.awk |tee -a cuu.out
+
+           done 
      done 
 fi
 # ----------------------------------------------------
