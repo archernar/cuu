@@ -270,9 +270,11 @@ ISOTIME="no"
 BIGNAMES="no" 
 BIGEVENTS="no" 
 CHANGEOPERATION="YES" 
+TIMEFACTOR="60"
 changeop
 
-while getopts "jr:Ff:D:ds:n:c:Ru:a:p:t:ihbZBE" arg
+
+while getopts "jr:Ff:D:ds:n:c:Ru:a:p:t:ihbZBET:" arg
 do
 	case $arg in
             B) BIGNAMES="yes" ;;
@@ -286,6 +288,7 @@ do
             D) DOCUMENT=$OPTARG ;;
             s) STARTDATE=$OPTARG ;;
             n) COUNT=$OPTARG ;;
+            T) TIMEFACTOR=$OPTARG ;;
             c) COMMAND=$OPTARG ;;
             u) USERNAME=$OPTARG
                if [ "$USERNAME" == "ALLUSERS" ] ; then
@@ -329,8 +332,12 @@ fi
 
 while [[ 0 -eq 0 ]];do
 
-        commandABBREVIATIONS
+commandABBREVIATIONS
 
+ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterminute(T);}'`
+ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
+AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
+ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 # -----------------------------------------------------------------------------------------------------------------------
 # Notes
 # https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
@@ -348,18 +355,30 @@ while [[ 0 -eq 0 ]];do
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-                    assert "$ACCOUNT"  "Profile not specified"
-                    awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
-                    awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-                    awsnull --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/$sz --user-name $USERNAME
-                    LIST=`aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text`
-                    print $LIST
-                    for ITEM in $LIST; do
-                        print $ITEM
-                    done
-
+#                       ISOAGO=`gawk '@include "cuu.awk"; BEGIN { print isoyesterminute(50);}'`
+#                       ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
+#                       AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
+#                       ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
+#                       print $ISOANON
+#                       print $ANON
+#                       print $ISOAGO
+#                       print $AGO
+#                     assert "$ACCOUNT"  "Profile not specified"
+#                     awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
+#                     awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+#                     awsnull --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/$sz --user-name $USERNAME
+#                     LIST=`aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text`
+#                     print $LIST
+#                     for ITEM in $LIST; do
+#                         print $ITEM
+#                     done
+NOTHING=0
 fi
 
+if [ "$COMMAND" == "TIME" ] ; then
+     print "END TIME    "$ISOANON"  "$ANON
+     print "START TIME  "$ISOAGO"  "$AGO
+fi
 if [ "$COMMAND" == "WWEC2" ] ; then
                     assert "$ACCOUNT"  "Profile not specified"
                     LIST=`aws ec2 describe-regions --query "Regions[*].RegionName" --output text`
