@@ -95,6 +95,25 @@ usage(){
 }
 # M </pre>
 # README.md End
+commandABBREVIATIONS() {
+	case "$COMMAND" in
+            GLP)                   COMMAND="GETLOCALPOLICIES" ;;
+            GAP)                   COMMAND="GETALLPOLICIES" ;;
+            LAP)                   COMMAND="LISTALLPOLICIES" ;;
+            LLP)                   COMMAND="LISTLOCALPOLICIES" ;;
+            LAWSP)                 COMMAND="LISTAWSPOLICIES" ;;
+            CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
+            CU)                    COMMAND="CLOUDTRAIL-USER" ;;
+            CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
+            CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
+            LU)                    COMMAND="LISTUSERS" ;;
+            DU)                    COMMAND="DESCRIBEUSERS" ;;
+            LG)                    COMMAND="LISTGROUPS" ;;
+            LR)                    COMMAND="LISTROLES" ;;
+            LA)                    COMMAND="LISTACCESSKEYS" ;;
+            SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
+	esac
+}
 wipeACCESSKEYS() {
      assert "$ACCOUNT" "Profile not specified"
      assert "$USERNAME" "Username not specified"
@@ -285,23 +304,8 @@ fi
 
 while [[ 0 -eq 0 ]];do
 
-	case "$COMMAND" in
-            GLP)                   COMMAND="GETLOCALPOLICIES" ;;
-            GAP)                   COMMAND="GETALLPOLICIES" ;;
-            LAP)                   COMMAND="LISTALLPOLICIES" ;;
-            LLP)                   COMMAND="LISTLOCALPOLICIES" ;;
-            LAWSP)                 COMMAND="LISTAWSPOLICIES" ;;
-            CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
-            CU)                    COMMAND="CLOUDTRAIL-USER" ;;
-            CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
-            CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
-            LU)                    COMMAND="LISTUSERS" ;;
-            DU)                    COMMAND="DESCRIBEUSERS" ;;
-            LG)                    COMMAND="LISTGROUPS" ;;
-            LR)                    COMMAND="LISTROLES" ;;
-            LA)                    COMMAND="LISTACCESSKEYS" ;;
-            SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
-	esac
+        commandABBREVIATIONS
+
 # -----------------------------------------------------------------------------------------------------------------------
 # Notes
 # https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
