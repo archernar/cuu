@@ -1,12 +1,12 @@
 # CUU - An AWS CLI Wrapper
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
-      -h  display usage
-      -a  cli profile name      (from .aws/config)
+      -a  operand:  cli profile name      (from .aws/config)
       -u  operand:  username
       -p  operand:  password    (default set in ~/.cuu.txt)
       -t  operand:  thing name  (used to specify a resource or object name)
       -s  operand:  start date  (default set in ~/.cuu.txt)
+      -h  display usage
       -d  limits abbreviations
       -D  Specify a document\file to upload (e.g. a policy document)
       -j  use long datetime fields
@@ -22,19 +22,20 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
           ----------------------------------------------------------------------------------------------
 User Commands
      lu     listusers                -a :PLIST:    Lists users" 
-            deleteuser               -a -u
+            deleteuser               -a -u         Delete the user
      du     describeusers            -a :PLIST:    Lists users and their attached groups and policies" 
             createuser               -a -u -p      Creates with no privledges
             createadminuser          -a -u -p      Creates a user with Administor Access
             createreadonlyuser       -a -u -p      Creates a user with Read Only
-     scram  scrampassword            -a -u         Assign an unknown (scrammed) password
-            changepassword           -a -u -p      Changes a users pwd, Will use PASSWORD in ~/.cuu.txt
-                                                   NOTE: for commands above, User will change password
+     scram  scrampassword            -a -u         Assignis the user an unknown (scrammed) password
+            changepassword           -a -u -p      Changes a user password
+                                                   For commands above, User will change password
                                                    after first login.  Password may be set in ~/.cuu.txt
-            listaccesskeys           -a -u         Lists the users (-u) access keys)
+Access Key Commands
+            listaccesskeys           -a -u         List the users access keys
             replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key
-            createaccesskey          -a -u         Creates an accesskey for the user (-u)
-            deleteaccesskeys         -a -u         Deletes the users (-u) access keys)
+            createaccesskey          -a -u         Creates an access key for the user
+            deleteaccesskeys         -a -u         Deletes all the users access keys
 Policy Commands
      lp     listallpolicies          -a            Lists all defined policies
      lpl    listlocalpoliciesl       -a            Lists local (user managed) policies
@@ -79,5 +80,5 @@ POLICYADD=
 </pre>
 <pre>
   
-Mon May 28 10:38:39 EDT 2018
+Mon May 28 10:43:51 EDT 2018
 </pre>
