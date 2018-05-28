@@ -274,6 +274,7 @@ while [[ 0 -eq 0 ]];do
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
             CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
+            DAU)                   COMMAND="DESCRIBEALLUSERS" ;;
             DU)                    COMMAND="DESCRIBEUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
@@ -529,7 +530,7 @@ if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
           # LIST=`aws --profile $ITEM iam list-users --query "Users[*].[UserName]" --output text`
           LIST=$USERNAME
           for USER in $LIST; do
-               print $ITEM $USERa |tee -a cuu.out
+               print $ITEM $USER |tee -a cuu.out
                aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}"                 | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out
                aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out 
                aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  | gawk -v A=$ITEM -f indent.awk |tee -a cuu.out 
