@@ -37,6 +37,8 @@ Access Key Commands
      cak    createaccesskey          -a -u         Creates an access key for the user
      dak    deleteaccesskeys         -a -u         Deletes all the users access keys
 Policy Commands
+            createpolicy             -a -t         Create new policy (-t) with policydoc.json template
+            deletepolicy             -a -t         Delete policy by name (-t)
      lp     listallpolicies          -a            Lists all defined policies
      lpl    listlocalpoliciesl       -a            Lists local (user managed) policies
      lpa    listawspolicies          -a            Lists aws policies
@@ -83,5 +85,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Tue May 29 18:25:40 EDT 2018
+Tue May 29 18:47:44 EDT 2018
 </pre>

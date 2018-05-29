@@ -62,6 +62,8 @@ usage(){
      print "     cak    createaccesskey          -a -u         Creates an access key for the user"
      print "     dak    deleteaccesskeys         -a -u         Deletes all the users access keys"
      print "Policy Commands"
+     print "            createpolicy             -a -t         Create new policy (-t) with policydoc.json template"
+     print "            deletepolicy             -a -t         Delete policy by name (-t)"
      print "     lp     listallpolicies          -a            Lists all defined policies"
      print "     lpl    listlocalpoliciesl       -a            Lists local (user managed) policies"
      print "     lpa    listawspolicies          -a            Lists aws policies"
@@ -619,15 +621,21 @@ if [ "$COMMAND" == "REMOVEUSERFROMALLGROUPS" ] ; then
     wipeGROUPS
 fi
 
+if [ "$COMMAND" == "NEWPOLICYDOC" ] ; then
+               cp policydoc.json.sav  policydoc.json
+fi
 if [ "$COMMAND" == "CREATEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://policydoc.json
+               THIS=""
 fi
 if [ "$COMMAND" == "DELETEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
-               aws --profile $ACCOUNT iam delete-policy --policy-arn $THING
+               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+               aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
+               THIS=""
 fi
 
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
