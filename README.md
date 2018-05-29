@@ -1,17 +1,16 @@
 # CUU - An AWS CLI Wrapper
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
+Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -a  operand:  cli profile name      (from .aws/config)
       -u  operand:  username
-      -p  operand:  password    (default set in ~/.cuu.txt)
-      -t  operand:  thing name  (used to specify a resource or object name)
+      -p  operand:  password    (default may be set in ~/.cuu.txt)
+      -t  operand:  thing name  (specify a resource or object name)
       -T  operand:  time window in minutes (to specify now-T to now)
-      -s  operand:  start date  (default set in ~/.cuu.txt)
       -h  display usage
       -d  limits abbreviations
       -D  Specify a document\file to upload (e.g. a policy document)
       -j  use long datetime fields
-      -F  force mode, do not confirm any command (e.g. deletes)
+      -F  force mode, do not confirm any command
       -B  show full user names
       -E  show event names
       -R  show raw records in output
@@ -46,27 +45,27 @@ Policy Commands
                                                    Use -t arn for a specific policy
             listuserpolicies         -a -u
             detachuserpolicies       -a -u
-            attachpolicytouser       -a -u -t      Specify the policy arn with -t
+            attachpolicytouser       -a -u -t      Specify the policy arn (-t)
 Group Commands
      lg     listgroups               -a            List all groups defined" 
             listusergroups           -a -u         Lists groups associated with user
-            addusertogroup           -a -u -t      Add user to group (-t)
+            addusertogroup           -a -u -t      Add user to a group (-t)
             removeuserfromallgroups  -a -u         Remove the user from attach attached groups
 EC2 Commands
             ec2                      -a            List instances and securitygroups
             ec2-sg                   -a            Security groups detail listing
             ec2-sgsum                -a            Security groups summary listing (incl. empty SGs)
 CloudTrail Commands
-     ca     cloudtrail-active        -a -s         Lists active users since start date (-s)
-     cu     cloudtrail-user          -a -u -s      Lists user (-u) activity since start date (-s)
-     cz     cloudtrail-allusers      -a -s         Runs cloudtrail-users for all users
-     cw     cloudtrail-watch         -s            Runs cloudtrail-users for each profile in PROFILELIST
+     ca     cloudtrail-active        -a -T         Lists active users in time window
+     cu     cloudtrail-user          -a -u -T      Lists user activity in time window
+     cz     cloudtrail-allusers      -a -T         Runs cloudtrail-users for all users
+     cw     cloudtrail-watch         -T            Runs cloudtrail-users for each profile in PROFILELIST
                                                    on the WATCHUSER in ~/.cuu.txt
 Specific Policy Commands
             iamuserchangepassword-add    -a -u :ULIST: Adds Policy
             iamuserchangepassword-remove -a -u :ULIST: Removes Policy
 Other
-            time                     <-T min>      Print time window
+            time                     -T            Print time window
 Note: Abbreviations are applied to output fields to limit line length
             -d will limit abbreviations
 </pre>
@@ -84,5 +83,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Tue May 29 07:20:46 EDT 2018
+Tue May 29 07:43:56 EDT 2018
 </pre>
