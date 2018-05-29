@@ -93,6 +93,7 @@ usage(){
      print "Other"
      print "            time                     <-T min>      Print time window"
      print ""
+     print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "            -d will limit abbreviations"
 }
