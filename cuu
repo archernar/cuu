@@ -119,6 +119,10 @@ commandABBREVIATIONS() {
             SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
 	esac
 }
+window() {
+     print "WINDOW START TIME  "$ISOAGO"  "$AGO
+     print "WINDOW END TIME    "$ISOANON"  "$ANON
+}
 wipeUSER() {
      wipePOLICIES
      wipeGROUPS
@@ -368,8 +372,8 @@ NOTHING=0
 fi
 
 if [ "$COMMAND" == "TIME" ] ; then
-     print "START TIME  "$ISOAGO"  "$AGO
-     print "END TIME    "$ISOANON"  "$ANON
+     print "WINDOW START TIME  "$ISOAGO"  "$AGO
+     print "WINDOW END TIME    "$ISOANON"  "$ANON
 fi
 if [ "$COMMAND" == "WWEC2" ] ; then
                     assert "$ACCOUNT"  "Profile not specified"
@@ -843,11 +847,14 @@ if [ "$COMMAND" == "EC2-UTIL" ] ; then
 
 if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT -v D=$DETAIL '{
+               assert "$TIMEFACTOR" "Time not specified"
+               window
+               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT -v D=$DETAIL -v T=$TIMEFACTOR '{
+                    print $NF
                     if (D=="yes")
-                         sz = "cuu -d -a " A " -c cu -u " $NF;
+                         sz = "cuu -T " T " -d -a " A " -c cu -u " $NF;
                     else
-                         sz = "cuu  -a " A " -c cu -u " $NF;
+                         sz = "cuu  -T " T " -a " A " -c cu -u " $NF;
                     system(sz)
                }' 
 fi
