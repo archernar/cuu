@@ -264,13 +264,13 @@ PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1
 POLICYLIST=`gawk -v  w=POLICYLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 GROUPREMOVE=`gawk -v w=GROUPREMOVE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 POLICYADD=`gawk -v   w=POLICYADD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+TIMEFACTOR=`gawk -v  w=TIMEFACTOR -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
 BIGNAMES="no" 
 BIGEVENTS="no" 
 CHANGEOPERATION="YES" 
-TIMEFACTOR="60"
 changeop
 
 
