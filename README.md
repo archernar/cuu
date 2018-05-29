@@ -61,7 +61,7 @@ CloudTrail Commands
      cu     cloudtrail-user          -a -u -s      Lists user (-u) activity since start date (-s)
      cz     cloudtrail-allusers      -a -s         Runs cloudtrail-users for all users
      cw     cloudtrail-watch         -s            Runs cloudtrail-users for each profile in PROFILELIST
-                                                    on the WATCHUSER in ~/.cuu.txt
+                                                   on the WATCHUSER in ~/.cuu.txt
 Specific Policy Commands
             iamuserchangepassword-add    -a -u :ULIST: Adds Policy
             iamuserchangepassword-remove -a -u :ULIST: Removes Policy
@@ -84,5 +84,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Tue May 29 07:19:18 EDT 2018
+Tue May 29 07:20:46 EDT 2018
 </pre>
