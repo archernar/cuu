@@ -40,7 +40,7 @@ usage(){
      print "      -B  show full user names"
      print "      -E  show event names"
      print "      -R  show raw records in output"
-     print "      -Z  user iso time"
+     print "      -Z  output iso time"
      print "      -i  interactive mode ('q' to quit)"
      print "      -c  command:"
      print "          Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS"

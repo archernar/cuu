@@ -15,7 +15,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -B  show full user names
       -E  show event names
       -R  show raw records in output
-      -Z  user iso time
+      -Z  output iso time
       -i  interactive mode ('q' to quit)
       -c  command:
           Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS
@@ -84,5 +84,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Tue May 29 07:17:56 EDT 2018
+Tue May 29 07:19:18 EDT 2018
 </pre>
