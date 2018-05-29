@@ -376,8 +376,8 @@ NOTHING=0
 fi
 
 if [ "$COMMAND" == "TIME" ] ; then
-     print "END TIME    "$ISOANON"  "$ANON
      print "START TIME  "$ISOAGO"  "$AGO
+     print "END TIME    "$ISOANON"  "$ANON
 fi
 if [ "$COMMAND" == "WWEC2" ] ; then
                     assert "$ACCOUNT"  "Profile not specified"
