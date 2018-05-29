@@ -168,29 +168,25 @@ groupREMOVE() {
 }
 policyREMOVE() {
                assertACCOUNTandUSERNAME
-               antiassert "$THING" "  Don't explicitly define the policy"
-               THING="$1"
                LIST=$USERNAME
                print ""
-               print $THING
+               print $1
                confirmprompt "Ready to remove policy"
                for USER in $LIST; do
-                    print $USER $THING
-                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $THING --user-name $USER
+                    print $USER $1
+                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $1
                done
 }
 policyADD() {
                assert "$ACCOUNT" "Profile not specified"
                assert "$USERNAME" "Username not specified"
-               antiassert "$THING" "  Don't explicitly define the policy"
-               THING="$1"
                LIST=$USERNAME
                print ""
-               print $THING
+               print $1
                confirmprompt "Ready to add policy"
                for USER in $LIST; do
-                    print $USER $THING
-                    aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING --user-name $USER
+                    print $USER $1
+                    aws --profile $ACCOUNT iam attach-user-policy --policy-arn $1 --user-name $USER
                done
 }
 changeop() {
@@ -202,6 +198,7 @@ nochangeop() {
 clean() {
     rm -rf $Tmp
     rm -rf ./cuu.out
+    rm -rf ./cuureport.txt
 }
 awsnull() {
     NOTHING=0;
@@ -349,7 +346,7 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
 # aws --profile ECD3 iam get-account-authorization-details 
 #   aws --profile ECD3 iam list-policies
-#   aws --profile ECD3 iam list-policies |  grep SAND
+#   aws --profile ECD3 iam list-policies
 #   aws --profile ECD3 iam list-policies --scope Local
 #   sz = "aws --profile " A " iam delete-access-key --user-name " U " --access-key-id  " $2
 #   sz = "aws --profile " A " iam list-policy-versions --policy-arn " $2
@@ -361,6 +358,10 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
+
+aws s3api put-object --bucket ecd3pub --key cuureport.txt --body cuureport.txt
+
+
 #                     assert "$ACCOUNT"  "Profile not specified"
 #                     awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
 #                     awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -618,6 +619,17 @@ if [ "$COMMAND" == "REMOVEUSERFROMALLGROUPS" ] ; then
     wipeGROUPS
 fi
 
+if [ "$COMMAND" == "CREATEPOLICY" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING" "Thing not specified"
+               aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://policydoc.json
+fi
+if [ "$COMMAND" == "DELETEPOLICY" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING" "Thing not specified"
+               aws --profile $ACCOUNT iam delete-policy --policy-arn $THING
+fi
+
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
@@ -641,6 +653,16 @@ if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
                ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
 fi
+
+
+if [ "$COMMAND" == "IAMNAMEDPOLICY-ADD" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING" "Thing not specified"
+               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+               policyADD "arn:aws:iam::"$THIS":policy/"$THING
+               THIS=""
+fi
+
 if [ "$COMMAND" == "IAMUSERCODECOMMITPOWERUSER-ADD" ] ; then
                policyADD "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
 fi
@@ -850,7 +872,8 @@ if [ "$COMMAND" == "EC2-UTIL" ] ; then
 if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$TIMEFACTOR" "Time not specified"
-               window
+               clean
+               window | tee -a cuureport.txt
                aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT -v D=$DETAIL -v T=$TIMEFACTOR '{
                     print $NF
                     if (D=="yes")
@@ -858,7 +881,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
                     else
                          sz = "cuu  -T " T " -a " A " -c cu -u " $NF;
                     system(sz)
-               }' 
+               }' | tee -a  cuureport.txt
 fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
