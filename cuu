@@ -627,12 +627,14 @@ fi
 if [ "$COMMAND" == "CREATEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
+               confirm
                aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://policydoc.json
                THIS=""
 fi
 if [ "$COMMAND" == "DELETEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
+               confirm
                THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
                aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
                THIS=""
