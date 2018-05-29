@@ -5,6 +5,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-s][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -u  operand:  username
       -p  operand:  password    (default set in ~/.cuu.txt)
       -t  operand:  thing name  (used to specify a resource or object name)
+      -T  operand:  time window in minutes (to specify now-T to now)
       -s  operand:  start date  (default set in ~/.cuu.txt)
       -h  display usage
       -d  limits abbreviations
@@ -64,6 +65,8 @@ CloudTrail Commands
 Specific Policy Commands
             iamuserchangepassword-add    -a -u :ULIST: Adds Policy
             iamuserchangepassword-remove -a -u :ULIST: Removes Policy
+Other
+            time                     <-T min>      Print time window
 Note: Abbreviations are applied to output fields to limit line length
             -d will limit abbreviations
 </pre>
@@ -81,5 +84,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Tue May 29 07:11:12 EDT 2018
+Tue May 29 07:16:32 EDT 2018
 </pre>
