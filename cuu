@@ -257,7 +257,6 @@ POLICYADD=""
 REGION="us-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-STARTDATE=`gawk -v w=STARTDATE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -273,7 +272,6 @@ BIGEVENTS="no"
 CHANGEOPERATION="YES" 
 changeop
 
-
 while getopts "jr:Ff:D:ds:n:c:Ru:a:p:t:ihbZBET:" arg
 do
 	case $arg in
@@ -286,7 +284,6 @@ do
             i) LOOP="yes" ;;
             d) DETAIL="yes"; DETAILFLAG=" -d " ;;
             D) DOCUMENT=$OPTARG ;;
-            s) STARTDATE=$OPTARG ;;
             n) COUNT=$OPTARG ;;
             T) TIMEFACTOR=$OPTARG ;;
             c) COMMAND=$OPTARG ;;
@@ -334,7 +331,10 @@ while [[ 0 -eq 0 ]];do
 
 commandABBREVIATIONS
 
-ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterminute(T);}'`
+if [ "$TIMEFACTOR" == "" ] ; then
+     TIMEFACTOR=24
+fi
+ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterhour(T);}'`
 ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
 AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
@@ -355,14 +355,6 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-#                       ISOAGO=`gawk '@include "cuu.awk"; BEGIN { print isoyesterminute(50);}'`
-#                       ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
-#                       AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
-#                       ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
-#                       print $ISOANON
-#                       print $ANON
-#                       print $ISOAGO
-#                       print $AGO
 #                     assert "$ACCOUNT"  "Profile not specified"
 #                     awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
 #                     awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -697,7 +689,7 @@ fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $STARTDATE | gawk '
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $ISOAGO | gawk '
                /^EVENTS/ {
                     print $NF 
                }' | sort | uniq
@@ -812,7 +804,7 @@ if [ "$COMMAND" == "EC2-SG" ] ; then
 fi
 if [ "$COMMAND" == "EC2-SPARK" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$STARTDATE -v A=$ACCOUNT '
+               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT '
                @include "cuu.awk"
                {
                sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 3600 --namespace AWS/EC2 --statistics Maximum \
@@ -832,7 +824,7 @@ if [ "$COMMAND" == "EC2-SPARK" ] ; then
 
 if [ "$COMMAND" == "EC2-UTIL" ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$STARTDATE -v A=$ACCOUNT '
+               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT '
                @include "cuu.awk"
                {
                sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 300 --namespace AWS/EC2 --statistics Maximum \
@@ -878,9 +870,9 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$USERNAME" "Username not specified"
                if [ "$USERNAME" == "ALL" ] ; then
-                 aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE  > $Tmp
+                 aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
                else
-                 aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $STARTDATE --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                 aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                fi
                cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
