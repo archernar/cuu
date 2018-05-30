@@ -113,8 +113,10 @@ commandABBREVIATIONS() {
             CP)                    COMMAND="CHANGEPASSWORD" ;;
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
             CU)                    COMMAND="CLOUDTRAIL-USER" ;;
+            CZ)                    COMMAND="CLOUDTRAIL-USER"
+                                   USERNAME="ALL"
+                                   ;;
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
-            CZ)                    COMMAND="CLOUDTRAIL-ALLUSERS" ;;
             LU)                    COMMAND="LISTUSERS" ;;
             DU)                    COMMAND="DESCRIBEUSERS" ;;
             DESCRIBEUSER)          COMMAND="DESCRIBEUSERS" ;;
@@ -360,10 +362,6 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-
-aws s3api put-object --bucket ecd3pub --key cuureport.txt --body cuureport.txt
-
-
 #                     assert "$ACCOUNT"  "Profile not specified"
 #                     awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
 #                     awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -374,6 +372,17 @@ aws s3api put-object --bucket ecd3pub --key cuureport.txt --body cuureport.txt
 #                         print $ITEM
 #                     done
 NOTHING=0
+fi
+
+if [ "$COMMAND" == "PUBLISH" ] ; then
+     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+     DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
+     FNAME="cuureport"-$EPOCHTIME".txt"
+     print $FNAME
+     cp cuureport.txt $FNAME
+     aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-type text/plain > $Tmp
+     aws --profile $ACCOUNT s3 ls s3://ecd3pub --recursive
+     java Gpurl $FNAME
 fi
 
 if [ "$COMMAND" == "TIME" ] ; then
@@ -879,20 +888,6 @@ if [ "$COMMAND" == "EC2-UTIL" ] ; then
 
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
 
-if [ "$COMMAND" == "CLOUDTRAIL-ALLUSERS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$TIMEFACTOR" "Time not specified"
-               clean
-               window | tee -a cuureport.txt
-               aws --profile $ACCOUNT iam list-users | gawk -v A=$ACCOUNT -v D=$DETAIL -v T=$TIMEFACTOR '{
-                    print $NF
-                    if (D=="yes")
-                         sz = "cuu -T " T " -d -a " A " -c cu -u " $NF;
-                    else
-                         sz = "cuu  -T " T " -a " A " -c cu -u " $NF;
-                    system(sz)
-               }' | tee -a  cuureport.txt
-fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
                assert "PROFILELIST"  "Profile  not specified"
@@ -911,6 +906,8 @@ fi
 if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$USERNAME" "Username not specified"
+               clean
+               window | tee -a cuureport.txt
                if [ "$USERNAME" == "ALL" ] ; then
                  aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
                else
@@ -1085,7 +1082,7 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     print trim(ACCT), time, name, ty, en, "IN-" req
                     print trim(ACCT), time, name, ty, en, "OU-" resp
                     if (match(RAW,/^yes/) != 0) print $0 "\n\n"
-               }' 
+               }'  | sort -k 4,4 -k 3,3 | tee -a cuureport.txt
 fi
 
 if [ "$LOOP" == "yes" ] ; then
