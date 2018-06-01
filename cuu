@@ -178,7 +178,7 @@ policyREMOVE() {
                confirmprompt "Ready to remove policy"
                for USER in $LIST; do
                     print $USER $1
-                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $1
+                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $1 --user-name $USER
                done
 }
 policyADD() {
@@ -209,6 +209,14 @@ awsnull() {
 }
 awsdbg() {
      printf "DBGOUT:   aws %s %s %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12
+}
+assertfile() {
+    if [ -a $1 ] ; then
+         NOTHING=0
+    else
+         print "File "$1" Not Found"
+         exit 1
+    fi
 }
 asserte() {
     print "Checking: "$1
@@ -362,6 +370,7 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
+                      assertfile cuureport.txt
 #                     assert "$ACCOUNT"  "Profile not specified"
 #                     awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
 #                     awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
@@ -375,6 +384,7 @@ NOTHING=0
 fi
 
 if [ "$COMMAND" == "PUBLISH" ] ; then
+     assertfile cuureport.txt
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
      DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
      FNAME="cuureport"-$EPOCHTIME".txt"
@@ -382,7 +392,7 @@ if [ "$COMMAND" == "PUBLISH" ] ; then
      cp cuureport.txt $FNAME
      aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-type text/plain > $Tmp
      aws --profile $ACCOUNT s3 ls s3://ecd3pub --recursive
-     java Gpurl $FNAME
+     java Gpurl us-east-1 ecd3pub $FNAME 15
 fi
 
 if [ "$COMMAND" == "TIME" ] ; then
@@ -485,6 +495,19 @@ if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
+fi
+if [ "$COMMAND" == "CREATEUSERNOKEY" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT"  "Profile not specified"
+               assert "$PASSWORD" "Password not specified"
+               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+               aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
+               aws --profile $ACCOUNT iam add-user-to-group --group-name SANDBOX_USER_GROUP  --user-name $USERNAME
+               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+               policyADD "arn:aws:iam::"$THIS":policy/SANDBOX_CONTROL_POLICY"
+               policyADD "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
+               cuu -a $ACCOUNT -c DESCRIBEUSER -u $USERNAME
 fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
                assert "$USERNAME" "Username not specified"
@@ -637,7 +660,7 @@ if [ "$COMMAND" == "CREATEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                confirm
-               aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://policydoc.json
+               aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://this.json
                THIS=""
 fi
 if [ "$COMMAND" == "DELETEPOLICY" ] ; then
@@ -674,6 +697,13 @@ if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
 fi
 
 
+if [ "$COMMAND" == "IAMNAMEDPOLICY-REMOVE" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING" "Thing not specified"
+               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+               policyREMOVE "arn:aws:iam::"$THIS":policy/"$THING
+               THIS=""
+fi
 if [ "$COMMAND" == "IAMNAMEDPOLICY-ADD" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"

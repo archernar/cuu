@@ -50,8 +50,10 @@ function configrecord(szIn,szProfile,szUser,szProfileName,               sz,a,n,
      sz = sz "iamprof = " szProfile newline
      sz = sz "output = text" newline
      sz = sz "region = us-east-1" newline
-     sz = sz "aws_access_key_id=" a[2] newline
-     sz = sz "aws_secret_access_key=" a[4] newline
+     sz = sz newline
+     sz = sz "For Java Programs" newline
+     sz = sz "String aws_access_key_id=\"" a[2] "\";" newline
+     sz = sz "String aws_secret_access_key=\"" a[4] "\";" newline
      sz = sz newline
      return sz
 }
