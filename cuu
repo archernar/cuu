@@ -67,9 +67,12 @@ usage(){
      print "     lp     listallpolicies          -a            Lists all defined policies"
      print "     lpl    listlocalpoliciesl       -a            Lists local (user managed) policies"
      print "     lpa    listawspolicies          -a            Lists aws policies"
-     print "     gap    getallpolicies           -a <-t arn>   Get all policy docs defined for this profile"
-     print "     glp    getlocalpolicies         -a <-t arn>   Get all local policy docs defined for this profile"
-     print "                                                   Use -t arn for a specific policy"
+     print "     upp    updatepolicy             -a -t -D      Update local policy name (-t) with policy doc (-D, use file://)"
+     print "            attachpolicyset          -a -u         Attach policy ARNs listed in file policyset.txt to user (-u)"
+     print "            removepolicyset          -a -u         Removes policy ARNs listed in policyset.txt to user (-u)"
+     print "     gap    getallpolicies           -a <-t regex> Get all policy docs defined for this profile"
+     print "     glp    getlocalpolicies         -a <-t regex> Get all local policy docs defined for this profile"
+     print "                                                   Use regex for a specific policy"
      print "            listuserpolicies         -a -u"
      print "            detachuserpolicies       -a -u"
      print "            attachpolicytouser       -a -u -t      Specify the policy arn (-t)"
@@ -170,34 +173,59 @@ buildUSERLIST() {
 groupREMOVE() {
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
 }
+groupADD() {
+               aws --profile $ACCOUNT iam add-user-to-group      --user-name $USERNAME --group-name $1
+}
+groupsetREMOVE() {
+               THISSET=`cat groupset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
+               confirmset
+               for ITEM in $THISSET; do
+                    groupREMOVE $ITEM
+               done
+               THISSET=""
+}
+groupsetATTACH() {
+               THISSET=`cat groupset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
+               confirmset
+               for ITEM in $THISSET; do
+                    groupADD $ITEM
+               done
+               THISSET=""
+}
+policysetREMOVE() {
+               THISSET=`cat policyset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
+               confirmset
+               for ITEM in $THISSET; do
+                    policyREMOVE $ITEM
+               done
+               THISSET=""
+}
+policysetATTACH() {
+               THISSET=`cat policyset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
+               confirmset
+               for ITEM in $THISSET; do
+                    policyATTACH $ITEM
+               done
+               THISSET=""
+}
+
 policyREMOVE() {
                assertACCOUNTandUSERNAME
                LIST=$USERNAME
-               print ""
-               print $1
-               confirmprompt "Ready to remove policy"
                for USER in $LIST; do
                     print $USER $1
                     aws --profile $ACCOUNT iam detach-user-policy --policy-arn $1 --user-name $USER
                done
+               LIST=""
 }
-policyADD() {
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+policyATTACH() {
+               assertACCOUNTandUSERNAME
                LIST=$USERNAME
-               print ""
-               print $1
-               confirmprompt "Ready to add policy"
                for USER in $LIST; do
                     print $USER $1
                     aws --profile $ACCOUNT iam attach-user-policy --policy-arn $1 --user-name $USER
                done
-}
-changeop() {
-     CHANGEOPERATION="YES" 
-}
-nochangeop() {
-     CHANGEOPERATION="NO" 
+               LIST=""
 }
 clean() {
     rm -rf $Tmp
@@ -235,11 +263,23 @@ assertACCOUNTandUSERNAME() {
      assert "$ACCOUNT" "Profile not specified"
      assert "$USERNAME" "User not specified"
 }
+assertACCOUNTandUSERNAMEandPASSWORD() {
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     assert "$PASSWORD" "Password not specified"
+}
 antiassert() {
     if [ "$1" != "" ] ; then
          print $2
          exit 1
     fi
+}
+confirmset() {
+     print ""
+     for ITEM in $THISSET; do
+          print "   "$ITEM
+     done
+     confirm
 }
 confirmprompt() {
      print "   "$1
@@ -284,8 +324,6 @@ SHOWRAW="no"
 ISOTIME="no" 
 BIGNAMES="no" 
 BIGEVENTS="no" 
-CHANGEOPERATION="YES" 
-changeop
 
 while getopts "jr:Ff:D:dn:c:Ru:a:p:t:ihbZBET:" arg
 do
@@ -370,16 +408,16 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-                      assertfile cuureport.txt
+#                       assertfile cuureport.txt
 #                     assert "$ACCOUNT"  "Profile not specified"
 #                     awsnull --profile $ACCOUNT iam create-user --user-name $USERNAME
 #                     awsnull --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 #                     awsnull --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/$sz --user-name $USERNAME
 #                     LIST=`aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text`
-#                     print $LIST
-#                     for ITEM in $LIST; do
-#                         print $ITEM
-#                     done
+                     LIST=`cat arns`
+                     for ITEM in $LIST; do
+                         print $ITEM
+                     done
 NOTHING=0
 fi
 
@@ -419,12 +457,16 @@ if [ "$COMMAND" == "UPDATEPOLICY" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$THING"    "Policy not specified"
                asserte "$DOCUMENT" "Document not specified"
-               LIST=`aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $THING --query "Versions[*].[VersionId]" |gawk -f skipfirst.awk`
+               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+               ARN="arn:aws:iam::"$THIS":policy/"$THING
+               LIST=`aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId]" |gawk -f skipfirst.awk`
                for ITEM in $LIST; do
-                    aws --profile $ACCOUNT iam delete-policy-version --policy-arn $THING --version-id $ITEM
+                    aws --profile $ACCOUNT iam delete-policy-version --policy-arn $ARN --version-id $ITEM
                done
-               aws --profile $ACCOUNT iam create-policy-version  --policy-arn $THING --policy-document $DOCUMENT --set-as-default
-               aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $THING --query "Versions[*].[VersionId,CreateDate,IsDefaultVersion]" 
+               aws --profile $ACCOUNT iam create-policy-version  --policy-arn $ARN --policy-document $DOCUMENT --set-as-default
+               aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId,CreateDate,IsDefaultVersion]" 
+               THIS=""
+               ARN=""
 fi
 if [ "$COMMAND" == "GETALLPOLICIES" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
@@ -467,7 +509,7 @@ if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
                     gARN=`print "$ITEM" | gawk -F, '{print $2}'`
                     gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "policies/"$2}'`
                     print "\nUpdate with:"
-                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D file://"
+                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gNAME"   -D file://"
                     print $gARNFILE
                     print "this.json"
                     aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER  > $gARNFILE
@@ -479,9 +521,7 @@ fi
 #       Create User, Change Password, Delete User
 # ----------------------------------------------------
 if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Profile not specified"
-               assert "$PASSWORD" "Password not specified"
+               assertACCOUNTandUSERNAMEandPASSWORD
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AdministratorAccess    --user-name $USERNAME
@@ -489,30 +529,23 @@ if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
                print $PASSWORD
 fi
 if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Profile not specified"
-               assert "$PASSWORD" "Password not specified"
+               assertACCOUNTandUSERNAMEandPASSWORD
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
 fi
+
 if [ "$COMMAND" == "CREATEUSERNOKEY" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Profile not specified"
-               assert "$PASSWORD" "Password not specified"
+               assertACCOUNTandUSERNAMEandPASSWORD
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
-               aws --profile $ACCOUNT iam add-user-to-group --group-name SANDBOX_USER_GROUP  --user-name $USERNAME
-               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               policyADD "arn:aws:iam::"$THIS":policy/SANDBOX_CONTROL_POLICY"
-               policyADD "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
-               cuu -a $ACCOUNT -c DESCRIBEUSER -u $USERNAME
+               if [ "$THING" != "" ] ; then
+                    aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+               fi
 fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Profile not specified"
-               assert "$PASSWORD" "Password not specified"
+               assertACCOUNTandUSERNAMEandPASSWORD
                aws --profile $ACCOUNT iam create-user --user-name $USERNAME
                aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
                aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
@@ -527,23 +560,19 @@ if [ "$COMMAND" == "CREATEUSER" ] ; then
                cuu -a $ACCOUNT -c DESCRIBEUSER -u $USERNAME
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Profile not specified"
                assert "$PASSWORD" "Password not specified"
                confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
 if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT"  "Profile not specified"
+               assertACCOUNTandUSERNAME
                RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
                assert "$PASSWORD" "Password not specified"
                confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
 fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Profile not specified"
+               assertACCOUNTandUSERNAME
                wipeUSER
                aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
                aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
@@ -614,6 +643,16 @@ if [ "$COMMAND" == "LISTAWSPOLICIES" ] ; then
                done
 fi
 
+if [ "$COMMAND" == "ATTACHPOLICYSET" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USER" "Profile not specified"
+               policysetATTACH
+fi
+if [ "$COMMAND" == "REMOVEPOLICYSET" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USER" "Profile not specified"
+               policysetREMOVE
+fi
 if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
      assert "$ACCOUNT" "Profile not specified"
      clean
@@ -640,13 +679,11 @@ fi
 # These commands operate on users
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTUSERPOLICIES" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+               assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
 fi
 if [ "$COMMAND" == "LISTUSERGROUPS" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Profile not specified"
+               assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text
 fi
 if [ "$COMMAND" == "REMOVEUSERFROMALLGROUPS" ] ; then
@@ -654,7 +691,7 @@ if [ "$COMMAND" == "REMOVEUSERFROMALLGROUPS" ] ; then
 fi
 
 if [ "$COMMAND" == "NEWPOLICYDOC" ] ; then
-               cp policydoc.json.sav  policydoc.json
+               cp policydoc.json.sav  this.json
 fi
 if [ "$COMMAND" == "CREATEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -673,8 +710,7 @@ if [ "$COMMAND" == "DELETEPOLICY" ] ; then
 fi
 
 if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Profile not specified"
+               assertACCOUNTandUSERNAME
                confirm
                aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
                {
@@ -708,15 +744,19 @@ if [ "$COMMAND" == "IAMNAMEDPOLICY-ADD" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Thing not specified"
                THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               policyADD "arn:aws:iam::"$THIS":policy/"$THING
+               policyATTACH "arn:aws:iam::"$THIS":policy/"$THING
                THIS=""
 fi
 
 if [ "$COMMAND" == "IAMUSERCODECOMMITPOWERUSER-ADD" ] ; then
-               policyADD "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               policyATTACH "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
 fi
 if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-ADD" ] ; then
-               policyADD "arn:aws:iam::aws:policy/IAMUserChangePassword"
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               policyATTACH "arn:aws:iam::aws:policy/IAMUserChangePassword"
 fi
 if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-REMOVE" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -751,9 +791,8 @@ if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
 fi
 
 if [ "$COMMAND" == "SWAP" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
-               policyADD $POLICYADD
+               assertACCOUNTandUSERNAME
+               policyATTACH $POLICYADD
                groupREMOVE $GROUPREMOVE
 fi
 if [ "$COMMAND" == "REMOVEUSERFROMGROUP" ] ; then
@@ -785,8 +824,7 @@ if [ "$COMMAND" == "REPLACEACCESSKEYS" ] ; then
                     }'
 fi
 if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+               assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
                aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
                cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' 
@@ -796,13 +834,11 @@ if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
                     }'
 fi
 if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "User not specified"
+               assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
 fi
 if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Profile not specified"
+               assertACCOUNTandUSERNAME
                confirm
                wipeACCESSKEYS
 fi

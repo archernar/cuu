@@ -1,0 +1,4 @@
+# This file should contain a list of group ARNs
+# Comment lines begin with a # character
+# Black lines are allowed
+

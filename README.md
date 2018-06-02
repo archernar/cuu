@@ -42,9 +42,12 @@ Policy Commands
      lp     listallpolicies          -a            Lists all defined policies
      lpl    listlocalpoliciesl       -a            Lists local (user managed) policies
      lpa    listawspolicies          -a            Lists aws policies
-     gap    getallpolicies           -a <-t arn>   Get all policy docs defined for this profile
-     glp    getlocalpolicies         -a <-t arn>   Get all local policy docs defined for this profile
-                                                   Use -t arn for a specific policy
+     upp    updatepolicy             -a -t -D      Update local policy name (-t) with policy doc (-D, use file://)
+            attachpolicyset          -a -u         Attach policy ARNs listed in file policyset.txt to user (-u)
+            removepolicyset          -a -u         Removes policy ARNs listed in policyset.txt to user (-u)
+     gap    getallpolicies           -a <-t regex> Get all policy docs defined for this profile
+     glp    getlocalpolicies         -a <-t regex> Get all local policy docs defined for this profile
+                                                   Use regex for a specific policy
             listuserpolicies         -a -u
             detachuserpolicies       -a -u
             attachpolicytouser       -a -u -t      Specify the policy arn (-t)
@@ -85,5 +88,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Fri Jun  1 17:54:20 EDT 2018
+Sat Jun  2 16:50:03 EDT 2018
 </pre>
