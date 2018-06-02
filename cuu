@@ -30,7 +30,7 @@ usage(){
      print "      -u  operand:  username"
      print "      -p  operand:  password    (default may be set in ~/.cuu.txt)"
      print "      -t  operand:  thing name  (specify a resource or object name)"
-     print "      -T  operand:  time window in minutes (to specify now-T to now)"
+     print "      -T  operand:  time window in hours (to specify now-T to now)"
      print "      -h  display usage"
      print "      -d  limits abbreviations"
      print "      -D  Specify a document\file to upload (e.g. a policy document)"
@@ -91,6 +91,8 @@ usage(){
      print "     cz     cloudtrail-allusers      -a -T         Runs cloudtrail-users for all users"
      print "     cw     cloudtrail-watch         -T            Runs cloudtrail-users for each profile in PROFILELIST"
      print "                                                   on the WATCHUSER in ~/.cuu.txt"
+     print "                                                   -T specifies time window in hour"
+
      print "Specific Policy Commands"
      print "            iamuserchangepassword-add    -a -u :ULIST: Adds Policy"
      print "            iamuserchangepassword-remove -a -u :ULIST: Removes Policy"

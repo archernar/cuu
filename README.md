@@ -5,7 +5,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -u  operand:  username
       -p  operand:  password    (default may be set in ~/.cuu.txt)
       -t  operand:  thing name  (specify a resource or object name)
-      -T  operand:  time window in minutes (to specify now-T to now)
+      -T  operand:  time window in hours (to specify now-T to now)
       -h  display usage
       -d  limits abbreviations
       -D  Specify a document\file to upload (e.g. a policy document)
@@ -66,6 +66,7 @@ CloudTrail Commands
      cz     cloudtrail-allusers      -a -T         Runs cloudtrail-users for all users
      cw     cloudtrail-watch         -T            Runs cloudtrail-users for each profile in PROFILELIST
                                                    on the WATCHUSER in ~/.cuu.txt
+                                                   -T specifies time window in hour
 Specific Policy Commands
             iamuserchangepassword-add    -a -u :ULIST: Adds Policy
             iamuserchangepassword-remove -a -u :ULIST: Removes Policy
@@ -88,5 +89,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Sat Jun  2 16:51:33 EDT 2018
+Sat Jun  2 16:58:17 EDT 2018
 </pre>
