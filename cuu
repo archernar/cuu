@@ -691,7 +691,7 @@ if [ "$COMMAND" == "REMOVEUSERFROMALLGROUPS" ] ; then
 fi
 
 if [ "$COMMAND" == "NEWPOLICYDOC" ] ; then
-               cp policydoc.json.sav  this.json
+               cp policydoc.json this.json
 fi
 if [ "$COMMAND" == "CREATEPOLICY" ] ; then
                assert "$ACCOUNT" "Profile not specified"
