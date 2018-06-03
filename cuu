@@ -130,11 +130,31 @@ commandABBREVIATIONS() {
             SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
 	esac
 }
+# ---------------------------------------------------------------------------------------------------------
+# MACROS
+# ---------------------------------------------------------------------------------------------------------
 window() {
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
 }
+createACCESSKEY() {
+     assertACCOUNTandUSERNAME
+     aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
+     cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME '@include "cuu.awk"; { print configrecord($0,A,U,A); }'
+}
+createUSER() {
+     assertACCOUNTandUSERNAMEandPASSWORD
+     aws --profile $ACCOUNT iam create-user --user-name $USERNAME
+     aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+     aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
+}
+deleteUSER() {
+     assertACCOUNTandUSERNAME
+     aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
+     aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
+}
 wipeUSER() {
+     assertACCOUNTandUSERNAME
      wipePOLICIES
      wipeGROUPS
      wipeACCESSKEYS
@@ -164,6 +184,7 @@ wipeACCESSKEYS() {
      done
      ACCESSKEYLIST=""
 }
+# ---------------------------------------------------------------------------------------------------------
 buildUSERLIST() {
           USERLIST=""
           if [ "$USERNAME" == "" ] ; then
@@ -174,6 +195,11 @@ buildUSERLIST() {
 }
 groupREMOVE() {
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
+}
+optionalGROUPADD() {
+          if [ "$THING" != "" ] ; then
+                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+          fi
 }
 groupADD() {
                aws --profile $ACCOUNT iam add-user-to-group      --user-name $USERNAME --group-name $1
@@ -229,6 +255,7 @@ policyATTACH() {
                done
                LIST=""
 }
+
 clean() {
     rm -rf $Tmp
     rm -rf ./cuu.out
@@ -270,6 +297,15 @@ assertACCOUNTandUSERNAMEandPASSWORD() {
      assert "$USERNAME" "Username not specified"
      assert "$PASSWORD" "Password not specified"
 }
+assertACCOUNTandUSERNAMEandTHING() {
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     assert "$THING"    $1" not specified"
+}
+assertACCOUNTandTHING() {
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$THING"    $1" not specified"
+}
 antiassert() {
     if [ "$1" != "" ] ; then
          print $2
@@ -289,7 +325,7 @@ confirmprompt() {
 }
 confirm() {
      if [ "$FORCE" != "yes" ] ; then
-          print -n "   Enter '10111' to confirm >> "
+          print -n "   For "$ACCOUNT":  Enter '10111' to confirm >> "
           read STRIN
           if [ "$STRIN" != "10111" ] ; then
                print "   Exiting - No Match"
@@ -524,61 +560,47 @@ fi
 # ----------------------------------------------------
 if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
                assertACCOUNTandUSERNAMEandPASSWORD
-               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
-               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AdministratorAccess    --user-name $USERNAME
-               print $USERNAME
-               print $PASSWORD
+               createUSER
+               policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
+               optionalGROUPADD
 fi
 if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
                assertACCOUNTandUSERNAMEandPASSWORD
-               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
-               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
+               createUSER
+               policyATTACH arn:aws:iam::aws:policy/ReadOnlyAccess
+               optionalGROUPADD
 fi
-
 if [ "$COMMAND" == "CREATEUSERNOKEY" ] ; then
                assertACCOUNTandUSERNAMEandPASSWORD
-               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
-               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
-               if [ "$THING" != "" ] ; then
-                    aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
-               fi
+               createUSER
+               optionalGROUPADD
 fi
 if [ "$COMMAND" == "CREATEUSER" ] ; then
                assertACCOUNTandUSERNAMEandPASSWORD
-               aws --profile $ACCOUNT iam create-user --user-name $USERNAME
-               aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-               aws --profile $ACCOUNT iam attach-user-policy --user-name $USERNAME --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword
-               if [ "$THING" != "" ] ; then
-                    aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
-               fi
-               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
-               @include "cuu.awk" 
-               { 
-                   print configrecord($0,A,U,A); 
-               }'
-               cuu -a $ACCOUNT -c DESCRIBEUSER -u $USERNAME
+               createUSER
+               optionalGROUPADD
+               createACCESSKEY
 fi
 if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
-               assert "$PASSWORD" "Password not specified"
+               assertACCOUNTandUSERNAMEandPASSWORD
                confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
 if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
                assertACCOUNTandUSERNAME
                RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
-               assert "$PASSWORD" "Password not specified"
                confirm
                aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
 fi
 if [ "$COMMAND" == "DELETEUSER" ] ; then
                assertACCOUNTandUSERNAME
                wipeUSER
-               aws --profile $ACCOUNT iam delete-login-profile --user-name $USERNAME 
-               aws --profile $ACCOUNT iam delete-user --user-name $USERNAME 
+               deleteUSER
 fi
+
+
+
+
 if [ "$COMMAND" == "ACCOUNTNUMBER" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
@@ -696,15 +718,13 @@ if [ "$COMMAND" == "NEWPOLICYDOC" ] ; then
                cp policydoc.json this.json
 fi
 if [ "$COMMAND" == "CREATEPOLICY" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
+               assertACCOUNTandTHING "Policy-Name"
                confirm
                aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://this.json
                THIS=""
 fi
 if [ "$COMMAND" == "DELETEPOLICY" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
+               assertACCOUNTandTHING "Policy-Name"
                confirm
                THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
                aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
@@ -721,63 +741,56 @@ if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
                }'
 fi
 if [ "$COMMAND" == "ATTACHPOLICYTOALLUSERS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
-               aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text | gawk -v A=$ACCOUNT -v T=$THING '{
-                    system("aws --profile " A " iam attach-user-policy --policy-arn " T  " --user-name " $1);
-               }'
+               assertACCOUNTandTHING "Policy-ARN"
+               buildUSERLIST()
+               for USER in $USERLIST; do
+                    policyATTACH $THING
+               done
+               USERLIST=""
 fi
 if [ "$COMMAND" == "ATTACHPOLICYTOUSER" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
+               assertACCOUNTandUSERNAME
                assert "$THING" "Thing not specified"
-               ACCTNUMBER=`aws --profile $ACCOUNT sts get-caller-identity | gawk '{print $1}'`
-               aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THING  --user-name $USERNAME
+               policyATTACH $THING
 fi
 
 
 if [ "$COMMAND" == "IAMNAMEDPOLICY-REMOVE" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
+               assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
+               policyREMOVE $THING
+fi
+if [ "$COMMAND" == "IAMNAMEDPOLICY-ADD" ] ; then
+               assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
+               policyATTACH $THING
+fi
+if [ "$COMMAND" == "IAMNAMEDPOLICY-REMOVE" ] ; then
+               assertACCOUNTandTHING "Policy-Name"
                THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
                policyREMOVE "arn:aws:iam::"$THIS":policy/"$THING
                THIS=""
 fi
 if [ "$COMMAND" == "IAMNAMEDPOLICY-ADD" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
+               assertACCOUNTandTHING "Policy-Name"
                THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
                policyATTACH "arn:aws:iam::"$THIS":policy/"$THING
                THIS=""
 fi
 
 if [ "$COMMAND" == "IAMUSERCODECOMMITPOWERUSER-ADD" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+               assertACCOUNTandUSERNAME
                policyATTACH "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
 fi
 if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-ADD" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+               assertACCOUNTandUSERNAME
                policyATTACH "arn:aws:iam::aws:policy/IAMUserChangePassword"
 fi
 if [ "$COMMAND" == "IAMUSERCHANGEPASSWORD-REMOVE" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
-               antiassert "$THING" "  Don't explicitly define the policy"
-               THING="arn:aws:iam::aws:policy/IAMUserChangePassword"
-               LIST=$USERNAME
-               print ""
-               print $THING
-               confirmprompt "Ready to remove policy"
-               for USER in $LIST; do
-                    print $USER $THING
-                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $THING --user-name $USER
-               done
+               assertACCOUNTandUSERNAME
+               policyREMOVE arn:aws:iam::aws:policy/IAMUserChangePassword
 fi
 
 if [ "$COMMAND" == "LISTUSERSINGROUP" ] ; then
-     assert "$ACCOUNT" "Profile not specified"
-     assert "$THING" "Thing not specified"
+     assertACCOUNTandTHING "Group-Name"
      USERLIST=`aws --profile $ACCOUNT iam get-group --output text --group-name $THING --query "Users[*].[UserName]"`
      for USER in $USERLIST; do
          print $USER
@@ -785,11 +798,10 @@ if [ "$COMMAND" == "LISTUSERSINGROUP" ] ; then
      USERLIST=""
 fi
 if [ "$COMMAND" == "ADDUSERTOGROUP" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Thing not specified"
-               aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
-               aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].{ARN:Arn}" |
-                                   gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f noindent.awk
+     assertACCOUNTandTHING "Group-Name"
+     aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+     aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].{ARN:Arn}" |
+                                gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f noindent.awk
 fi
 
 if [ "$COMMAND" == "SWAP" ] ; then
@@ -819,21 +831,13 @@ if [ "$COMMAND" == "REPLACEACCESSKEYS" ] ; then
                wipeACCESSKEYS
                aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
                aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' 
-                    @include "cuu.awk" 
-                    { 
-                        print configrecord($0,A,U,A); 
-                    }'
+               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U,A);}'
 fi
 if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
                assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
                aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' 
-                    @include "cuu.awk"i
-                    { 
-                        print configrecord($0,A,U); 
-                    }'
+               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
 fi
 if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
                assertACCOUNTandUSERNAME
