@@ -106,6 +106,9 @@ usage(){
 # README.md End
 commandABBREVIATIONS() {
 	case "$COMMAND" in
+            DUMENU)                COMMAND="USERMENU" ;;
+            UM)                    COMMAND="USERMENU" ;;
+            DUM)                   COMMAND="USERMENU" ;;
             CAK)                   COMMAND="CREATEACCESSKEYS" ;;
             RAK)                   COMMAND="REPLACEACCESSKEYS" ;;
             LAK)                   COMMAND="LISTACCESSKEYS" ;;
@@ -624,6 +627,30 @@ if [ "$COMMAND" == "LISTUSERS" ] ; then
                done
                cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
+if [ "$COMMAND" == "USERMENU" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               buildUSERLIST  $ACCOUNT
+               clean
+               print "PS3='Pick user, enter choice:'" > $Tmp
+               print -n "select clean_menu in " >> $Tmp
+               for USER in $USERLIST; do
+                    print -n "\""$USER"\" " >> $Tmp
+               done
+               print "\"Exit\"" >> $Tmp
+               print "do" >> $Tmp
+               print "case \$clean_menu in" >> $Tmp
+               for USER in $USERLIST; do
+                    print "\""$USER"\")" >> $Tmp
+                    print "cuu -a ECD1 -c du -u "$USER";;" >> $Tmp
+               done
+               print "\"Exit\") break;;" >> $Tmp
+               print "esac" >> $Tmp
+               print "done" >> $Tmp
+               chmod 777 $Tmp
+               $Tmp
+fi
+
+
 if [ "$COMMAND" == "CREATEGROUP" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING"   "Group not specified"
@@ -742,7 +769,7 @@ if [ "$COMMAND" == "DETACHUSERPOLICIES" ] ; then
 fi
 if [ "$COMMAND" == "ATTACHPOLICYTOALLUSERS" ] ; then
                assertACCOUNTandTHING "Policy-ARN"
-               buildUSERLIST()
+               buildUSERLIST $ACCOUNT
                for USER in $USERLIST; do
                     policyATTACH $THING
                done
