@@ -20,7 +20,11 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
           Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS
           Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
           ----------------------------------------------------------------------------------------------
+Quick Menus
+     dum    describeusermenu         -a            Interactive user menu, Describes users
+     ctm    cloudtrailmenu           -a            Interactive user menu, CloudTrail 48Hr Audit Report
 User Commands
+     du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
      lu     listusers                -a :PLIST:    List users" 
             deleteuser               -a -u         Delete the user
      du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
@@ -89,5 +93,5 @@ TIMEFACTOR=1                          ; In minutes
 </pre>
 <pre>
   
-Sun Jun  3 10:30:48 EDT 2018
+Sun Jun  3 10:34:38 EDT 2018
 </pre>
