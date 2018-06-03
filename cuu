@@ -106,6 +106,8 @@ usage(){
 # README.md End
 commandABBREVIATIONS() {
 	case "$COMMAND" in
+            CTM)                   COMMAND="CLOUDTRAILMENU" ;;
+            CTMENU)                COMMAND="CLOUDTRAILMENU" ;;
             DUMENU)                COMMAND="USERMENU" ;;
             UM)                    COMMAND="USERMENU" ;;
             DUM)                   COMMAND="USERMENU" ;;
@@ -641,7 +643,29 @@ if [ "$COMMAND" == "USERMENU" ] ; then
                print "case \$clean_menu in" >> $Tmp
                for USER in $USERLIST; do
                     print "\""$USER"\")" >> $Tmp
-                    print "cuu -a ECD1 -c du -u "$USER";;" >> $Tmp
+                    print "cuu -a "$ACCOUNT" -c du -u "$USER";;" >> $Tmp
+               done
+               print "\"Exit\") break;;" >> $Tmp
+               print "esac" >> $Tmp
+               print "done" >> $Tmp
+               chmod 777 $Tmp
+               $Tmp
+fi
+if [ "$COMMAND" == "CLOUDTRAILMENU" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               buildUSERLIST  $ACCOUNT
+               clean
+               print "PS3='Pick user, enter choice:'" > $Tmp
+               print -n "select clean_menu in " >> $Tmp
+               for USER in $USERLIST; do
+                    print -n "\""$USER"\" " >> $Tmp
+               done
+               print "\"Exit\"" >> $Tmp
+               print "do" >> $Tmp
+               print "case \$clean_menu in" >> $Tmp
+               for USER in $USERLIST; do
+                    print "\""$USER"\")" >> $Tmp
+                    print "cuu -B -E -T 24 -a "$ACCOUNT" -c cu -u "$USER";;" >> $Tmp
                done
                print "\"Exit\") break;;" >> $Tmp
                print "esac" >> $Tmp
