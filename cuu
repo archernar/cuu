@@ -42,17 +42,18 @@ usage(){
      print "      -Z  output iso time"
      print "      -i  interactive mode ('q' to quit)"
      print "      -c  command:"
-     print "          Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS"
-     print "          Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
+     print "          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS"
+     print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
      print "          ----------------------------------------------------------------------------------------------"
      print "Quick Menus"
      print "     dum    describeusermenu         -a            Interactive user menu, Describes users"
      print "     ctm    cloudtrailmenu           -a            Interactive user menu, CloudTrail 48Hr Audit Report"
      print "User Commands"
-     print "     du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
-     print "     lu     listusers                -a :PLIST:    List users" 
+     print "     du     describeusers            -a :PL:       List users and their attached groups and policies" 
+     print "     lu     listusers                -a :PL:       List users" 
+     print "     lu2    listusers2               -a :PL:       List users simple form" 
      print "            deleteuser               -a -u         Delete the user"
-     print "     du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
+     print "     du     describeusers            -a :PL:       List users and their attached groups and policies" 
      print "            createuser               -a -u -p      Creates with no privledges"
      print "            createadminuser          -a -u -p      Creates a user with Administor Access"
      print "            createreadonlyuser       -a -u -p      Creates a user with Read Only"
@@ -92,15 +93,15 @@ usage(){
      print "     vpc2   createvpc-2subnets       -a -r         Creates an internet accessible VPC with Pub\Priv Subnets"
      print "            deletevpc             -a -r -t <vpc>   Deletes a VPC (-t vpcid)"
      print "CloudTrail Commands"
-     print "     ca     cloudtrail-active        -a -T         Lists active users in time window"
-     print "     cu     cloudtrail-user          -a -u -T      Lists user activity in time window"
-     print "     cz     cloudtrail-allusers      -a -T         Runs cloudtrail-users for all users"
-     print "     cw     cloudtrail-watch         -T            Runs cloudtrail-users for each profile in PROFILELIST"
+     print "     ca     cloudtrail-active     -a -T         Lists active users in time window"
+     print "     cu     cloudtrail-user       -a -T -u :UL: Lists user activity in time window"
+     print "     cz     cloudtrail-allusers   -a -T         Runs cloudtrail-users for all users"
+     print "     cw     cloudtrail-watch      -T            Runs cloudtrail-users for each profile in PROFILELIST"
      print "                                                   on the WATCHUSER in ~/.cuu.txt"
      print "                                                   -T specifies time window in hour"
      print "Specific Policy Commands"
-     print "            iamuserchangepassword-add    -a -u :ULIST: Adds Policy"
-     print "            iamuserchangepassword-remove -a -u :ULIST: Removes Policy"
+     print "            iamuserchangepassword-add    -a -u :UL: Adds Policy"
+     print "            iamuserchangepassword-remove -a -u :UL: Removes Policy"
      print "Other"
      print "            time                     -T            Print time window"
      print ""
@@ -134,6 +135,7 @@ commandABBREVIATIONS() {
                                    ;;
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
             LU)                    COMMAND="LISTUSERS" ;;
+            LU2)                   COMMAND="LISTUSERS2" ;;
             DU)                    COMMAND="DESCRIBEUSERS" ;;
             DESCRIBEUSER)          COMMAND="DESCRIBEUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
@@ -198,10 +200,14 @@ wipeACCESSKEYS() {
 # ---------------------------------------------------------------------------------------------------------
 buildUSERLIST() {
           USERLIST=""
-          if [ "$USERNAME" == "" ] ; then
-              USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
+          if [ "$USERNAME" == "USERLIST" ] ; then
+               USERLIST=`cat userlist`
           else
-              USERLIST=$USERNAME
+               if [ "$USERNAME" == "" ] ; then
+                   USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
+               else
+                   USERLIST=$USERNAME
+               fi
           fi
 }
 groupREMOVE() {
@@ -250,7 +256,11 @@ policysetATTACH() {
 
 policyREMOVE() {
                assertACCOUNTandUSERNAME
-               LIST=$USERNAME
+               if [ "$USERNAME" == "USERLIST" ] ; then
+                   LIST=`cat userlist`
+               else
+                    LIST=$USERNAME
+               fi
                for USER in $LIST; do
                     print $USER $1
                     aws --profile $ACCOUNT iam detach-user-policy --policy-arn $1 --user-name $USER
@@ -259,7 +269,11 @@ policyREMOVE() {
 }
 policyATTACH() {
                assertACCOUNTandUSERNAME
-               LIST=$USERNAME
+               if [ "$USERNAME" == "USERLIST" ] ; then
+                   LIST=`cat userlist`
+               else
+                    LIST=$USERNAME
+               fi
                for USER in $LIST; do
                     print $USER $1
                     aws --profile $ACCOUNT iam attach-user-policy --policy-arn $1 --user-name $USER
@@ -719,6 +733,14 @@ if [ "$COMMAND" == "LISTUSERS" ] ; then
                done
                cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
+if [ "$COMMAND" == "LISTUSERS2" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM iam list-users --query "Users[*].[UserName]" >> $Tmp
+               done
+               cat $Tmp
+fi
 if [ "$COMMAND" == "USERMENU" ] ; then
                assert "$ACCOUNT" "Profile not specified"
                buildUSERLIST  $ACCOUNT
@@ -1121,10 +1143,18 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                assert "$USERNAME" "Username not specified"
                clean
                window | tee -a cuureport.txt
-               if [ "$USERNAME" == "ALL" ] ; then
-                 aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
+               if [ "$USERNAME" == "USERLIST" ] ; then
+                    rm -rf $Tmp  >/dev/null 2>&1
+                    LIST=`cat userlist`
+                    for USER in $LIST; do
+                      aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USER >> $Tmp
+                    done
                else
-                 aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                    if [ "$USERNAME" == "ALL" ] ; then
+                      aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
+                    else
+                      aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                    fi
                fi
                cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"

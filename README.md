@@ -17,17 +17,18 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -Z  output iso time
       -i  interactive mode ('q' to quit)
       -c  command:
-          Optional :ULIST: may specify a user, a list of users, or the special keyword ALLUSERS
-          Optional :PLIST: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
+          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
+          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
           ----------------------------------------------------------------------------------------------
 Quick Menus
      dum    describeusermenu         -a            Interactive user menu, Describes users
      ctm    cloudtrailmenu           -a            Interactive user menu, CloudTrail 48Hr Audit Report
 User Commands
-     du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
-     lu     listusers                -a :PLIST:    List users" 
+     du     describeusers            -a :PL:       List users and their attached groups and policies" 
+     lu     listusers                -a :PL:       List users" 
+     lu2    listusers2               -a :PL:       List users simple form" 
             deleteuser               -a -u         Delete the user
-     du     describeusers            -a :PLIST:    List users and their attached groups and policies" 
+     du     describeusers            -a :PL:       List users and their attached groups and policies" 
             createuser               -a -u -p      Creates with no privledges
             createadminuser          -a -u -p      Creates a user with Administor Access
             createreadonlyuser       -a -u -p      Creates a user with Read Only
@@ -67,15 +68,15 @@ VPC and EC2 Commands
      vpc2   createvpc-2subnets       -a -r         Creates an internet accessible VPC with Pub\Priv Subnets
             deletevpc             -a -r -t <vpc>   Deletes a VPC (-t vpcid)
 CloudTrail Commands
-     ca     cloudtrail-active        -a -T         Lists active users in time window
-     cu     cloudtrail-user          -a -u -T      Lists user activity in time window
-     cz     cloudtrail-allusers      -a -T         Runs cloudtrail-users for all users
-     cw     cloudtrail-watch         -T            Runs cloudtrail-users for each profile in PROFILELIST
+     ca     cloudtrail-active     -a -T         Lists active users in time window
+     cu     cloudtrail-user       -a -T -u :UL: Lists user activity in time window
+     cz     cloudtrail-allusers   -a -T         Runs cloudtrail-users for all users
+     cw     cloudtrail-watch      -T            Runs cloudtrail-users for each profile in PROFILELIST
                                                    on the WATCHUSER in ~/.cuu.txt
                                                    -T specifies time window in hour
 Specific Policy Commands
-            iamuserchangepassword-add    -a -u :ULIST: Adds Policy
-            iamuserchangepassword-remove -a -u :ULIST: Removes Policy
+            iamuserchangepassword-add    -a -u :UL: Adds Policy
+            iamuserchangepassword-remove -a -u :UL: Removes Policy
 Other
             time                     -T            Print time window
 Note: Abbreviations are applied to output fields to limit line length
@@ -102,5 +103,5 @@ IGWID=                                ; Internet Gateway ID
 </pre>
 <pre>
   
-Tue Jun  5 16:09:05 EDT 2018
+Tue Jun  5 17:57:39 EDT 2018
 </pre>
