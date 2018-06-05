@@ -64,7 +64,8 @@ VPC and EC2 Commands
             ec2                      -a            List instances and securitygroups
             ec2-sg                   -a            Security groups detail listing
             ec2-sgsum                -a            Security groups summary listing (incl. empty SGs)
-     vpc2   createvpc-2subnets       -a            Creates an internet accessible VPC with Pub\Priv Subnets
+     vpc2   createvpc-2subnets       -a -r         Creates an internet accessible VPC with Pub\Priv Subnets
+            deletevpc             -a -r -t <vpc>   Deletes a VPC (-t vpcid)
 CloudTrail Commands
      ca     cloudtrail-active        -a -T         Lists active users in time window
      cu     cloudtrail-user          -a -u -T      Lists user activity in time window
@@ -101,5 +102,5 @@ IGWID=                                ; Internet Gateway ID
 </pre>
 <pre>
   
-Tue Jun  5 11:05:34 EDT 2018
+Tue Jun  5 16:09:05 EDT 2018
 </pre>

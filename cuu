@@ -89,7 +89,8 @@ usage(){
      print "            ec2                      -a            List instances and securitygroups"
      print "            ec2-sg                   -a            Security groups detail listing"
      print "            ec2-sgsum                -a            Security groups summary listing (incl. empty SGs)"
-     print "     vpc2   createvpc-2subnets       -a            Creates an internet accessible VPC with Pub\Priv Subnets"
+     print "     vpc2   createvpc-2subnets       -a -r         Creates an internet accessible VPC with Pub\Priv Subnets"
+     print "            deletevpc             -a -r -t <vpc>   Deletes a VPC (-t vpcid)"
      print "CloudTrail Commands"
      print "     ca     cloudtrail-active        -a -T         Lists active users in time window"
      print "     cu     cloudtrail-user          -a -u -T      Lists user activity in time window"
@@ -464,20 +465,66 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
 # arn:aws:iam::aws:policy/AWSCodeCommitPowerUser
+# aws --profile $ACCOUNT --output json --region $REGION ec2 describe-vpcs
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
+     assert "$THING"    "VPC ID not specified"
+
      NOTHING=0
 fi
+
+if [ "$COMMAND" == "DELETEVPC" ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$REGION"   "Region not specified"
+     assert "$THING"    "VPC ID not specified"
+     VPCID=$THING
+     confirm
+
+     IGWID=`aws --profile $ACCOUNT --output text --region $REGION ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPCID" --query "InternetGateways[].InternetGatewayId"`
+     print "IGW   "$IGWID
+
+     RTLIST=`aws  --profile $ACCOUNT --region $REGION --output text ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPCID" "Name=association.main,Values=false" --query "RouteTables[].RouteTableId"`
+     print "RT    "$RTLIST
+
+     LIST=`aws --profile $ACCOUNT --region $REGION --output text ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPCID" --query "SecurityGroups[].GroupId"`
+     print $LIST
+     for ITEM in $LIST; do
+          aws --profile $ACCOUNT --output json --region $REGION ec2 delete-security-group --group-id $ITEM >/dev/null 2>&1
+     done
+     LIST=""
+
+
+     LIST=`aws --profile $ACCOUNT --region $REGION --output text ec2 describe-subnets --filters "Name=vpc-id,Values=$VPCID" --query "Subnets[*].SubnetId"`
+     for ITEM in $LIST; do
+          aws --profile $ACCOUNT --output text --region $REGION ec2 delete-subnet --subnet-id $ITEM
+     done
+     LIST=""
+
+     LIST=`aws --profile $ACCOUNT --region $REGION ec2 describe-route-tables --output text --filters "Name=vpc-id,Values=$VPCID" "Name=association.main,Values=false" --query "RouteTables[*].Associations[*].RouteTableAssociationId"`
+     for ITEM in $LIST; do
+          aws --profile $ACCOUNT --output json --region $REGION ec2 disassociate-route-table  --association-id $ITEM
+     done
+     LIST=""
+
+     aws --profile $ACCOUNT --output json --region $REGION ec2 delete-route-table --route-table-id $RTLIST
+     aws --profile $ACCOUNT --output json --region $REGION ec2 detach-internet-gateway --internet-gateway-id $IGWID --vpc-id $VPCID
+     aws --profile $ACCOUNT --output json --region $REGION ec2 delete-internet-gateway --internet-gateway-id $IGWID
+     aws --profile $ACCOUNT --output json --region $REGION ec2 delete-vpc --vpc-id $VPCID
+
+     NOTHING=0
+fi
+
+
 if [ "$COMMAND" == "CREATEVPC-2SUBNETS" ] ; then
      assert "$ACCOUNT"  "Profile not specified"
+     assert "$REGION"   "Region not specified"
      assert "$MYCIDR"   "My CIDR not specified"
-     ACCOUNT=ECD1
-     REGION=us-east-2
      THIS=""
      SUBNET1=""
      SUBNET2=""
      IGWID=""
+     confirm
 
      # aws        --profile $ACCOUNT --region $REGION --output text ec2 describe-vpcs           --query "Vpcs[*].[VpcId,CidrBlock]"
      VPCID=`aws   --profile $ACCOUNT --region $REGION               ec2 create-vpc              --cidr-block 10.0.0.0/16 --query "Vpc.VpcId"`
@@ -548,7 +595,8 @@ if [ "$COMMAND" == "UPDATEPOLICY" ] ; then
                for ITEM in $LIST; do
                     aws --profile $ACCOUNT iam delete-policy-version --policy-arn $ARN --version-id $ITEM
                done
-               aws --profile $ACCOUNT iam create-policy-version  --policy-arn $ARN --policy-document $DOCUMENT --set-as-default
+               gawk -v A=$THIS -f thisaccount.awk $DOCUMENT > $Tmp
+               aws --profile $ACCOUNT iam create-policy-version  --policy-arn $ARN --policy-document file://$DOCUMENT --set-as-default
                aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId,CreateDate,IsDefaultVersion]" 
                THIS=""
                ARN=""
@@ -570,7 +618,7 @@ if [ "$COMMAND" == "GETALLPOLICIES" ] ; then
                     gARN=`print "$ITEM" | gawk -F, '{print $2}'`
                     gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
                     print "\nUpdate with:"
-                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D file://"
+                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D <file>"
                     print $gARNFILE
                     print "this.json"
                     aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER | jq .[].Document.Statement > $gARNFILE
