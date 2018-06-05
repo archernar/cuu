@@ -60,10 +60,11 @@ Group Commands
             listusergroups           -a -u         Lists groups associated with user
             addusertogroup           -a -u -t      Add user to a group (-t)
             removeuserfromallgroups  -a -u         Remove the user from attach attached groups
-EC2 Commands
+VPC and EC2 Commands
             ec2                      -a            List instances and securitygroups
             ec2-sg                   -a            Security groups detail listing
             ec2-sgsum                -a            Security groups summary listing (incl. empty SGs)
+     vpc2   createvpc-2subnets       -a            Creates an internet accessible VPC with Pub\Priv Subnets
 CloudTrail Commands
      ca     cloudtrail-active        -a -T         Lists active users in time window
      cu     cloudtrail-user          -a -u -T      Lists user activity in time window
@@ -90,8 +91,15 @@ POLICYLIST=
 GROUPREMOVE=
 POLICYADD=
 TIMEFACTOR=1                          ; In minutes
+MYCIDR=                               ; My CIDR
+AMI=                                  ; AMI for instances
+SG=                                   ; Security Group for instances
+VPCID=                                ; VPC for instances
+SUBNET1=                              ; Public Subnet
+SUBNET2=                              ; Private Subnet
+IGWID=                                ; Internet Gateway ID
 </pre>
 <pre>
   
-Sun Jun  3 10:35:10 EDT 2018
+Tue Jun  5 10:53:06 EDT 2018
 </pre>
