@@ -199,27 +199,27 @@ wipeACCESSKEYS() {
 }
 # ---------------------------------------------------------------------------------------------------------
 buildUSERLIST() {
-          USERLIST=""
-          if [ "$USERNAME" == "USERLIST" ] ; then
-               USERLIST=`cat userlist`
+     USERLIST=""
+     if [ "$USERNAME" == "USERLIST" ] ; then
+          USERLIST=`cat userlist`
+     else
+          if [ "$USERNAME" == "" ] ; then
+              USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
           else
-               if [ "$USERNAME" == "" ] ; then
-                   USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
-               else
-                   USERLIST=$USERNAME
-               fi
+              USERLIST=$USERNAME
           fi
+     fi
 }
 groupREMOVE() {
-               aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
+     aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
 }
 optionalGROUPADD() {
-          if [ "$THING" != "" ] ; then
-                aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
-          fi
+     if [ "$THING" != "" ] ; then
+           aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
+     fi
 }
 groupADD() {
-               aws --profile $ACCOUNT iam add-user-to-group      --user-name $USERNAME --group-name $1
+     aws --profile $ACCOUNT iam add-user-to-group      --user-name $USERNAME --group-name $1
 }
 groupsetREMOVE() {
                THISSET=`cat groupset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
@@ -246,12 +246,12 @@ policysetREMOVE() {
                THISSET=""
 }
 policysetATTACH() {
-               THISSET=`cat policyset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
-               confirmset
-               for ITEM in $THISSET; do
-                    policyATTACH $ITEM
-               done
-               THISSET=""
+     THISSET=`cat policyset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
+     confirmset
+     for ITEM in $THISSET; do
+          policyATTACH $ITEM
+     done
+     THISSET=""
 }
 
 policyREMOVE() {
@@ -268,17 +268,17 @@ policyREMOVE() {
                LIST=""
 }
 policyATTACH() {
-               assertACCOUNTandUSERNAME
-               if [ "$USERNAME" == "USERLIST" ] ; then
-                   LIST=`cat userlist`
-               else
-                    LIST=$USERNAME
-               fi
-               for USER in $LIST; do
-                    print $USER $1
-                    aws --profile $ACCOUNT iam attach-user-policy --policy-arn $1 --user-name $USER
-               done
-               LIST=""
+     assertACCOUNTandUSERNAME
+     if [ "$USERNAME" == "USERLIST" ] ; then
+         LIST=`cat userlist`
+     else
+         LIST=$USERNAME
+     fi
+     for USER in $LIST; do
+          print $USER $1
+          aws --profile $ACCOUNT iam attach-user-policy --policy-arn $1 --user-name $USER
+     done
+     LIST=""
 }
 
 clean() {
