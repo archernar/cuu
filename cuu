@@ -360,6 +360,7 @@ POLICYADD=""
 MYCIDR="" 
 VPCID="" 
 IGWID="" 
+AMI="" 
 REGION="us-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -375,6 +376,7 @@ VPCID=`gawk -v  w=VPCID -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if (
 IGWID=`gawk -v  w=IGWID -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 SUBNET1=`gawk -v  w=SUBNET1 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 SUBNET2=`gawk -v  w=SUBNET2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+AMI=`gawk -v  w=AMI -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 
 DETAILFLAG=""
 SHOWRAW="no" 
