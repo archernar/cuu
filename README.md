@@ -59,8 +59,10 @@ Policy Commands
 Group Commands
      lg     listgroups               -a            List all groups defined" 
             listusergroups           -a -u         Lists groups associated with user
-            addusertogroup           -a -u -t      Add user to a group (-t)
-            removeuserfromallgroups  -a -u         Remove the user from attach attached groups
+            listusersingroup         -a -u -t      Lists the users in  group (-t)
+            addtogroup               -a -u -t      Add user to a group (-t)
+            removerfromgroup         -a -u -t      Remove user group (-t)
+            removerfromallgroups     -a -u         Remove user from all groups
 VPC and EC2 Commands
             ec2                      -a            List instances and securitygroups
             ec2-sg                   -a            Security groups detail listing
@@ -103,5 +105,5 @@ IGWID=                                ; Internet Gateway ID
 </pre>
 <pre>
   
-Tue Jun  5 18:05:13 EDT 2018
+Wed Jun  6 16:39:31 EDT 2018
 </pre>
