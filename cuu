@@ -81,6 +81,8 @@ usage(){
      print "            listuserpolicies         -a -u"
      print "            detachuserpolicies       -a -u"
      print "            attachpolicytouser       -a -u -t      Specify the policy arn (-t)"
+     print "Role Commands"
+     print "     lr     listroles                -a            List all roles defined" 
      print "Group Commands"
      print "     lg     listgroups               -a            List all groups defined" 
      print "            listusergroups           -a -u         Lists groups associated with user"
@@ -114,6 +116,7 @@ usage(){
 # README.md End
 commandABBREVIATIONS() {
 	case "$COMMAND" in
+            LR)                    COMMAND="LISTROLES" ;;
             VPC2)                  COMMAND="CREATEVPC-2SUBNETS" ;;
             CTM)                   COMMAND="CLOUDTRAILMENU" ;;
             CTMENU)                COMMAND="CLOUDTRAILMENU" ;;
@@ -210,6 +213,19 @@ buildUSERLIST() {
               USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
           else
               USERLIST=$USERNAME
+          fi
+     fi
+}
+buildPROFILELIST() {
+     PROFILELIST=""
+     if [ "$ACCOUNT" == "ACCOUNTLIST" ] ; then
+          PROFILELIST=`cat profilelist`
+     else
+          if [ "$ACCOUNT" == "" ] ; then
+              confirmprompt "You have selected all the accounts from ~/.cuu.txt"
+              PROFILELIST=`gawk -v  w=PROFILELIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+          else
+              PROFILELIST=$ACCOUNT
           fi
      fi
 }
@@ -627,7 +643,7 @@ fi
 if [ "$COMMAND" == "GETPOLICY" ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
-     LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
+     LIST=`$AWS iam list-policies --scope All --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
      cat $Tmp
 fi
 
@@ -758,33 +774,33 @@ fi
 # These commands operate on accounts
 # ----------------------------------------------------
 if [ "$COMMAND" == "LISTROLES" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
+               buildPROFILELIST
                clean
-               for ITEM in $ACCOUNT; do
-                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" >> $Tmp
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
                done
-               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+               cat $Tmp | column -t
 fi
 if [ "$COMMAND" == "LISTUSERS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
+               buildPROFILELIST
                clean
-               for ITEM in $ACCOUNT; do
-                    aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" >> $Tmp
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
                done
-               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+               cat $Tmp | column -t
 fi
 if [ "$COMMAND" == "LISTUSERS2" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
+               buildPROFILELIST
                clean
-               for ITEM in $ACCOUNT; do
+               for ITEM in $PROFILELIST; do
                     aws --profile $ITEM iam list-users --query "Users[*].[UserName]" >> $Tmp
                done
                cat $Tmp
 fi
 if [ "$COMMAND" == "LISTUSERS-JSON" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
+               buildPROFILELIST
                clean
-               for ITEM in $ACCOUNT; do
+               for ITEM in $PROFILELIST; do
                     aws --profile $ITEM iam list-users --query "Users[*].[Arn]" >> $Tmp
                done
                cat $Tmp | gawk '

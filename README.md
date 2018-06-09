@@ -56,6 +56,8 @@ Policy Commands
             listuserpolicies         -a -u
             detachuserpolicies       -a -u
             attachpolicytouser       -a -u -t      Specify the policy arn (-t)
+Role Commands
+     lr     listroles                -a            List all roles defined" 
 Group Commands
      lg     listgroups               -a            List all groups defined" 
             listusergroups           -a -u         Lists groups associated with user
@@ -106,5 +108,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Sat Jun  9 15:58:43 EDT 2018
+Sat Jun  9 16:19:45 EDT 2018
 </pre>
