@@ -395,16 +395,19 @@ IGWID=`gawk -v  w=IGWID -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if (
 SUBNET1=`gawk -v  w=SUBNET1 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 SUBNET2=`gawk -v  w=SUBNET2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 AMI=`gawk -v  w=AMI -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 
 DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
 BIGNAMES="no" 
 BIGEVENTS="no" 
+SUMMARY="no" 
 
-while getopts "jr:Ff:D:dn:c:Ru:a:p:t:ihbZBET:" arg
+while getopts "jr:Ff:D:dn:c:Ru:a:p:t:ihbSZBET:" arg
 do
 	case $arg in
+            S) SUMMARY="yes" ;;
             B) BIGNAMES="yes" ;;
             E) BIGEVENTS="yes" ;;
             Z) ISOTIME="yes" ;;
@@ -464,6 +467,7 @@ commandABBREVIATIONS
 # -- AWS CLI command line prefix setup
 # -----------------------------------------------------------------------------------------------------------------------
 AWS="aws --profile $ACCOUNT --region $REGION --output text "
+AWSJ="aws --profile $ACCOUNT --region $REGION --output json "
 
 if [ "$TIMEFACTOR" == "" ] ; then
      TIMEFACTOR=24
@@ -490,9 +494,21 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 
 if [ "$COMMAND" == "TEST" ] ; then
-     AWS="aws --profile $ACCOUNT --region $REGION --output text "
-     LIST=`$AWS iam list-users --query "Users[*].[UserName,CreateDate,Arn]"`
-     print $LIST
+     LIST=`$AWS ec2 describe-vpcs --query "Vpcs[].VpcId"`
+     for ITEM in $LIST; do
+          print $ITEM
+          print "-------------------------------------------"
+          $AWS ec2 describe-security-groups --filters "Name=vpc-id,Values=$ITEM" --query "SecurityGroups[].GroupId"
+     done
+fi
+if [ "$COMMAND" == "TEST2" ] ; then
+     IID=`$AWS ec2 run-instances --image-id $AMI --count 1 --instance-type t2.micro --key-name $KP --security-group-ids $SGID --subnet-id $SUBNET1 --query "Instances[0].InstanceId"`
+     IP=`$AWS  ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].PublicIpAddress"`
+     $AWS ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].State.Name"
+     print $IID
+     print $IP
+     print $AWS" ec2 terminate-instances --instance-id "$IID
+     print "ssh -i "$KP" ec2-user@"$IP
      NOTHING=0
 fi
 
@@ -503,13 +519,13 @@ if [ "$COMMAND" == "DELETEVPC" ] ; then
      VPCID=$THING
      confirm
 
-     IGWID=`aws --profile $ACCOUNT --output text --region $REGION ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPCID" --query "InternetGateways[].InternetGatewayId"`
+     IGWID=`$AWS ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPCID" --query "InternetGateways[].InternetGatewayId"`
      print "IGW   "$IGWID
 
-     RTLIST=`aws  --profile $ACCOUNT --region $REGION --output text ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPCID" "Name=association.main,Values=false" --query "RouteTables[].RouteTableId"`
+     RTLIST=`$AWS ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPCID" "Name=association.main,Values=false" --query "RouteTables[].RouteTableId"`
      print "RT    "$RTLIST
 
-     LIST=`aws --profile $ACCOUNT --region $REGION --output text ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPCID" --query "SecurityGroups[].GroupId"`
+     LIST=`$AWS ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPCID" --query "SecurityGroups[].GroupId"`
      print $LIST
      for ITEM in $LIST; do
           aws --profile $ACCOUNT --output json --region $REGION ec2 delete-security-group --group-id $ITEM >/dev/null 2>&1
@@ -517,22 +533,22 @@ if [ "$COMMAND" == "DELETEVPC" ] ; then
      LIST=""
 
 
-     LIST=`aws --profile $ACCOUNT --region $REGION --output text ec2 describe-subnets --filters "Name=vpc-id,Values=$VPCID" --query "Subnets[*].SubnetId"`
+     LIST=`$AWS ec2 describe-subnets --filters "Name=vpc-id,Values=$VPCID" --query "Subnets[*].SubnetId"`
      for ITEM in $LIST; do
           aws --profile $ACCOUNT --output text --region $REGION ec2 delete-subnet --subnet-id $ITEM
      done
      LIST=""
 
-     LIST=`aws --profile $ACCOUNT --region $REGION ec2 describe-route-tables --output text --filters "Name=vpc-id,Values=$VPCID" "Name=association.main,Values=false" --query "RouteTables[*].Associations[*].RouteTableAssociationId"`
+     LIST=`$AWS ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPCID" "Name=association.main,Values=false" --query "RouteTables[*].Associations[*].RouteTableAssociationId"`
      for ITEM in $LIST; do
           aws --profile $ACCOUNT --output json --region $REGION ec2 disassociate-route-table  --association-id $ITEM
      done
      LIST=""
 
-     aws --profile $ACCOUNT --output json --region $REGION ec2 delete-route-table --route-table-id $RTLIST
-     aws --profile $ACCOUNT --output json --region $REGION ec2 detach-internet-gateway --internet-gateway-id $IGWID --vpc-id $VPCID
-     aws --profile $ACCOUNT --output json --region $REGION ec2 delete-internet-gateway --internet-gateway-id $IGWID
-     aws --profile $ACCOUNT --output json --region $REGION ec2 delete-vpc --vpc-id $VPCID
+     $AWSJ ec2 delete-route-table --route-table-id $RTLIST
+     $AWSJ ec2 detach-internet-gateway --internet-gateway-id $IGWID --vpc-id $VPCID
+     $AWSJ ec2 delete-internet-gateway --internet-gateway-id $IGWID
+     $AWSJ ec2 delete-vpc --vpc-id $VPCID
 
      NOTHING=0
 fi
@@ -548,18 +564,18 @@ if [ "$COMMAND" == "CREATEVPC-2SUBNETS" ] ; then
      IGWID=""
      confirm
 
-     # $AWS        --profile $ACCOUNT --region $REGION --output text ec2 describe-vpcs           --query "Vpcs[*].[VpcId,CidrBlock]"
+     # $AWS        ec2 describe-vpcs           --query "Vpcs[*].[VpcId,CidrBlock]"
      VPCID=`$AWS   ec2 create-vpc              --cidr-block 10.0.0.0/16 --query "Vpc.VpcId"`
      SUBNET1=`$AWS ec2 create-subnet           --vpc-id $VPCID --cidr-block 10.0.0.0/24 --query "Subnet.SubnetId"`
      SUBNET2=`$AWS ec2 create-subnet           --vpc-id $VPCID --cidr-block 10.0.1.0/24 --query "Subnet.SubnetId"`
      IGWID=`$AWS   ec2 create-internet-gateway --query "InternetGateway.InternetGatewayId"`
-     $AWS          --profile $ACCOUNT --region $REGION               ec2 attach-internet-gateway --vpc-id $VPCID --internet-gateway-id $IGWID > $Tmp
-     THIS=`$AWS    --profile $ACCOUNT --region $REGION --output text ec2 create-route-table      --vpc-id $VPCID --query "RouteTable.RouteTableId"`
-     $AWS          --profile $ACCOUNT --region $REGION               ec2 create-route            --route-table-id $THIS --destination-cidr-block 0.0.0.0/0 --gateway-id $IGWID > $Tmp
-     ASSID=`$AWS   --profile $ACCOUNT --region $REGION --output text ec2 associate-route-table   --subnet-id $SUBNET1 --route-table-id $THIS --query "AssociationId"`
-     $AWS          --profile $ACCOUNT --region $REGION               ec2 modify-subnet-attribute --subnet-id $SUBNET1 --map-public-ip-on-launch > $Tmp
-     SGID=`$AWS    --profile $ACCOUNT --region $REGION --output text ec2 create-security-group   --group-name SSHAccess --description "SG for SSH access" --vpc-id $VPCID --query "GroupId"`
-     $AWS          --profile $ACCOUNT --region $REGION --output json ec2 authorize-security-group-ingress --group-id $SGID --protocol tcp --port 22 --cidr $MYCIDR > $Tmp
+     $AWS          ec2 attach-internet-gateway --vpc-id $VPCID --internet-gateway-id $IGWID > $Tmp
+     THIS=`$AWS    ec2 create-route-table      --vpc-id $VPCID --query "RouteTable.RouteTableId"`
+     $AWS          ec2 create-route            --route-table-id $THIS --destination-cidr-block 0.0.0.0/0 --gateway-id $IGWID > $Tmp
+     ASSID=`$AWS   ec2 associate-route-table   --subnet-id $SUBNET1 --route-table-id $THIS --query "AssociationId"`
+     $AWS          ec2 modify-subnet-attribute --subnet-id $SUBNET1 --map-public-ip-on-launch > $Tmp
+     SGID=`$AWS    ec2 create-security-group   --group-name SSHAccess --description "SG for SSH access" --vpc-id $VPCID --query "GroupId"`
+     $AWSJ         ec2 authorize-security-group-ingress --group-id $SGID --protocol tcp --port 22 --cidr $MYCIDR > $Tmp
      print "VPC ID      "$VPCID
      print "VPC SUBNET1 "$SUBNET1
      print "VPC SUBNET2 "$SUBNET1
@@ -584,12 +600,20 @@ fi
 if [ "$COMMAND" == "CREATEKEY" ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Key Name not specified"
-     aws --profile $ACCOUNT --region $REGION ec2 create-key-pair --key-name $THING --query 'KeyMaterial' --output text > $THING.pem
+     $AWS ec2 create-key-pair --key-name $THING --query 'KeyMaterial' > $THING.pem
      chmod 400 $THING.pem
 fi
 if [ "$COMMAND" == "TIME" ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
+fi
+if [ "$COMMAND" == "WORLD" ] ; then
+                    assert "$ACCOUNT"  "Profile not specified"
+                    LIST=`$AWS ec2 describe-regions --query "Regions[*].RegionName"`
+                    for ITEM in $LIST; do
+                        print "cuu -T 100 -c cu -u "$USERNAME" -r "$ITEM" -a "$ACCOUNT
+                    done
+
 fi
 if [ "$COMMAND" == "WWEC2" ] ; then
                     assert "$ACCOUNT"  "Profile not specified"
@@ -756,6 +780,15 @@ if [ "$COMMAND" == "LISTUSERS2" ] ; then
                     aws --profile $ITEM iam list-users --query "Users[*].[UserName]" >> $Tmp
                done
                cat $Tmp
+fi
+if [ "$COMMAND" == "LISTUSERS-JSON" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM iam list-users --query "Users[*].[Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk '
+               BEGIN {print "[";c="";} { printf "%s", c "\"" $0 "\"";c=",\n"; } END {print "\n]"}'
 fi
 if [ "$COMMAND" == "USERMENU" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -1172,9 +1205,13 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                       aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                     fi
                fi
-               cat $Tmp | gawk  -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
+               cat $Tmp | gawk  -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
+                    if (match(SMY,/^yes/) != 0) {
+                         BE="yes"
+                         BN="yes"
+                    }
                     sz=$0;
                     timepre=jget($0, "^.*[\"]eventTime[\"]:","NA");
                     ip=  jget($0, "^.*[\"]sourceIPAddress[\"]:","NA");
@@ -1317,7 +1354,10 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                              en=cutpad(en,12);
                          }
                          else {
-                             en=cutpad(en,18);
+                             NOTHING=0
+                             if (match(SMY,/^no/) > 0) {
+                                  en=cutpad(en,18);
+                             }
                          }
 
                          if (match(BN,/no/) > 0) {
@@ -1338,10 +1378,22 @@ if [ "$COMMAND" == "CLOUDTRAIL-USER" ] ; then
                     if (length(resp) > 256) resp=substr(resp,1,256) "(TRUNCATED)";
                     # print "-"
                     # print "acct","time","name","eventtype","eventname","req","resp"
-                    print trim(ACCT), time, name, ty, en, "IN-" req
-                    print trim(ACCT), time, name, ty, en, "OU-" resp
+                    if (match(SMY,/^yes/) != 0) {
+                         print trim(ACCT), time, name, en
+                    }
+                    else {
+                         print trim(ACCT), REG, time, name, ty, en, "IN-" req
+                         print trim(ACCT), REG, time, name, ty, en, "OU-" resp
+                    }
                     if (match(RAW,/^yes/) != 0) print $0 "\n\n"
-               }'  | sort -k 4,4 -k 3,3 | tee -a cuureport.txt
+               }'  
+#                > $Tmp
+# 
+#                if [ "$SUMMARY" == "yes" ] ; then
+#                     cat $Tmp | tee -a cuureport.txt
+#                else
+#                     cat $Tmp | sort -k 5,5 -k 4,4 | tee -a cuureport.txt
+#                fi
 fi
 
 if [ "$LOOP" == "yes" ] ; then

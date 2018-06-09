@@ -102,8 +102,9 @@ VPCID=                                ; VPC for instances
 SUBNET1=                              ; Public Subnet
 SUBNET2=                              ; Private Subnet
 IGWID=                                ; Internet Gateway ID
+KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Wed Jun  6 16:39:31 EDT 2018
+Sat Jun  9 15:58:43 EDT 2018
 </pre>
