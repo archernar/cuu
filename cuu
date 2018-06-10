@@ -203,6 +203,17 @@ wipeACCESSKEYS() {
      ACCESSKEYLIST=""
 }
 # ---------------------------------------------------------------------------------------------------------
+bCmd=0
+COMMANDPROC() {
+     bCmd=0
+     if [ "$COMMAND" == $1 ] ; then
+         bCmd=1
+     else
+         bCmd=0
+     fi
+     return bCmd
+}
+
 buildUSERLIST() {
      USERLIST=""
      if [ "$USERNAME" == "USERLIST" ] ; then
@@ -509,15 +520,19 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # aws --profile $ACCOUNT --output json --region $REGION ec2 describe-vpcs
 # -----------------------------------------------------------------------------------------------------------------------
 
-if [ "$COMMAND" == "TEST" ] ; then
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: TEST Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "TEST"; if [ $bCmd -gt 0 ] ; then
      LIST=`$AWS ec2 describe-vpcs --query "Vpcs[].VpcId"`
      for ITEM in $LIST; do
           print $ITEM
           print "-------------------------------------------"
           $AWS ec2 describe-security-groups --filters "Name=vpc-id,Values=$ITEM" --query "SecurityGroups[].GroupId"
      done
+     NOTHING=0
 fi
-if [ "$COMMAND" == "TEST2" ] ; then
+COMMANDPROC "TEST2"; if [ $bCmd -gt 0 ] ; then
      IID=`$AWS ec2 run-instances --image-id $AMI --count 1 --instance-type t2.micro --key-name $KP --security-group-ids $SGID --subnet-id $SUBNET1 --query "Instances[0].InstanceId"`
      IP=`$AWS  ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].PublicIpAddress"`
      $AWS ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].State.Name"
@@ -528,7 +543,10 @@ if [ "$COMMAND" == "TEST2" ] ; then
      NOTHING=0
 fi
 
-if [ "$COMMAND" == "DELETEVPC" ] ; then
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: VPC Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "DELETEVPC"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
      assert "$THING"    "VPC ID not specified"
@@ -547,7 +565,6 @@ if [ "$COMMAND" == "DELETEVPC" ] ; then
           aws --profile $ACCOUNT --output json --region $REGION ec2 delete-security-group --group-id $ITEM >/dev/null 2>&1
      done
      LIST=""
-
 
      LIST=`$AWS ec2 describe-subnets --filters "Name=vpc-id,Values=$VPCID" --query "Subnets[*].SubnetId"`
      for ITEM in $LIST; do
@@ -569,8 +586,7 @@ if [ "$COMMAND" == "DELETEVPC" ] ; then
      NOTHING=0
 fi
 
-
-if [ "$COMMAND" == "CREATEVPC-2SUBNETS" ] ; then
+COMMANDPROC "CREATEVPC-2SUBNETS"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
      assert "$MYCIDR"   "My CIDR not specified"
@@ -601,6 +617,10 @@ if [ "$COMMAND" == "CREATEVPC-2SUBNETS" ] ; then
      NOTHING=0
 fi
 
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: PUBLISH Operations
+# -----------------------------------------------------------------------------------------------------------------------
 if [ "$COMMAND" == "PUBLISH" ] ; then
      assertfile cuureport.txt
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
@@ -619,10 +639,6 @@ if [ "$COMMAND" == "CREATEKEY" ] ; then
      $AWS ec2 create-key-pair --key-name $THING --query 'KeyMaterial' > $THING.pem
      chmod 400 $THING.pem
 fi
-if [ "$COMMAND" == "TIME" ] ; then
-     print "WINDOW START TIME  "$ISOAGO"  "$AGO
-     print "WINDOW END TIME    "$ISOANON"  "$ANON
-fi
 if [ "$COMMAND" == "WORLD" ] ; then
                     assert "$ACCOUNT"  "Profile not specified"
                     LIST=`$AWS ec2 describe-regions --query "Regions[*].RegionName"`
@@ -640,6 +656,9 @@ if [ "$COMMAND" == "WWEC2" ] ; then
                     done
 
 fi
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: POLICY Operations
+# -----------------------------------------------------------------------------------------------------------------------
 if [ "$COMMAND" == "GETPOLICY" ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
@@ -648,51 +667,51 @@ if [ "$COMMAND" == "GETPOLICY" ] ; then
 fi
 
 if [ "$COMMAND" == "UPDATEPOLICY-TEST" ] ; then
-               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               gawk -v A=$THIS -f thisaccount.awk $DOCUMENT | tee $Tmp
-               print "file://"$Tmp
-               THIS=""
+     THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     gawk -v A=$THIS -f thisaccount.awk $DOCUMENT | tee $Tmp
+     print "file://"$Tmp
+     THIS=""
 fi
 
 if [ "$COMMAND" == "UPDATEPOLICY" ] ; then
-               assert "$ACCOUNT"  "Profile not specified"
-               assert "$THING"    "Policy not specified"
-               asserte "$DOCUMENT" "Document not specified"
-               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               ARN="arn:aws:iam::"$THIS":policy/"$THING
-               LIST=`aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId]" |gawk -f skipfirst.awk`
-               for ITEM in $LIST; do
-                    aws --profile $ACCOUNT iam delete-policy-version --policy-arn $ARN --version-id $ITEM
-               done
-               gawk -v A=$THIS -f thisaccount.awk $DOCUMENT > $Tmp
-               aws --profile $ACCOUNT iam create-policy-version  --policy-arn $ARN --policy-document file://$Tmp --set-as-default
-               aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId,CreateDate,IsDefaultVersion]" 
-               THIS=""
-               ARN=""
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$THING"    "Policy not specified"
+     asserte "$DOCUMENT" "Document not specified"
+     THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     ARN="arn:aws:iam::"$THIS":policy/"$THING
+     LIST=`aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId]" |gawk -f skipfirst.awk`
+     for ITEM in $LIST; do
+          aws --profile $ACCOUNT iam delete-policy-version --policy-arn $ARN --version-id $ITEM
+     done
+     gawk -v A=$THIS -f thisaccount.awk $DOCUMENT > $Tmp
+     aws --profile $ACCOUNT iam create-policy-version  --policy-arn $ARN --policy-document file://$Tmp --set-as-default
+     aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId,CreateDate,IsDefaultVersion]" 
+     THIS=""
+     ARN=""
 fi
 if [ "$COMMAND" == "GETALLPOLICIES" ] ; then
-               assert "$ACCOUNT"  "Profile not specified"
-               if [ "$THING" == "" ] ; then
-                    LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp`
-               else 
-                    LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |egrep $THING |tee $Tmp`
-               fi
-               CT=`cat $Tmp | wc -l`
-               confirmprompt $CT" Policy Document(s) will be retrieved"
-               mkdir -p ./policies
-               for ITEM in $LIST; do
-                    gNAME=`print "$ITEM" | gawk -F, '{print $1}'`
-                    gVER=`print "$ITEM" | gawk -F, '{print $3}'`
-                    gFILE="./policies/"$ACCOUNT"___"$gNAME"___"$gVER
-                    gARN=`print "$ITEM" | gawk -F, '{print $2}'`
-                    gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
-                    print "\nUpdate with:"
-                    print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D <file>"
-                    print $gARNFILE
-                    print "this.json"
-                    aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER | jq .[].Document.Statement > $gARNFILE
-                    cp $gARNFILE this.json
-               done
+     assert "$ACCOUNT"  "Profile not specified"
+     if [ "$THING" == "" ] ; then
+          LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp`
+     else 
+          LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |egrep $THING |tee $Tmp`
+     fi
+     CT=`cat $Tmp | wc -l`
+     confirmprompt $CT" Policy Document(s) will be retrieved"
+     mkdir -p ./policies
+     for ITEM in $LIST; do
+          gNAME=`print "$ITEM" | gawk -F, '{print $1}'`
+          gVER=`print "$ITEM" | gawk -F, '{print $3}'`
+          gFILE="./policies/"$ACCOUNT"___"$gNAME"___"$gVER
+          gARN=`print "$ITEM" | gawk -F, '{print $2}'`
+          gARNFILE=`print "$ITEM" | gawk -F, '{gsub(/[/]/,"::::",$2);print "./policies/"$2}'`
+          print "\nUpdate with:"
+          print "cuu -a "$ACCOUNT" -c updatepolicy  -t "$gARN"   -D <file>"
+          print $gARNFILE
+          print "this.json"
+          aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER | jq .[].Document.Statement > $gARNFILE
+          cp $gARNFILE this.json
+     done
 fi
 if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
                assert "$ACCOUNT"  "Profile not specified"
@@ -718,160 +737,6 @@ if [ "$COMMAND" == "GETLOCALPOLICIES" ] ; then
                     aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER  > $gARNFILE
                     cp $gARNFILE this.json
                done
-fi
-# ----------------------------------------------------
-# Fundamental User Commands
-#       Create User, Change Password, Delete User
-# ----------------------------------------------------
-if [ "$COMMAND" == "CREATEADMINUSER" ] ; then
-               assertACCOUNTandUSERNAMEandPASSWORD
-               createUSER
-               policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
-               optionalGROUPADD
-fi
-if [ "$COMMAND" == "CREATEREADONLYUSER" ] ; then
-               assertACCOUNTandUSERNAMEandPASSWORD
-               createUSER
-               policyATTACH arn:aws:iam::aws:policy/ReadOnlyAccess
-               optionalGROUPADD
-fi
-if [ "$COMMAND" == "CREATEUSERNOKEY" ] ; then
-               assertACCOUNTandUSERNAMEandPASSWORD
-               createUSER
-               optionalGROUPADD
-fi
-if [ "$COMMAND" == "CREATEUSER" ] ; then
-               assertACCOUNTandUSERNAMEandPASSWORD
-               createUSER
-               optionalGROUPADD
-               createACCESSKEY
-fi
-if [ "$COMMAND" == "CHANGEPASSWORD" ] ; then
-               assertACCOUNTandUSERNAMEandPASSWORD
-               confirm
-               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
-fi
-if [ "$COMMAND" == "SCRAMPASSWORD" ] ; then
-               assertACCOUNTandUSERNAME
-               RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
-               confirm
-               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
-fi
-if [ "$COMMAND" == "DELETEUSER" ] ; then
-               assertACCOUNTandUSERNAME
-               wipeUSER
-               deleteUSER
-fi
-
-
-
-
-if [ "$COMMAND" == "ACCOUNTNUMBER" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
-fi
-# ----------------------------------------------------
-# These commands operate on accounts
-# ----------------------------------------------------
-if [ "$COMMAND" == "LISTROLES" ] ; then
-               buildPROFILELIST
-               clean
-               for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
-               done
-               cat $Tmp | column -t
-fi
-if [ "$COMMAND" == "LISTUSERS" ] ; then
-               buildPROFILELIST
-               clean
-               for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
-               done
-               cat $Tmp | column -t
-fi
-if [ "$COMMAND" == "LISTUSERS2" ] ; then
-               buildPROFILELIST
-               clean
-               for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM iam list-users --query "Users[*].[UserName]" >> $Tmp
-               done
-               cat $Tmp
-fi
-if [ "$COMMAND" == "LISTUSERS-JSON" ] ; then
-               buildPROFILELIST
-               clean
-               for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM iam list-users --query "Users[*].[Arn]" >> $Tmp
-               done
-               cat $Tmp | gawk '
-               BEGIN {print "[";c="";} { printf "%s", c "\"" $0 "\"";c=",\n"; } END {print "\n]"}'
-fi
-if [ "$COMMAND" == "USERMENU" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               buildUSERLIST  $ACCOUNT
-               clean
-               print "PS3='Pick user, enter choice:'" > $Tmp
-               print -n "select clean_menu in " >> $Tmp
-               for USER in $USERLIST; do
-                    print -n "\""$USER"\" " >> $Tmp
-               done
-               print "\"Exit\"" >> $Tmp
-               print "do" >> $Tmp
-               print "case \$clean_menu in" >> $Tmp
-               for USER in $USERLIST; do
-                    print "\""$USER"\")" >> $Tmp
-                    print "cuu -a "$ACCOUNT" -c du -u "$USER";;" >> $Tmp
-               done
-               print "\"Exit\") break;;" >> $Tmp
-               print "esac" >> $Tmp
-               print "done" >> $Tmp
-               chmod 777 $Tmp
-               $Tmp
-fi
-if [ "$COMMAND" == "CLOUDTRAILMENU" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               buildUSERLIST  $ACCOUNT
-               clean
-               print "PS3='Pick user, enter choice:'" > $Tmp
-               print -n "select clean_menu in " >> $Tmp
-               for USER in $USERLIST; do
-                    print -n "\""$USER"\" " >> $Tmp
-               done
-               print "\"Exit\"" >> $Tmp
-               print "do" >> $Tmp
-               print "case \$clean_menu in" >> $Tmp
-               for USER in $USERLIST; do
-                    print "\""$USER"\")" >> $Tmp
-                    print "cuu -B -E -T 24 -a "$ACCOUNT" -c cu -u "$USER";;" >> $Tmp
-               done
-               print "\"Exit\") break;;" >> $Tmp
-               print "esac" >> $Tmp
-               print "done" >> $Tmp
-               chmod 777 $Tmp
-               $Tmp
-fi
-
-
-if [ "$COMMAND" == "CREATEGROUP" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING"   "Group not specified"
-               clean
-               aws --profile $ACCOUNT iam create-group --group-name $THING --output text
-               aws --profile $ACCOUNT iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]"
-fi
-if [ "$COMMAND" == "DELETEGROUP" ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$THING" "Group not specified"
-               aws --profile $ACCOUNT iam delete-group --group-name $THING
-fi
-if [ "$COMMAND" == "LISTGROUPS" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               clean
-               for ITEM in $ACCOUNT; do
-                    aws --profile $ITEM iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
-               done
-               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
 if [ "$COMMAND" == "LISTALLPOLICIES" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -905,7 +770,123 @@ if [ "$COMMAND" == "REMOVEPOLICYSET" ] ; then
                assert "$USER" "Profile not specified"
                policysetREMOVE
 fi
-if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: ACCESS KEY Operations
+# -----------------------------------------------------------------------------------------------------------------------
+if [ "$COMMAND" == "REPLACEACCESSKEYS" ] ; then
+               assertACCOUNTandUSERNAME
+               confirm
+               wipeACCESSKEYS
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
+               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U,A);}'
+fi
+if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
+               assertACCOUNTandUSERNAME
+               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
+               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
+fi
+if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
+               assertACCOUNTandUSERNAME
+               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+fi
+if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
+               assertACCOUNTandUSERNAME
+               confirm
+               wipeACCESSKEYS
+fi
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: USER Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "CREATEREADMINUSER"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAMEandPASSWORD
+               createUSER
+               policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
+               optionalGROUPADD
+fi
+COMMANDPROC "CREATEREADONLYUSER"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAMEandPASSWORD
+               createUSER
+               policyATTACH arn:aws:iam::aws:policy/ReadOnlyAccess
+               optionalGROUPADD
+fi
+COMMANDPROC "CREATEUSERNOKEY"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAMEandPASSWORD
+               createUSER
+               optionalGROUPADD
+fi
+COMMANDPROC "CREATEUSER"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAMEandPASSWORD
+               createUSER
+               optionalGROUPADD
+               createACCESSKEY
+fi
+COMMANDPROC "CHANGEPASSWORD"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAMEandPASSWORD
+               confirm
+               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+fi
+COMMANDPROC "SCRAMPASSWORD"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAME
+               RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+               confirm
+               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
+fi
+COMMANDPROC "DELETEUSER"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAME
+               wipeUSER
+               deleteUSER
+fi
+COMMANDPROC "LISTUSERS"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
+               done
+               cat $Tmp | column -t
+fi
+COMMANDPROC "LISTUSERS2"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM iam list-users --query "Users[*].[UserName]" >> $Tmp
+               done
+               cat $Tmp
+fi
+COMMANDPROC "LISTUSERS-JSON"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM iam list-users --query "Users[*].[Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk '
+               BEGIN {print "[";c="";} { printf "%s", c "\"" $0 "\"";c=",\n"; } END {print "\n]"}'
+fi
+COMMANDPROC "USERMENU"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               buildUSERLIST  $ACCOUNT
+               clean
+               print "PS3='Pick user, enter choice:'" > $Tmp
+               print -n "select clean_menu in " >> $Tmp
+               for USER in $USERLIST; do
+                    print -n "\""$USER"\" " >> $Tmp
+               done
+               print "\"Exit\"" >> $Tmp
+               print "do" >> $Tmp
+               print "case \$clean_menu in" >> $Tmp
+               for USER in $USERLIST; do
+                    print "\""$USER"\")" >> $Tmp
+                    print "cuu -a "$ACCOUNT" -c du -u "$USER";;" >> $Tmp
+               done
+               print "\"Exit\") break;;" >> $Tmp
+               print "esac" >> $Tmp
+               print "done" >> $Tmp
+               chmod 777 $Tmp
+               $Tmp
+fi
+COMMANDPROC "DESCRIBEUSERS"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      clean
      for ITEM in $ACCOUNT; do
@@ -926,6 +907,55 @@ if [ "$COMMAND" == "DESCRIBEUSERS" ] ; then
 
            done 
      done 
+fi
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: UTILITY Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "TIME"; if [ $bCmd -gt 0 ] ; then
+     print "WINDOW START TIME  "$ISOAGO"  "$AGO
+     print "WINDOW END TIME    "$ISOANON"  "$ANON
+fi
+COMMANDPROC "ACCOUNTNUMBER"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
+fi
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: ROLE Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "LISTROLES"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
+               done
+               cat $Tmp | column -t
+fi
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: GROUP Operations
+# -----------------------------------------------------------------------------------------------------------------------
+if [ "$COMMAND" == "CREATEGROUP" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING"   "Group not specified"
+               clean
+               aws --profile $ACCOUNT iam create-group --group-name $THING --output text
+               aws --profile $ACCOUNT iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]"
+fi
+if [ "$COMMAND" == "DELETEGROUP" ] ; then
+               assert "$USERNAME" "Username not specified"
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$THING" "Group not specified"
+               aws --profile $ACCOUNT iam delete-group --group-name $THING
+fi
+if [ "$COMMAND" == "LISTGROUPS" ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ITEM iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
 # ----------------------------------------------------
 # These commands operate on users
@@ -1045,37 +1075,7 @@ if [ "$COMMAND" == "REMOVEFROMGROUP" ] ; then
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $THING 
 fi
 
-if [ "$COMMAND" == "CLOUDTRAIL-ACTIVE" ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $ISOAGO | gawk '
-               /^EVENTS/ {
-                    print $NF 
-               }' | sort | uniq
-fi
 
-if [ "$COMMAND" == "REPLACEACCESSKEYS" ] ; then
-               assertACCOUNTandUSERNAME
-               confirm
-               wipeACCESSKEYS
-               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
-               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U,A);}'
-fi
-if [ "$COMMAND" == "CREATEACCESSKEY" ] ; then
-               assertACCOUNTandUSERNAME
-               aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
-               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-               cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
-fi
-if [ "$COMMAND" == "LISTACCESSKEYS" ] ; then
-               assertACCOUNTandUSERNAME
-               aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-fi
-if [ "$COMMAND" == "DELETEACCESSKEYS" ] ; then
-               assertACCOUNTandUSERNAME
-               confirm
-               wipeACCESSKEYS
-fi
 
 if [ "$COMMAND" == "EC2" ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -1187,7 +1187,38 @@ if [ "$COMMAND" == "EC2-UTIL" ] ; then
 
 
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
-
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: CLOUD TRAIL Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "CLOUDTRAIL-ACTIVE"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $ISOAGO | gawk '
+               /^EVENTS/ {
+                    print $NF 
+               }' | sort | uniq
+fi
+COMMANDPROC "CLOUDTRAILMENU"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               buildUSERLIST  $ACCOUNT
+               clean
+               print "PS3='Pick user, enter choice:'" > $Tmp
+               print -n "select clean_menu in " >> $Tmp
+               for USER in $USERLIST; do
+                    print -n "\""$USER"\" " >> $Tmp
+               done
+               print "\"Exit\"" >> $Tmp
+               print "do" >> $Tmp
+               print "case \$clean_menu in" >> $Tmp
+               for USER in $USERLIST; do
+                    print "\""$USER"\")" >> $Tmp
+                    print "cuu -B -E -T 24 -a "$ACCOUNT" -c cu -u "$USER";;" >> $Tmp
+               done
+               print "\"Exit\") break;;" >> $Tmp
+               print "esac" >> $Tmp
+               print "done" >> $Tmp
+               chmod 777 $Tmp
+               $Tmp
+fi
 
 if [ "$COMMAND" == "CLOUDTRAIL-WATCH" ] ; then
                assert "PROFILELIST"  "Profile  not specified"
