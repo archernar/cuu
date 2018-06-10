@@ -71,6 +71,7 @@ VPC and EC2 Commands
             ec2-sgsum                -a            Security groups summary listing (incl. empty SGs)
      vpc2   createvpc-2subnets       -a -r         Creates an internet accessible VPC with Pub\Priv Subnets
             deletevpc             -a -r -t <vpc>   Deletes a VPC (-t vpcid)
+            createkeypair            -a -u         Creates a Key Pair
 CloudTrail Commands
      ca     cloudtrail-active     -a -T         Lists active users in time window
      cu     cloudtrail-user       -a -T -u :UL: Lists user activity in time window
@@ -108,5 +109,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Sun Jun 10 11:31:35 EDT 2018
+Sun Jun 10 14:40:42 EDT 2018
 </pre>
