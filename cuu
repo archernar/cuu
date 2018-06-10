@@ -1022,7 +1022,6 @@ COMMANDPROC "ATTACHPOLICYTOUSER"; if [ $bCmd -gt 0 ] ; then
                policyATTACH $THING
 fi
 
-
 COMMANDPROC "IAMNAMEDPOLICY-REMOVE"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
                policyREMOVE $THING
@@ -1084,8 +1083,6 @@ COMMANDPROC "REMOVEFROMGROUP"; if [ $bCmd -gt 0 ] ; then
                confirm
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $THING 
 fi
-
-
 
 COMMANDPROC "EC2"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -1333,10 +1330,6 @@ COMMANDPROC "CLOUDTRAIL-USER"; if [ $bCmd -gt 0 ] ; then
                          gsub(/[Aa]llocate/,"Alloc",req);
                          gsub(/[Aa]llocate/,"Alloc",resp);
                          gsub(/[Aa]llocate/,"Alloc",ty);
-                         
-                         
-                         
-                         
                          gsub(/[Aa]ssociation/,"Assoc",req);
                          gsub(/[Aa]ssociation/,"Assoc",resp);
                          gsub(/[Aa]ssociation/,"Assoc",ty);
@@ -1467,9 +1460,6 @@ fi
 COMMANDPROC "COMMANDS"; if [ $bCmd -gt 0 ] ; then
      cat $CuuCommandFile
 fi
-
-
-
 
 if [ $gCmd -eq 0 ] ; then
     print "CUU Error!"
