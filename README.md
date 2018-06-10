@@ -84,6 +84,8 @@ Specific Policy Commands
             iamuserchangepassword-remove -a -u :UL: Removes Policy
 Other
             time                     -T            Print time window
+            accountnumber            -a            Prints the account number for profile (-a)
+            commands                               Lists all the cuu commands
 Note: Abbreviations are applied to output fields to limit line length
             -d will limit abbreviations
 </pre>
@@ -109,5 +111,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Sun Jun 10 14:40:42 EDT 2018
+Sun Jun 10 14:58:08 EDT 2018
 </pre>

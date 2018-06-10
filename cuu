@@ -1,6 +1,7 @@
 #!/usr/bin/ksh
 Tmp="/tmp/$$"
 TmpDir="/tmp/dir$$"
+CuuCommandFile="/tmp/CuuCommandFile$$"
 trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
@@ -109,6 +110,8 @@ usage(){
      print "            iamuserchangepassword-remove -a -u :UL: Removes Policy"
      print "Other"
      print "            time                     -T            Print time window"
+     print "            accountnumber            -a            Prints the account number for profile (-a)"
+     print "            commands                               Lists all the cuu commands"
      print ""
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "            -d will limit abbreviations"
@@ -512,10 +515,14 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -- COMMAND PROCESSOR: 
 # -----------------------------------------------------------------------------------------------------------------------
 bCmd=0
+gCmd=0
+rm -rf $CuuCommandFile  >/dev/null 2>&1
 COMMANDPROC() {
      bCmd=0
+     print $1 >> $CuuCommandFile
      if [ "$COMMAND" == $1 ] ; then
          bCmd=1
+         gCmd=1
      else
          bCmd=0
      fi
@@ -626,7 +633,6 @@ COMMANDPROC "CREATEVPC-2SUBNETS"; if [ $bCmd -gt 0 ] ; then
      NOTHING=0
 fi
 
-
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: PUBLISH Operations
 # -----------------------------------------------------------------------------------------------------------------------
@@ -663,18 +669,18 @@ fi
 # -- COMMAND SET: POLICY Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "CREATEPOLICY"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandTHING "Policy-Name"
-               confirm
-               aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://this.json
-               THIS=""
+     assertACCOUNTandTHING "Policy-Name"
+     confirm
+     aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://this.json
+     THIS=""
 fi
 
 COMMANDPROC "DELETEPOLICY"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandTHING "Policy-Name"
-               confirm
-               THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
-               THIS=""
+     assertACCOUNTandTHING "Policy-Name"
+     confirm
+     THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
+     THIS=""
 fi
 
 COMMANDPROC "GETPOLICY"; if [ $bCmd -gt 0 ] ; then
@@ -937,17 +943,6 @@ COMMANDPROC "DESCRIBEUSERS"; if [ $bCmd -gt 0 ] ; then
      done 
 fi
 
-# -----------------------------------------------------------------------------------------------------------------------
-# -- COMMAND SET: UTILITY Operations
-# -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "TIME"; if [ $bCmd -gt 0 ] ; then
-     print "WINDOW START TIME  "$ISOAGO"  "$AGO
-     print "WINDOW END TIME    "$ISOANON"  "$ANON
-fi
-COMMANDPROC "ACCOUNTNUMBER"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT" "Profile not specified"
-     aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
-fi
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: ROLE Operations
@@ -1458,6 +1453,30 @@ COMMANDPROC "CLOUDTRAIL-USER"; if [ $bCmd -gt 0 ] ; then
 #                fi
 fi
 
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: UTILITY Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "TIME"; if [ $bCmd -gt 0 ] ; then
+     print "WINDOW START TIME  "$ISOAGO"  "$AGO
+     print "WINDOW END TIME    "$ISOANON"  "$ANON
+fi
+COMMANDPROC "ACCOUNTNUMBER"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
+fi
+COMMANDPROC "COMMANDS"; if [ $bCmd -gt 0 ] ; then
+     cat $CuuCommandFile
+fi
+
+
+
+
+if [ $gCmd -eq 0 ] ; then
+    print "CUU Error!"
+    print "     \""$COMMAND"\" is not a cuu command"
+fi
+
+
 if [ "$LOOP" == "yes" ] ; then
 COMMANDPROC "EXIT"; if [ $bCmd -gt 0 ] ; then
                     exit 0
@@ -1492,5 +1511,4 @@ read COMMAND
      fi
 
 done
-
 exit 1
