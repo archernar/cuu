@@ -381,6 +381,7 @@ confirm() {
           fi
      fi
 }
+typeset -A INFO 
 typeset -u COMMAND
 COMMAND=""
 USERNAME=""
@@ -516,25 +517,25 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 # -----------------------------------------------------------------------------------------------------------------------
 bCmd=0
 gCmd=0
+szCmd=""
 rm -rf $CuuCommandFile  >/dev/null 2>&1
 COMMANDPROC() {
      bCmd=0
      print $1 >> $CuuCommandFile
+     INFO[$1]="$2"
      if [ "$COMMAND" == $1 ] ; then
          bCmd=1
          gCmd=1
+         szCmd="$COMMAND"
      else
          bCmd=0
      fi
      return bCmd
 }
-# -----------------------------------------------------------------------------------------------------------------------
-# -- COMMAND SET: TEST Operations
-# -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "HELLOWORLD"; if [ $bCmd -gt 0 ] ; then
-     print "Hello World!"
-     NOTHING=0
-fi
+COMMANDINFO() {
+    INFO[$szCmd]="$1"
+    # print ${INFO[$szCmd]}
+}
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
@@ -1445,20 +1446,44 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: UTILITY Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "NEWPOLICYDOC"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "NEWPOLICYDOC" "Create new this.json from policydoc.json template"; if [ $bCmd -gt 0 ] ; then
      cp policydoc.json this.json
 fi
-COMMANDPROC "TIME"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
 fi
-COMMANDPROC "ACCOUNTNUMBER"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCOUNTNUMBER" "Print account number"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
 fi
-COMMANDPROC "COMMANDS"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "COMMANDS" "List Commands"; if [ $bCmd -gt 0 ] ; then
      cat $CuuCommandFile
 fi
+COMMANDPROC "HELP" "Command help"; if [ $bCmd -gt 0 ] ; then
+     LIST=`cat $CuuCommandFile`
+     for ITEM in $LIST; do
+          printf "%-40s-- %s\n" $ITEM "${INFO[$ITEM]}"
+     done
+     NOTHING=0
+     LIST=""
+fi
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: TEST Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
+     LIST=`cat $CuuCommandFile`
+     for ITEM in $LIST; do
+          printf "%-40s-- %s\n" $ITEM "${INFO[$ITEM]}"
+     done
+     NOTHING=0
+     LIST=""
+fi
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET END
+# -----------------------------------------------------------------------------------------------------------------------
+
 if [ $gCmd -eq 0 ] ; then
     print "CUU Error!"
     print "     \""$COMMAND"\" is not a cuu command"
