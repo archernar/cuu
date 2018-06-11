@@ -88,9 +88,9 @@ usage(){
      print "     lg     listgroups               -a            List all groups defined" 
      print "            listusergroups           -a -u         Lists groups associated with user"
      print "            listusersingroup         -a -u -t      Lists the users in  group (-t)"
-     print "            addtogroup               -a -u -t      Add user to a group (-t)"
-     print "            removerfromgroup         -a -u -t      Remove user group (-t)"
-     print "            removerfromallgroups     -a -u         Remove user from all groups"
+     print "            addusertogroup           -a -u -t      Add user to a group (-t)"
+     print "            removeuserfromgroup         -a -u -t      Remove user group (-t)"
+     print "            removeuserfromallgroups  -a -u         Remove user from all groups"
      print "VPC and EC2 Commands"
      print "            ec2                      -a            List instances and securitygroups"
      print "            ec2-sg                   -a            Security groups detail listing"
@@ -682,6 +682,34 @@ COMMANDPROC "DELETEPOLICY"; if [ $bCmd -gt 0 ] ; then
      aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
      THIS=""
 fi
+COMMANDPROC "LISTUSERPOLICIES"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAME
+               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
+fi
+
+
+COMMANDPROC "DETACHUSERPOLICIES"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAME
+               confirm
+               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
+               {
+                   sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
+                   system(sz)
+               }'
+fi
+COMMANDPROC "ATTACHPOLICYTOALLUSERS"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandTHING "Policy-ARN"
+               buildUSERLIST $ACCOUNT
+               for USER in $USERLIST; do
+                    policyATTACH $THING
+               done
+               USERLIST=""
+fi
+COMMANDPROC "ATTACHPOLICYTOUSER"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAME
+               assert "$THING" "Thing not specified"
+               policyATTACH $THING
+fi
 
 COMMANDPROC "GETPOLICY"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
@@ -943,7 +971,6 @@ COMMANDPROC "DESCRIBEUSERS"; if [ $bCmd -gt 0 ] ; then
      done 
 fi
 
-
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: ROLE Operations
 # -----------------------------------------------------------------------------------------------------------------------
@@ -963,64 +990,53 @@ COMMANDPROC "CREATEGROUP"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING"   "Group not specified"
                clean
-               aws --profile $ACCOUNT iam create-group --group-name $THING --output text
-               aws --profile $ACCOUNT iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]"
+               $AWS iam create-group --group-name $THING
+               $AWS iam list-groups  --query "Groups[*].[GroupName,CreateDate,Arn]"
 fi
 COMMANDPROC "DELETEGROUP"; if [ $bCmd -gt 0 ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Group not specified"
-               aws --profile $ACCOUNT iam delete-group --group-name $THING
+               $AWS iam delete-group --group-name $THING
 fi
 COMMANDPROC "LISTGROUPS"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                clean
                for ITEM in $ACCOUNT; do
-                    aws --profile $ITEM iam list-groups --output text --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
+                    aws --profile $ACCOUNT iam list-groups --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
                done
                cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
-# ----------------------------------------------------
-# These commands operate on users
-# ----------------------------------------------------
-COMMANDPROC "LISTUSERPOLICIES"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAME
-               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
+COMMANDPROC "LISTUSERSINGROUP"; if [ $bCmd -gt 0 ] ; then
+              assertACCOUNTandTHING "Group-Name"
+              buildUSERLIST $ACCOUNT
+              for USER in $USERLIST; do
+                  print $USER
+              done
+              USERLIST=""
+fi
+COMMANDPROC "ADDUSERTOGROUP"; if [ $bCmd -gt 0 ] ; then
+              assertACCOUNTandTHING "Group-Name"
+              $AWS iam add-user-to-group --group-name $THING  --user-name $USERNAME
+              $AWS iam list-groups-for-user --user-name $USERNAME --query "Groups[*].{ARN:Arn}" | gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f noindent.awk
 fi
 COMMANDPROC "LISTUSERGROUPS"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text
 fi
-COMMANDPROC "REMOVEALLGROUPS"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "REMOVEUSERFROMALLGROUPS"; if [ $bCmd -gt 0 ] ; then
     wipeGROUPS
 fi
-
-COMMANDPROC "NEWPOLICYDOC"; if [ $bCmd -gt 0 ] ; then
-               cp policydoc.json this.json
-fi
-
-COMMANDPROC "DETACHUSERPOLICIES"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAME
+COMMANDPROC "REMOVEUSERFROMGROUP"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               assert "$USERNAME" "Username not specified"
+               assert "$THING" "Group name not specified"
                confirm
-               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
-               {
-                   sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
-                   system(sz)
-               }'
+               aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $THING 
 fi
-COMMANDPROC "ATTACHPOLICYTOALLUSERS"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandTHING "Policy-ARN"
-               buildUSERLIST $ACCOUNT
-               for USER in $USERLIST; do
-                    policyATTACH $THING
-               done
-               USERLIST=""
-fi
-COMMANDPROC "ATTACHPOLICYTOUSER"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAME
-               assert "$THING" "Thing not specified"
-               policyATTACH $THING
-fi
+# ----------------------------------------------------
+# These commands operate on users
+# ----------------------------------------------------
 
 COMMANDPROC "IAMNAMEDPOLICY-REMOVE"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
@@ -1056,37 +1072,19 @@ COMMANDPROC "IAMUSERCHANGEPASSWORD-REMOVE"; if [ $bCmd -gt 0 ] ; then
                policyREMOVE arn:aws:iam::aws:policy/IAMUserChangePassword
 fi
 
-COMMANDPROC "LISTUSERSINGROUP"; if [ $bCmd -gt 0 ] ; then
-     assertACCOUNTandTHING "Group-Name"
-     buildUSERLIST $ACCOUNT
-     for USER in $USERLIST; do
-         print $USER
-     done
-     USERLIST=""
-fi
-COMMANDPROC "ADDTOGROUP"; if [ $bCmd -gt 0 ] ; then
-     assertACCOUNTandTHING "Group-Name"
-     aws --profile $ACCOUNT iam add-user-to-group --group-name $THING  --user-name $USERNAME
-     aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].{ARN:Arn}" |
-                                gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f noindent.awk
-fi
 
 COMMANDPROC "SWAP"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                policyATTACH $POLICYADD
                groupREMOVE $GROUPREMOVE
 fi
-COMMANDPROC "REMOVEFROMGROUP"; if [ $bCmd -gt 0 ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
-               assert "$THING" "Group name not specified"
-               confirm
-               aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $THING 
-fi
 
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: EC2 Operations
+# -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "EC2"; if [ $bCmd -gt 0 ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {print "\n\n\n"}/INSTANCES/{print $0}/SECURITYGROUPS/{print $0 "\n\n\n"}'
+     assert "$ACCOUNT" "Profile not specified"
+     $AWS ec2 describe-instances | gawk 'BEGIN {print "\n\n\n"}/INSTANCES/{print $0}/SECURITYGROUPS/{print $0 "\n\n\n"}'
 fi
 
 COMMANDPROC "EC2-LIST"; if [ $bCmd -gt 0 ] ; then
@@ -1101,8 +1099,6 @@ COMMANDPROC "EC2-LIST"; if [ $bCmd -gt 0 ] ; then
 fi
 
 #          XLIST=`aws --profile $ACCOUNT ec2 describe-regions --query "Regions[*].RegionName" --output text`
-
-
 
 COMMANDPROC "EC2-SGSUM"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
@@ -1250,13 +1246,13 @@ COMMANDPROC "CLOUDTRAIL-USER"; if [ $bCmd -gt 0 ] ; then
                     rm -rf $Tmp  >/dev/null 2>&1
                     LIST=`cat userlist`
                     for USER in $LIST; do
-                      aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USER >> $Tmp
+                      $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USER >> $Tmp
                     done
                else
                     if [ "$USERNAME" == "ALL" ] ; then
-                      aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
+                      $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
                     else
-                      aws --profile $ACCOUNT --region $REGION --output text cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                      $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                     fi
                fi
                cat $Tmp | gawk  -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
@@ -1449,6 +1445,9 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: UTILITY Operations
 # -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "NEWPOLICYDOC"; if [ $bCmd -gt 0 ] ; then
+     cp policydoc.json this.json
+fi
 COMMANDPROC "TIME"; if [ $bCmd -gt 0 ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
@@ -1460,7 +1459,6 @@ fi
 COMMANDPROC "COMMANDS"; if [ $bCmd -gt 0 ] ; then
      cat $CuuCommandFile
 fi
-
 if [ $gCmd -eq 0 ] ; then
     print "CUU Error!"
     print "     \""$COMMAND"\" is not a cuu command"

@@ -62,9 +62,9 @@ Group Commands
      lg     listgroups               -a            List all groups defined" 
             listusergroups           -a -u         Lists groups associated with user
             listusersingroup         -a -u -t      Lists the users in  group (-t)
-            addtogroup               -a -u -t      Add user to a group (-t)
-            removerfromgroup         -a -u -t      Remove user group (-t)
-            removerfromallgroups     -a -u         Remove user from all groups
+            addusertogroup           -a -u -t      Add user to a group (-t)
+            removeuserfromgroup         -a -u -t      Remove user group (-t)
+            removeuserfromallgroups  -a -u         Remove user from all groups
 VPC and EC2 Commands
             ec2                      -a            List instances and securitygroups
             ec2-sg                   -a            Security groups detail listing
@@ -111,5 +111,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Sun Jun 10 17:24:02 EDT 2018
+Sun Jun 10 21:35:54 EDT 2018
 </pre>
