@@ -111,6 +111,7 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
 cuu command list
+  
 ACCOUNTNUMBER          ADDUSERTOGROUP             ATTACHPOLICYSET               ATTACHPOLICYTOALLUSERS
 ATTACHPOLICYTOUSER     CHANGEPASSWORD             CLOUDTRAIL-ACTIVE             CLOUDTRAILMENU
 CLOUDTRAIL-USER        CLOUDTRAIL-WATCH           COMMANDS                      CREATEACCESSKEY
@@ -132,5 +133,5 @@ UPDATEPOLICY-TEST      USERMENU                   WORLD                         
 </pre>
 <pre>
   
-Sun Jun 10 23:32:19 EDT 2018
+Sun Jun 10 23:33:59 EDT 2018
 </pre>
