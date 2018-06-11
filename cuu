@@ -1238,7 +1238,7 @@ COMMANDPROC "CLOUDTRAIL-WATCH"; if [ $bCmd -gt 0 ] ; then
                     done
                fi
 fi
-COMMANDPROC "CLOUDTRAIL-USER"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$USERNAME" "Username not specified"
                clean
