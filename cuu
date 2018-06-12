@@ -1498,6 +1498,7 @@ COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
           typeset -l v=$ITEM
           printf "     %-33s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
      done
+     cp $Tmp fed
      cat $Tmp | sort
      NOTHING=0
      LIST=""
