@@ -7,12 +7,7 @@ rm $Tmp  >/dev/null 2>&1
 
 
 gawk -f readme.awk cuu  > README.md
-echo "<pre>" >> README.md
-echo "~/.cuu.txt  can contain defaults for these settings" >> README.md
-cat .cuu.txt >> README.md
-echo "</pre>" >> README.md
-# cuu -c commandlist | sort | gawk '{printf "%s ", $0;if ((NR%4)==0) print "";}' | column -t >> README.md
-# cuu -c commands | sort  >> README.md
+
 
 cuu -c utilcommands | grep -v alias  > $Tmp
 echo "<pre>" >> README.md
@@ -65,6 +60,12 @@ echo "  " >> README.md
 echo "</pre>" >> README.md
 
 
+echo "<pre>" >> README.md
+echo "~/.cuu.txt  can contain defaults for these settings" >> README.md
+cat .cuu.txt >> README.md
+echo "</pre>" >> README.md
+# cuu -c commandlist | sort | gawk '{printf "%s ", $0;if ((NR%4)==0) print "";}' | column -t >> README.md
+# cuu -c commands | sort  >> README.md
 
 
 

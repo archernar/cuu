@@ -22,26 +22,6 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
           ----------------------------------------------------------------------------------------------
 </pre>
 <pre>
-~/.cuu.txt  can contain defaults for these settings
-PASSWORD=
-STARTDATE=2018-05-01T00:00:00Z        ; Obsolete
-WATCHPROFILE=
-WATCHUSER=
-PROFILELIST=
-POLICYLIST=
-GROUPREMOVE=
-POLICYADD=
-TIMEFACTOR=1                          ; In minutes
-MYCIDR=                               ; My CIDR
-AMI=                                  ; AMI for instances
-SG=                                   ; Security Group for instances
-VPCID=                                ; VPC for instances
-SUBNET1=                              ; Public Subnet
-SUBNET2=                              ; Private Subnet
-IGWID=                                ; Internet Gateway ID
-KP=                                   ; Key Pair Name
-</pre>
-<pre>
 cuu commands
   
 User Commands  
@@ -128,6 +108,26 @@ utiltime                             -a         Print time window
   
 </pre>
 <pre>
+~/.cuu.txt  can contain defaults for these settings
+PASSWORD=
+STARTDATE=2018-05-01T00:00:00Z        ; Obsolete
+WATCHPROFILE=
+WATCHUSER=
+PROFILELIST=
+POLICYLIST=
+GROUPREMOVE=
+POLICYADD=
+TIMEFACTOR=1                          ; In minutes
+MYCIDR=                               ; My CIDR
+AMI=                                  ; AMI for instances
+SG=                                   ; Security Group for instances
+VPCID=                                ; VPC for instances
+SUBNET1=                              ; Public Subnet
+SUBNET2=                              ; Private Subnet
+IGWID=                                ; Internet Gateway ID
+KP=                                   ; Key Pair Name
+</pre>
+<pre>
   
-Tue Jun 12 14:44:24 EDT 2018
+Tue Jun 12 14:45:41 EDT 2018
 </pre>
