@@ -124,6 +124,16 @@ userlist                             -a         User listing
 userlist-json                        -a         User list in json format
 usermenu                             -a         Menu driven user information
   
+Password Commands  
+passwordchange                       -a -u -p   Change a users password
+passwordscram                        -a -u      Make a users password unkown (scram)
+  
+AccessKey Commands  
+accesskeycreate                      -a         Create access keys for user
+accesskeyreplace                     -a         Delete and replace access keys
+accesskeysdelete                     -a         Delete all access keys attached to user
+accesskeyslist                       -a         List a users access keys
+  
 Policy Commands  
 policybyarn-add                      -a -u -t   Attach policy to user by ARN
 policybyarn-remove                   -a -u -t   Detach policy from user by ARN
@@ -144,6 +154,13 @@ policyupdate                         -a -t -D   Update policy
 policyuserchangepassword-add         -a         Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
 policyuserchangepassword-remove      -a         Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
   
+Group Commands  
+groupadduser                         -a -t      Add user/userlist to group
+groupcreate                          -a -t      Create group in profile
+groupdelete                          -a -u -t   Delete group from profile by group name
+groupremoveallusers                  -a         Remove all groups atttach to user
+groupremoveuser                      -a         Remove user from group by group name
+  
 VPC Commands  
 vpccreate                            -a -r      Create a Two Subnet VPC
 vpcdelete                            -a -r -t   Delete VPC
@@ -156,8 +173,14 @@ ec2-sgsum                            -a         Security Group Summary Report
 ec2-spark                            -a         CloudWatch CPU Utilization with Spark Graphing
 ec2-util                             -a         CloudWatch CPU Utilization
   
+CLOUDTRAIL Commands  
+cloudtrail-active                    -a         Cloudtrail watch all activity in the time window
+cloudtrailmenu                       -a         Menu interface to pick and watch users via cloudtrail
+cloudtrail-user                      -a         Tracks a user's activity via cloud trail
+cloudtrail-watch                     -a         Cloudtrail watch a user across multiple profiles
+  
 </pre>
 <pre>
   
-Tue Jun 12 12:56:05 EDT 2018
+Tue Jun 12 13:00:50 EDT 2018
 </pre>
