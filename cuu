@@ -46,6 +46,8 @@ usage(){
      print "          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS"
      print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
      print "          ----------------------------------------------------------------------------------------------"
+# M </pre>
+# README.md End
      print "Quick Menus"
      print "     dum    describeusermenu         -a            Interactive user menu, Describes users"
      print "     ctm    cloudtrailmenu           -a            Interactive user menu, CloudTrail 48Hr Audit Report"
@@ -116,8 +118,6 @@ usage(){
      print "Note: Abbreviations are applied to output fields to limit line length"
      print "            -d will limit abbreviations"
 }
-# M </pre>
-# README.md End
 commandABBREVIATIONS() {
 	case "$COMMAND" in
             LR)                    COMMAND="LISTROLES" ;;
