@@ -158,8 +158,14 @@ Group Commands
 groupadduser                         -a -t      Add user/userlist to group
 groupcreate                          -a -t      Create group in profile
 groupdelete                          -a -u -t   Delete group from profile by group name
+grouplist                            -a         List groups in profile
+grouplistusers                       -a         List users in group
 groupremoveallusers                  -a         Remove all groups atttach to user
 groupremoveuser                      -a         Remove user from group by group name
+groupsforuser                        -a         List groups attached to user
+  
+Role Commands  
+roleslist                            -a         List Roles
   
 VPC Commands  
 vpccreate                            -a -r      Create a Two Subnet VPC
@@ -182,5 +188,5 @@ cloudtrail-watch                     -a         Cloudtrail watch a user across m
 </pre>
 <pre>
   
-Tue Jun 12 13:00:50 EDT 2018
+Tue Jun 12 13:53:21 EDT 2018
 </pre>

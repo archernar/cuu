@@ -1,3 +1,11 @@
+#!/usr/bin/ksh
+Tmp="/tmp/$$"
+TmpDir="/tmp/dir$$"
+trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
+trap "exit 2" 1 2 3 13 15
+rm $Tmp  >/dev/null 2>&1
+
+
 gawk -f readme.awk cuu  > README.md
 echo "<pre>" >> README.md
 echo "~/.cuu.txt  can contain defaults for these settings" >> README.md
@@ -6,37 +14,46 @@ echo "</pre>" >> README.md
 # cuu -c commandlist | sort | gawk '{printf "%s ", $0;if ((NR%4)==0) print "";}' | column -t >> README.md
 # cuu -c commands | sort  >> README.md
 
+cuu -c utilcommands | grep -v alias  > $Tmp
 echo "<pre>" >> README.md
 echo "cuu commands" >> README.md
 echo "  " >> README.md
+
 echo "User Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^user >> README.md
+cat $Tmp | egrep ^user >> README.md
 echo "  " >> README.md
 
 echo "Password Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^password >> README.md
+cat $Tmp | egrep ^password >> README.md
 echo "  " >> README.md
 
 echo "AccessKey Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^accesskey >> README.md
+cat $Tmp | egrep ^accesskey >> README.md
 echo "  " >> README.md
 
 
 
 echo "Policy Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^policy >> README.md
+cat $Tmp | egrep ^policy >> README.md
 echo "  " >> README.md
 echo "Group Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^group >> README.md
+cat $Tmp | egrep ^group >> README.md
 echo "  " >> README.md
+echo "Role Commands  " >> README.md
+cat $Tmp | egrep ^role >> README.md
+echo "  " >> README.md
+
+
 echo "VPC Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^vpc >> README.md
+cat $Tmp | egrep ^vpc >> README.md
+
 echo "  " >> README.md
 echo "EC2 Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^ec2 >> README.md
+cat $Tmp | egrep ^ec2 >> README.md
+
 echo "  " >> README.md
 echo "CLOUDTRAIL Commands  " >> README.md
-cuu -c utilcommands | grep -v alias | egrep ^cloudtrail >> README.md
+cat $Tmp | egrep ^cloudtrail >> README.md
 
 echo "  " >> README.md
 echo "</pre>" >> README.md
