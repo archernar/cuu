@@ -662,14 +662,6 @@ COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if
 fi
 
 
-COMMANDPROC "WORLD" "CloudTrail report for 100 hour window for user across all regions" "-a"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT"  "Profile not specified"
-     LIST=`$AWS ec2 describe-regions --query "Regions[*].RegionName"`
-     for ITEM in $LIST; do
-         print "cuu -T 100 -c cu -u "$USERNAME" -r "$ITEM" -a "$ACCOUNT
-     done
-
-fi
 COMMANDPROC "WWEC2" "Another form of describe instances" "-a"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      LIST=`aws ec2 describe-regions --query "Regions[*].RegionName" --output text`
@@ -716,13 +708,13 @@ COMMANDPROC "POLICYDELETE" "Delete local policy ARN" "-a -t"; if [ $bCmd -gt 0 ]
      aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
      THIS=""
 fi
-COMMANDPROC "LISTUSERPOLICIES" "List policies atttached to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYLISTUSER,LISTUSERPOLICIES" "List policies atttached to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
 fi
 
 
-COMMANDPROC "DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYUSERDETACHALL,DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      confirm
      aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME ' {
@@ -730,7 +722,7 @@ COMMANDPROC "DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $
           system(sz)
      }'
 fi
-COMMANDPROC "ATTACHPOLICYTOALLUSERS" "Attach policy to all users" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYATTACHTOALLUSERS,ATTACHPOLICYTOALLUSERS" "Attach policy to all users" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandTHING "Policy-ARN"
      buildUSERLIST $ACCOUNT
      for USER in $USERLIST; do
@@ -738,13 +730,13 @@ COMMANDPROC "ATTACHPOLICYTOALLUSERS" "Attach policy to all users" "-a -t"; if [ 
      done
      USERLIST=""
 fi
-COMMANDPROC "ATTACHPOLICYTOUSER" "Attach policy to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYATTACHTOUSER,ATTACHPOLICYTOUSER" "Attach policy to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      assert "$THING" "Thing not specified"
      policyATTACH $THING
 fi
 
-COMMANDPROC "GETPOLICY" "Get policy" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYGET,GETPOLICY" "Get policy" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
      LIST=`$AWS iam list-policies --scope All --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
@@ -1221,6 +1213,14 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: CLOUD TRAIL Operations
 # -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "CLOUDTRAILWORLD,WORLD" "CloudTrail report for 100 hour window for user across all regions" "-a"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     LIST=`$AWS ec2 describe-regions --query "Regions[*].RegionName"`
+     for ITEM in $LIST; do
+         print "cuu -T 100 -c cu -u "$USERNAME" -r "$ITEM" -a "$ACCOUNT
+     done
+
+fi
 COMMANDPROC "CLOUDTRAIL-ACTIVE" "Cloudtrail watch all activity in the time window"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT --output text cloudtrail lookup-events --start-time $ISOAGO | gawk '

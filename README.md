@@ -47,6 +47,8 @@ accesskeysdelete                     -a         Delete all access keys attached 
 accesskeyslist                       -a         List a users access keys
   
 Policy Commands  
+policyattachtoallusers               -a -t      Attach policy to all users
+policyattachtouser                   -a -u      Attach policy to user
 policybyarn-add                      -a -u -t   Attach policy to user by ARN
 policybyarn-remove                   -a -u -t   Detach policy from user by ARN
 policybyname-add                     -a -t      Attach local policy to user by policy name
@@ -56,15 +58,18 @@ policycodecommitpoweruser-remove     -a         Remove arn:aws:iam::aws:policy/A
 policycreate                         -a -t      Create policy bu name and upload policy document this.json
 policydelete                         -a -t      Delete local policy ARN
 policygetall                         -a         Get all policy documents
+policyget                            -a -t      Get policy
 policygetlocal                       -a         Get local policy documents
 policylistall                        -a         List all policies
 policylistaws                        -a         List all AWS policies
 policylistlocal                      -a         List local policies
+policylistuser                       -a -u      List policies atttached to user
 policysetattach                      -a -u      Attach all policies specified in policyset.txt to user
 policysetremove                      -a -u      Remove all policies specified in policyset.txt from user
 policyupdate                         -a -t -D   Update policy
 policyuserchangepassword-add         -a         Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
 policyuserchangepassword-remove      -a         Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
+policyuserdetachall                  -a -u      Detach all policies from user
   
 Group Commands  
 groupadduser                         -a -t      Add user/userlist to group
@@ -96,6 +101,7 @@ cloudtrail-active                    -a         Cloudtrail watch all activity in
 cloudtrailmenu                       -a         Menu interface to pick and watch users via cloudtrail
 cloudtrail-user                      -a         Tracks a user's activity via cloud trail
 cloudtrail-watch                     -a         Cloudtrail watch a user across multiple profiles
+cloudtrailworld                      -a         CloudTrail report for 100 hour window for user across all regions
   
 Utility Commands  
 utilaccountnumber                    -a         Print account number
@@ -129,5 +135,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Tue Jun 12 14:51:25 EDT 2018
+Tue Jun 12 14:57:19 EDT 2018
 </pre>
