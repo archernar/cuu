@@ -1496,7 +1496,7 @@ COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
                SZOPTO="-a"
           fi
           typeset -l v=$ITEM
-          printf "%-36s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
+          printf "   %-33s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
      done
      cat $Tmp | sort
      NOTHING=0

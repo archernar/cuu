@@ -8,7 +8,6 @@ rm $Tmp  >/dev/null 2>&1
 
 gawk -f readme.awk cuu  > README.md
 
-
 cuu -c utilcommands | grep -v alias  > $Tmp
 echo "<pre>" >> README.md
 echo "cuu commands" >> README.md
