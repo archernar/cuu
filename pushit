@@ -52,8 +52,14 @@ echo "EC2 Commands  " >> README.md
 cat $Tmp | egrep ^ec2 >> README.md
 
 echo "  " >> README.md
-echo "CLOUDTRAIL Commands  " >> README.md
+echo "CloudTrail Commands  " >> README.md
 cat $Tmp | egrep ^cloudtrail >> README.md
+
+echo "  " >> README.md
+echo "Utility Commands  " >> README.md
+cat $Tmp | egrep ^util >> README.md
+
+
 
 echo "  " >> README.md
 echo "</pre>" >> README.md

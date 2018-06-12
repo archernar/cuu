@@ -678,20 +678,6 @@ COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if
      NOTHING=0
 fi
 
-# -----------------------------------------------------------------------------------------------------------------------
-# -- COMMAND SET: PUBLISH Operations
-# -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0 ] ; then
-     assertfile cuureport.txt
-     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
-     DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
-     FNAME="cuureport"-$EPOCHTIME".txt"
-     print $FNAME
-     cp cuureport.txt $FNAME
-     aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-type text/plain > $Tmp
-     aws --profile $ACCOUNT s3 ls s3://ecd3pub --recursive
-     java Gpurl us-east-1 ecd3pub $FNAME 15
-fi
 
 COMMANDPROC "WORLD" "CloudTrail report for 100 hour window for user across all regions" "-a"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
@@ -1120,7 +1106,17 @@ COMMANDPROC "POLICYUSERCHANGEPASSWORD-REMOVE,IAMUSERCHANGEPASSWORD-REMOVE" "Remo
                assertACCOUNTandUSERNAME
                policyREMOVE $THIS
 fi
-
+COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0 ] ; then
+     assertfile cuureport.txt
+     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+     DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
+     FNAME="cuureport"-$EPOCHTIME".txt"
+     print $FNAME
+     cp cuureport.txt $FNAME
+     aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-type text/plain > $Tmp
+     aws --profile $ACCOUNT s3 ls s3://ecd3pub --recursive
+     java Gpurl us-east-1 ecd3pub $FNAME 15
+fi
 
 COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME

@@ -179,14 +179,23 @@ ec2-sgsum                            -a         Security Group Summary Report
 ec2-spark                            -a         CloudWatch CPU Utilization with Spark Graphing
 ec2-util                             -a         CloudWatch CPU Utilization
   
-CLOUDTRAIL Commands  
+CloudTrail Commands  
 cloudtrail-active                    -a         Cloudtrail watch all activity in the time window
 cloudtrailmenu                       -a         Menu interface to pick and watch users via cloudtrail
 cloudtrail-user                      -a         Tracks a user's activity via cloud trail
 cloudtrail-watch                     -a         Cloudtrail watch a user across multiple profiles
   
+Utility Commands  
+utilaccountnumber                    -a         Print account number
+utilcommandlist                      -a         List Commands
+utilcommands                         -a         Command help
+utilnewpolicydoc                     -a         Create new this.json from policydoc.json template
+utilpublish                          -a         Publish cuureport.txt
+utilswap                             -a         Swap a Policy for a Group
+utiltime                             -a         Print time window
+  
 </pre>
 <pre>
   
-Tue Jun 12 13:53:21 EDT 2018
+Tue Jun 12 13:55:52 EDT 2018
 </pre>
