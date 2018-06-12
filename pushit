@@ -15,6 +15,12 @@ echo "  " >> README.md
 echo "Policy Commands  " >> README.md
 cuu -c utilcommands | grep -v alias | egrep ^policy >> README.md
 echo "  " >> README.md
+echo "VPC Commands  " >> README.md
+cuu -c utilcommands | grep -v alias | egrep ^vpc >> README.md
+echo "  " >> README.md
+echo "EC2 Commands  " >> README.md
+cuu -c utilcommands | grep -v alias | egrep ^ec2 >> README.md
+echo "  " >> README.md
 echo "</pre>" >> README.md
 
 

@@ -144,8 +144,20 @@ policyupdate                         -a -t -D   Update policy
 policyuserchangepassword-add         -a         Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
 policyuserchangepassword-remove      -a         Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
   
+VPC Commands  
+vpccreate                            -a -r      Create a Two Subnet VPC
+vpcdelete                            -a -r -t   Delete VPC
+  
+EC2 Commands  
+ec2                                  -a         Describe Instances
+ec2-list                             -a         EC2 List
+ec2-sg                               -a         Security Group Detail Report
+ec2-sgsum                            -a         Security Group Summary Report
+ec2-spark                            -a         CloudWatch CPU Utilization with Spark Graphing
+ec2-util                             -a         CloudWatch CPU Utilization
+  
 </pre>
 <pre>
   
-Tue Jun 12 12:54:02 EDT 2018
+Tue Jun 12 12:56:05 EDT 2018
 </pre>
