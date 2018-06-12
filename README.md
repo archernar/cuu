@@ -131,80 +131,80 @@ REMOVEUSERFROMGROUP        REPLACEACCESSKEYS             SCRAMPASSWORD          
 TEST                       TEST2                         TIME                            UPDATEPOLICY
   
   
-TEST                                    -- Test Command
-TEST2                                   -- Test Command Two
-DELETEVPC                               -- Delete VPC
-CREATEVPC-2SUBNETS                      -- Create a Two Subnet VPC
-PUBLISH                                 -- Publish cuureport.txt
-WORLD                                   -- CloudTrail report for 100 hour window for user across all regions
-WWEC2                                   -- Another form of describe instances
-CREATEPOLICY                            -- Create policy bu name and upload policy document this.json
-DELETEPOLICY                            -- Delete local policy ARN
-LISTUSERPOLICIES                        -- List policies atttached to user
-DETACHUSERPOLICIES                      -- Detach all policies from user
+ACCOUNTNUMBER                           -- Print account number
+ADDUSERTOGROUP                          -- Add user/userlist to group
+ATTACHPOLICYSET                         -- Attach all policies specified in policyset.txt to user
 ATTACHPOLICYTOALLUSERS                  -- Attach policy to all users
 ATTACHPOLICYTOUSER                      -- Attach policy to user
-GETPOLICY                               -- Get policy
-UPDATEPOLICY                            -- Update policy
-GETALLPOLICIES                          -- Get all policy documents
-GETLOCALPOLICIES                        -- Get local policy documents
-LISTALLPOLICIES                         -- List all policies
-LISTLOCALPOLICIES                       -- List local policies
-LISTAWSPOLICIES                         -- List all AWS policies
-ATTACHPOLICYSET                         -- Attach all policies specified in policyset.txt to user
-REMOVEPOLICYSET                         -- Remove all policies specified in policyset.txt from user
-CREATEKEYPAIR                           -- Create a set of keypairs
-REPLACEACCESSKEYS                       -- Delete and replace access keys
-CREATEACCESSKEY                         -- Create access keys for user
-LISTACCESSKEYS                          -- List a users access keys
-DELETEACCESSKEYS                        -- Delete all access keys attached to user
-CREATEREADMINUSER                       -- Create admin user
-CREATEREADONLYUSER                      -- Create readonly user
-CREATEUSERNOKEY                         -- Create a user with no access keys
-CREATEUSER                              -- Create a user and assign access keys
 CHANGEPASSWORD                          -- Change a users password
-SCRAMPASSWORD                           -- Make a users password unkown (scram)
-DELETEUSER                              -- Delete user
-LISTUSERS                               -- User listing
-LISTUSERS2                              -- User listing (simple format)
-LISTUSERS-JSON                          -- User list in json format
-USERMENU                                -- Menu driven user information
-DESCRIBEUSERS                           -- Lists groups and policies associated with user/userlist
-LISTROLES                               -- List Roles
-CREATEGROUP                             -- Create group in profile
-DELETEGROUP                             -- Delete group from profile by group name
-LISTGROUPS                              -- List groups in profile
-LISTUSERSINGROUP                        -- List users in group
-ADDUSERTOGROUP                          -- Add user/userlist to group
-LISTUSERGROUPS                          -- List groups attached to user
-REMOVEUSERFROMALLGROUPS                 -- Remove all groups atttach to user
-REMOVEUSERFROMGROUP                     -- Remove user from group by group name
-IAMPOLICYBYARN-REMOVE                   -- Detach policy from user by ARN
-IAMPOLICYBYARN-ADD                      -- Attach policy to user by ARN
-IAMPOLICYBYNAME-REMOVE                  -- Detach local policy from user by policy name
-IAMPOLICYBYNAME-ADD                     -- Attach local policy to user by policy name
-IAMUSERCODECOMMITPOWERUSER-ADD          -- Add arn:aws:iam::aws:policy/AWSCodeCommitPowerUser to user
-IAMUSERCODECOMMITPOWERUSER-REMOVE       -- Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
-IAMUSERCHANGEPASSWORD-ADD               -- Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
-IAMUSERCHANGEPASSWORD-REMOVE            -- Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
-SWAP                                    -- Swap a Policy for a Group
-EC2                                     -- Describe Instances
-EC2-LIST                                -- EC2 List
-EC2-SGSUM                               -- Security Group Summary Report
-EC2-SG                                  -- Security Group Detail Report
-EC2-SPARK                               -- CloudWatch CPU Utilization with Spark Graphing
-EC2-UTIL                                -- CloudWatch CPU Utilization
 CLOUDTRAIL-ACTIVE                       -- Cloudtrail watch all activity in the time window
 CLOUDTRAILMENU                          -- Menu interface to pick and watch users via cloudtrail
-CLOUDTRAIL-WATCH                        -- Cloudtrail watch a user across multiple profiles
 CLOUDTRAIL-USER                         -- Tracks a user's activity via cloud trail
-NEWPOLICYDOC                            -- Create new this.json from policydoc.json template
-TIME                                    -- Print time window
-ACCOUNTNUMBER                           -- Print account number
+CLOUDTRAIL-WATCH                        -- Cloudtrail watch a user across multiple profiles
 COMMANDLIST                             -- List Commands
 COMMANDS                                -- Command help
+CREATEACCESSKEY                         -- Create access keys for user
+CREATEGROUP                             -- Create group in profile
+CREATEKEYPAIR                           -- Create a set of keypairs
+CREATEPOLICY                            -- Create policy bu name and upload policy document this.json
+CREATEREADMINUSER                       -- Create admin user
+CREATEREADONLYUSER                      -- Create readonly user
+CREATEUSER                              -- Create a user and assign access keys
+CREATEUSERNOKEY                         -- Create a user with no access keys
+CREATEVPC-2SUBNETS                      -- Create a Two Subnet VPC
+DELETEACCESSKEYS                        -- Delete all access keys attached to user
+DELETEGROUP                             -- Delete group from profile by group name
+DELETEPOLICY                            -- Delete local policy ARN
+DELETEUSER                              -- Delete user
+DELETEVPC                               -- Delete VPC
+DESCRIBEUSERS                           -- Lists groups and policies associated with user/userlist
+DETACHUSERPOLICIES                      -- Detach all policies from user
+EC2                                     -- Describe Instances
+EC2-LIST                                -- EC2 List
+EC2-SG                                  -- Security Group Detail Report
+EC2-SGSUM                               -- Security Group Summary Report
+EC2-SPARK                               -- CloudWatch CPU Utilization with Spark Graphing
+EC2-UTIL                                -- CloudWatch CPU Utilization
+GETALLPOLICIES                          -- Get all policy documents
+GETLOCALPOLICIES                        -- Get local policy documents
+GETPOLICY                               -- Get policy
+IAMPOLICYBYARN-ADD                      -- Attach policy to user by ARN
+IAMPOLICYBYARN-REMOVE                   -- Detach policy from user by ARN
+IAMPOLICYBYNAME-ADD                     -- Attach local policy to user by policy name
+IAMPOLICYBYNAME-REMOVE                  -- Detach local policy from user by policy name
+IAMUSERCHANGEPASSWORD-ADD               -- Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
+IAMUSERCHANGEPASSWORD-REMOVE            -- Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
+IAMUSERCODECOMMITPOWERUSER-ADD          -- Add arn:aws:iam::aws:policy/AWSCodeCommitPowerUser to user
+IAMUSERCODECOMMITPOWERUSER-REMOVE       -- Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
+LISTACCESSKEYS                          -- List a users access keys
+LISTALLPOLICIES                         -- List all policies
+LISTAWSPOLICIES                         -- List all AWS policies
+LISTGROUPS                              -- List groups in profile
+LISTLOCALPOLICIES                       -- List local policies
+LISTROLES                               -- List Roles
+LISTUSERGROUPS                          -- List groups attached to user
+LISTUSERPOLICIES                        -- List policies atttached to user
+LISTUSERS2                              -- User listing (simple format)
+LISTUSERSINGROUP                        -- List users in group
+LISTUSERS-JSON                          -- User list in json format
+LISTUSERS                               -- User listing
+NEWPOLICYDOC                            -- Create new this.json from policydoc.json template
+PUBLISH                                 -- Publish cuureport.txt
+REMOVEPOLICYSET                         -- Remove all policies specified in policyset.txt from user
+REMOVEUSERFROMALLGROUPS                 -- Remove all groups atttach to user
+REMOVEUSERFROMGROUP                     -- Remove user from group by group name
+REPLACEACCESSKEYS                       -- Delete and replace access keys
+SCRAMPASSWORD                           -- Make a users password unkown (scram)
+SWAP                                    -- Swap a Policy for a Group
+TEST2                                   -- Test Command Two
+TEST                                    -- Test Command
+TIME                                    -- Print time window
+UPDATEPOLICY                            -- Update policy
+USERMENU                                -- Menu driven user information
+WORLD                                   -- CloudTrail report for 100 hour window for user across all regions
+WWEC2                                   -- Another form of describe instances
 </pre>
 <pre>
   
-Mon Jun 11 20:28:08 EDT 2018
+Mon Jun 11 20:35:56 EDT 2018
 </pre>

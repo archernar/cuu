@@ -12,7 +12,7 @@ echo "  " >> README.md
 cuu -c commandlist | sort | gawk '{printf "%s ", $0;if ((NR%4)==0) print "";}' | column -t >> README.md
 echo "  " >> README.md
 echo "  " >> README.md
-cuu -c commands >> README.md
+cuu -c commands | sort  >> README.md
 echo "</pre>" >> README.md
 
 echo "<pre>" >> README.md
