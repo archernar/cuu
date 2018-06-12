@@ -14,44 +14,44 @@ echo "cuu commands" >> README.md
 echo "  " >> README.md
 
 echo "User Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*user >> README.md
+cat $Tmp | egrep "^[ ]*user" >> README.md
 echo "  " >> README.md
 
 echo "Password Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*password >> README.md
+cat $Tmp | egrep "^[ ]*password" >> README.md
 echo "  " >> README.md
 
 echo "AccessKey Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*accesskey >> README.md
+cat $Tmp | egrep "^[ ]*accesskey" >> README.md
 echo "  " >> README.md
 
 
 
 echo "Policy Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*policy >> README.md
+cat $Tmp | egrep "^[ ]*policy" >> README.md
 echo "  " >> README.md
 echo "Group Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*group >> README.md
+cat $Tmp | egrep "^[ ]*group" >> README.md
 echo "  " >> README.md
 echo "Role Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*role >> README.md
+cat $Tmp | egrep "^[ ]*role" >> README.md
 echo "  " >> README.md
 
 
 echo "VPC Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*vpc >> README.md
+cat $Tmp | egrep "^[ ]*vpc" >> README.md
 
 echo "  " >> README.md
 echo "EC2 Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*ec2 >> README.md
+cat $Tmp | egrep "^[ ]*ec2" >> README.md
 
 echo "  " >> README.md
 echo "CloudTrail Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*cloudtrail >> README.md
+cat $Tmp | egrep "^[ ]*cloudtrail" >> README.md
 
 echo "  " >> README.md
 echo "Utility Commands  " >> README.md
-cat $Tmp | egrep ^[ ]*util >> README.md
+cat $Tmp | egrep "^[ ]*util" >> README.md
 
 
 
