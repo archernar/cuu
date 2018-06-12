@@ -114,23 +114,97 @@ cuu command list
   
 ACCOUNTNUMBER              ADDUSERTOGROUP                ATTACHPOLICYSET                 ATTACHPOLICYTOALLUSERS
 ATTACHPOLICYTOUSER         CHANGEPASSWORD                CLOUDTRAIL-ACTIVE               CLOUDTRAILMENU
-CLOUDTRAIL-USER            CLOUDTRAIL-WATCH              COMMANDS                        CREATEACCESSKEY
+CLOUDTRAIL-USER            CLOUDTRAIL-WATCH              COMMANDLIST                     CREATEACCESSKEY
 CREATEGROUP                CREATEKEYPAIR                 CREATEPOLICY                    CREATEREADMINUSER
 CREATEREADONLYUSER         CREATEUSER                    CREATEUSERNOKEY                 CREATEVPC-2SUBNETS
 DELETEACCESSKEYS           DELETEGROUP                   DELETEPOLICY                    DELETEUSER
 DELETEVPC                  DESCRIBEUSERS                 DETACHUSERPOLICIES              EC2
 EC2-LIST                   EC2-SG                        EC2-SGSUM                       EC2-SPARK
 EC2-UTIL                   GETALLPOLICIES                GETLOCALPOLICIES                GETPOLICY
-IAMNAMEDPOLICY-ADD         IAMNAMEDPOLICY-ADD            IAMNAMEDPOLICY-REMOVE           IAMNAMEDPOLICY-REMOVE
-IAMUSERCHANGEPASSWORD-ADD  IAMUSERCHANGEPASSWORD-REMOVE  IAMUSERCODECOMMITPOWERUSER-ADD  LISTACCESSKEYS
-LISTALLPOLICIES            LISTAWSPOLICIES               LISTGROUPS                      LISTLOCALPOLICIES
-LISTROLES                  LISTUSERGROUPS                LISTUSERPOLICIES                LISTUSERS
-LISTUSERS2                 LISTUSERSINGROUP              LISTUSERS-JSON                  NEWPOLICYDOC
-PUBLISH                    REMOVEPOLICYSET               REMOVEUSERFROMALLGROUPS         REMOVEUSERFROMGROUP
-REPLACEACCESSKEYS          SCRAMPASSWORD                 SWAP                            TEST
-TEST2                      TIME                          UPDATEPOLICY                    UPDATEPOLICY-TEST
+IAMPOLICYBYARN-ADD         IAMPOLICYBYARN-REMOVE         IAMPOLICYBYNAME-ADD             IAMPOLICYBYNAME-REMOVE
+IAMUSERCHANGEPASSWORD-ADD  IAMUSERCHANGEPASSWORD-REMOVE  IAMUSERCODECOMMITPOWERUSER-ADD  IAMUSERCODECOMMITPOWERUSER-REMOVE
+LISTACCESSKEYS             LISTALLPOLICIES               LISTAWSPOLICIES                 LISTGROUPS
+LISTLOCALPOLICIES          LISTROLES                     LISTUSERGROUPS                  LISTUSERPOLICIES
+LISTUSERS                  LISTUSERS2                    LISTUSERSINGROUP                LISTUSERS-JSON
+NEWPOLICYDOC               PUBLISH                       REMOVEPOLICYSET                 REMOVEUSERFROMALLGROUPS
+REMOVEUSERFROMGROUP        REPLACEACCESSKEYS             SCRAMPASSWORD                   SWAP
+TEST                       TEST2                         TIME                            UPDATEPOLICY
+  
+  
+TEST                                    -- Test Command
+TEST2                                   -- Test Command Two
+DELETEVPC                               -- Delete VPC
+CREATEVPC-2SUBNETS                      -- Create a Two Subnet VPC
+PUBLISH                                 -- Publish cuureport.txt
+WORLD                                   -- CloudTrail report for 100 hour window for user across all regions
+WWEC2                                   -- Another form of describe instances
+CREATEPOLICY                            -- Create policy bu name and upload policy document this.json
+DELETEPOLICY                            -- Delete local policy ARN
+LISTUSERPOLICIES                        -- List policies atttached to user
+DETACHUSERPOLICIES                      -- Detach all policies from user
+ATTACHPOLICYTOALLUSERS                  -- Attach policy to all users
+ATTACHPOLICYTOUSER                      -- Attach policy to user
+GETPOLICY                               -- Get policy
+UPDATEPOLICY                            -- Update policy
+GETALLPOLICIES                          -- Get all policy documents
+GETLOCALPOLICIES                        -- Get local policy documents
+LISTALLPOLICIES                         -- List all policies
+LISTLOCALPOLICIES                       -- List local policies
+LISTAWSPOLICIES                         -- List all AWS policies
+ATTACHPOLICYSET                         -- Attach all policies specified in policyset.txt to user
+REMOVEPOLICYSET                         -- Remove all policies specified in policyset.txt from user
+CREATEKEYPAIR                           -- Create a set of keypairs
+REPLACEACCESSKEYS                       -- Delete and replace access keys
+CREATEACCESSKEY                         -- Create access keys for user
+LISTACCESSKEYS                          -- List a users access keys
+DELETEACCESSKEYS                        -- Delete all access keys attached to user
+CREATEREADMINUSER                       -- Create admin user
+CREATEREADONLYUSER                      -- Create readonly user
+CREATEUSERNOKEY                         -- Create a user with no access keys
+CREATEUSER                              -- Create a user and assign access keys
+CHANGEPASSWORD                          -- Change a users password
+SCRAMPASSWORD                           -- Make a users password unkown (scram)
+DELETEUSER                              -- Delete user
+LISTUSERS                               -- User listing
+LISTUSERS2                              -- User listing (simple format)
+LISTUSERS-JSON                          -- User list in json format
+USERMENU                                -- Menu driven user information
+DESCRIBEUSERS                           -- Lists groups and policies associated with user/userlist
+LISTROLES                               -- List Roles
+CREATEGROUP                             -- Create group in profile
+DELETEGROUP                             -- Delete group from profile by group name
+LISTGROUPS                              -- List groups in profile
+LISTUSERSINGROUP                        -- List users in group
+ADDUSERTOGROUP                          -- Add user/userlist to group
+LISTUSERGROUPS                          -- List groups attached to user
+REMOVEUSERFROMALLGROUPS                 -- Remove all groups atttach to user
+REMOVEUSERFROMGROUP                     -- Remove user from group by group name
+IAMPOLICYBYARN-REMOVE                   -- Detach policy from user by ARN
+IAMPOLICYBYARN-ADD                      -- Attach policy to user by ARN
+IAMPOLICYBYNAME-REMOVE                  -- Detach local policy from user by policy name
+IAMPOLICYBYNAME-ADD                     -- Attach local policy to user by policy name
+IAMUSERCODECOMMITPOWERUSER-ADD          -- Add arn:aws:iam::aws:policy/AWSCodeCommitPowerUser to user
+IAMUSERCODECOMMITPOWERUSER-REMOVE       -- Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
+IAMUSERCHANGEPASSWORD-ADD               -- Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
+IAMUSERCHANGEPASSWORD-REMOVE            -- Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
+SWAP                                    -- Swap a Policy for a Group
+EC2                                     -- Describe Instances
+EC2-LIST                                -- EC2 List
+EC2-SGSUM                               -- Security Group Summary Report
+EC2-SG                                  -- Security Group Detail Report
+EC2-SPARK                               -- CloudWatch CPU Utilization with Spark Graphing
+EC2-UTIL                                -- CloudWatch CPU Utilization
+CLOUDTRAIL-ACTIVE                       -- Cloudtrail watch all activity in the time window
+CLOUDTRAILMENU                          -- Menu interface to pick and watch users via cloudtrail
+CLOUDTRAIL-WATCH                        -- Cloudtrail watch a user across multiple profiles
+CLOUDTRAIL-USER                         -- Tracks a user's activity via cloud trail
+NEWPOLICYDOC                            -- Create new this.json from policydoc.json template
+TIME                                    -- Print time window
+ACCOUNTNUMBER                           -- Print account number
+COMMANDLIST                             -- List Commands
+COMMANDS                                -- Command help
 </pre>
 <pre>
   
-Mon Jun 11 12:55:12 EDT 2018
+Mon Jun 11 20:28:08 EDT 2018
 </pre>
