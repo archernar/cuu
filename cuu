@@ -145,8 +145,6 @@ commandABBREVIATIONS() {
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
             LU)                    COMMAND="LISTUSERS" ;;
             LU2)                   COMMAND="LISTUSERS2" ;;
-            DU)                    COMMAND="DESCRIBEUSERS" ;;
-            DESCRIBEUSER)          COMMAND="DESCRIBEUSERS" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
             SCRAM)                 COMMAND="SCRAMPASSWORD" ;;
@@ -382,6 +380,7 @@ confirm() {
      fi
 }
 typeset -A INFO 
+typeset -A OPTO 
 typeset -u COMMAND
 COMMAND=""
 USERNAME=""
@@ -518,11 +517,22 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 bCmd=0
 gCmd=0
 szCmd=""
+OA="-a"
+OART="-a -r -t"
+OAR="-a -r"
+OAU="-a -u"
+OAUT="-a -u -t"
 rm -rf $CuuCommandFile  >/dev/null 2>&1
-COMMANDPROC() {
+XXCOMMANDPROC() {
+     THISCMD1=`echo "$1" | gawk -F, '{print $1}'`
+     THISCMD2=`echo "$1" | gawk -F, '{print $2}'`
+     print $THISCMD1
+     print $THISCMD2
+     exit 1
      bCmd=0
      print $1 >> $CuuCommandFile
      INFO[$1]="$2"
+     OPTO[$1]="$3"
      if [ "$COMMAND" == $1 ] ; then
          bCmd=1
          gCmd=1
@@ -532,6 +542,44 @@ COMMANDPROC() {
      fi
      return bCmd
 }
+COMMANDPROC() {
+     bCmd=0
+     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($1)}'`
+     print $THISCMD >> $CuuCommandFile
+     INFO[$THISCMD]="$2"
+     OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then
+         bCmd=1
+         gCmd=1
+         szCmd="$COMMAND"
+         return bCmd
+     fi
+
+     bCmd=0
+     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($2)}'`
+     print $THISCMD"(alias)" >> $CuuCommandFile
+     INFO[$THISCMD]="$2"
+     OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then
+         bCmd=1
+         gCmd=1
+         szCmd="$COMMAND"
+         return bCmd
+     fi
+
+     bCmd=0
+     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($3)}'`
+     print $THISCMD >> $CuuCommandFile
+     INFO[$THISCMD]="$2"
+     OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then
+         bCmd=1
+         gCmd=1
+         szCmd="$COMMAND"
+         return bCmd
+     fi
+     return 0
+}
 COMMANDINFO() {
     INFO[$szCmd]="$1"
     # print ${INFO[$szCmd]}
@@ -540,12 +588,8 @@ COMMANDINFO() {
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "TEST" "Test Command"; if [ $bCmd -gt 0 ] ; then
-     LIST=`$AWS ec2 describe-vpcs --query "Vpcs[].VpcId"`
-     for ITEM in $LIST; do
-          print $ITEM
-          print "-------------------------------------------"
-          $AWS ec2 describe-security-groups --filters "Name=vpc-id,Values=$ITEM" --query "SecurityGroups[].GroupId"
-     done
+     figlet $COMMAND
+     exit 1
      NOTHING=0
 fi
 
@@ -563,7 +607,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: VPC Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "DELETEVPC" "Delete VPC"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VPCDELETE,DELETEVPC" "Delete VPC" "-a -r -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
      assert "$THING"    "VPC ID not specified"
@@ -603,7 +647,7 @@ COMMANDPROC "DELETEVPC" "Delete VPC"; if [ $bCmd -gt 0 ] ; then
      NOTHING=0
 fi
 
-COMMANDPROC "CREATEVPC-2SUBNETS" "Create a Two Subnet VPC"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
      assert "$MYCIDR"   "My CIDR not specified"
@@ -637,7 +681,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: PUBLISH Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "PUBLISH" "Publish cuureport.txt"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0 ] ; then
      assertfile cuureport.txt
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
      DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
@@ -649,7 +693,7 @@ COMMANDPROC "PUBLISH" "Publish cuureport.txt"; if [ $bCmd -gt 0 ] ; then
      java Gpurl us-east-1 ecd3pub $FNAME 15
 fi
 
-COMMANDPROC "WORLD" "CloudTrail report for 100 hour window for user across all regions"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "WORLD" "CloudTrail report for 100 hour window for user across all regions" "-a"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      LIST=`$AWS ec2 describe-regions --query "Regions[*].RegionName"`
      for ITEM in $LIST; do
@@ -657,7 +701,7 @@ COMMANDPROC "WORLD" "CloudTrail report for 100 hour window for user across all r
      done
 
 fi
-COMMANDPROC "WWEC2" "Another form of describe instances"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "WWEC2" "Another form of describe instances" "-a"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      LIST=`aws ec2 describe-regions --query "Regions[*].RegionName" --output text`
      for ITEM in $LIST; do
@@ -669,57 +713,76 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: POLICY Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "CREATEPOLICY" "Create policy bu name and upload policy document this.json"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYBYARN-REMOVE" "Detach policy from user by ARN" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
+     policyREMOVE $THING
+fi
+COMMANDPROC "POLICYBYARN-ADD" "Attach policy to user by ARN" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
+     policyATTACH $THING
+fi
+COMMANDPROC "POLICYBYNAME-REMOVE" "Detach local policy from user by policy name" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandTHING "Policy-Name"
+     ACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     policyREMOVE "arn:aws:iam::"$ACCT":policy/"$THING
+     ACCT=""
+fi
+COMMANDPROC "POLICYBYNAME-ADD" "Attach local policy to user by policy name" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandTHING "Policy-Name"
+     ACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     policyATTACH "arn:aws:iam::"$ACCT":policy/"$THING
+     ACCT=""
+fi
+COMMANDPROC "POLICYCREATE" "Create policy bu name and upload policy document this.json" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandTHING "Policy-Name"
      confirm
      aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://this.json
      THIS=""
 fi
 
-COMMANDPROC "DELETEPOLICY" "Delete local policy ARN"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYDELETE" "Delete local policy ARN" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandTHING "Policy-Name"
      confirm
      THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
      aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
      THIS=""
 fi
-COMMANDPROC "LISTUSERPOLICIES" "List policies atttached to user"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAME
-               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
+COMMANDPROC "LISTUSERPOLICIES" "List policies atttached to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
 fi
 
 
-COMMANDPROC "DETACHUSERPOLICIES" "Detach all policies from user"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAME
-               confirm
-               aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME '
-               {
-                   sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
-                   system(sz)
-               }'
+COMMANDPROC "DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     confirm
+     aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME ' {
+          sz = "aws --profile " A " iam detach-user-policy --user-name " U " --policy-arn " $2
+          system(sz)
+     }'
 fi
-COMMANDPROC "ATTACHPOLICYTOALLUSERS" "Attach policy to all users"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandTHING "Policy-ARN"
-               buildUSERLIST $ACCOUNT
-               for USER in $USERLIST; do
-                    policyATTACH $THING
-               done
-               USERLIST=""
+COMMANDPROC "ATTACHPOLICYTOALLUSERS" "Attach policy to all users" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandTHING "Policy-ARN"
+     buildUSERLIST $ACCOUNT
+     for USER in $USERLIST; do
+          policyATTACH $THING
+     done
+     USERLIST=""
 fi
-COMMANDPROC "ATTACHPOLICYTOUSER" "Attach policy to user"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAME
-               assert "$THING" "Thing not specified"
-               policyATTACH $THING
+COMMANDPROC "ATTACHPOLICYTOUSER" "Attach policy to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     assert "$THING" "Thing not specified"
+     policyATTACH $THING
 fi
 
-COMMANDPROC "GETPOLICY" "Get policy"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GETPOLICY" "Get policy" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
      LIST=`$AWS iam list-policies --scope All --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
      cat $Tmp
 fi
 
-COMMANDPROC "UPDATEPOLICY" "Update policy"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYUPDATE,UPDATEPOLICY" "Update policy" "-a -t -D"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
      asserte "$DOCUMENT" "Document not specified"
@@ -735,7 +798,7 @@ COMMANDPROC "UPDATEPOLICY" "Update policy"; if [ $bCmd -gt 0 ] ; then
      THIS=""
      ARN=""
 fi
-COMMANDPROC "GETALLPOLICIES" "Get all policy documents"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYGETALL,GETALLPOLICIES,GAP" "Get all policy documents"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      if [ "$THING" == "" ] ; then
           LIST=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" | tee $Tmp`
@@ -759,7 +822,7 @@ COMMANDPROC "GETALLPOLICIES" "Get all policy documents"; if [ $bCmd -gt 0 ] ; th
           cp $gARNFILE this.json
      done
 fi
-COMMANDPROC "GETLOCALPOLICIES" "Get local policy documents"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYGETLOCAL,GETLOCALPOLICIES,GLP" "Get local policy documents"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT"  "Profile not specified"
           if [ "$THING" == "" ] ; then
                LIST=`aws --profile $ACCOUNT iam list-policies --scope Local --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |tee $Tmp`
@@ -784,21 +847,21 @@ COMMANDPROC "GETLOCALPOLICIES" "Get local policy documents"; if [ $bCmd -gt 0 ] 
                cp $gARNFILE this.json
           done
 fi
-COMMANDPROC "LISTALLPOLICIES" "List all policies"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYLISTALL,LISTALLPOLICIES" "List all policies"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT" "Profile not specified"
           clean
           for ITEM in $ACCOUNT; do
                aws --profile $ITEM --output text iam list-policies --scope All --query "Policies[*].[Arn]" | sort
           done
 fi
-COMMANDPROC "LISTLOCALPOLICIES" "List local policies"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYLISTLOCAL,LISTLOCALPOLICIES" "List local policies"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT" "Profile not specified"
           clean
           for ITEM in $ACCOUNT; do
               aws --profile $ITEM --output text iam list-policies --scope Local --query "Policies[*].[PolicyName,UpdateDate,DefaultVersionId,Arn]" | column -t
           done
 fi
-COMMANDPROC "LISTAWSPOLICIES" "List all AWS policies"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYLISTAWS,LISTAWSPOLICIES" "List all AWS policies"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT" "Profile not specified"
           clean
           for ITEM in $ACCOUNT; do
@@ -806,12 +869,12 @@ COMMANDPROC "LISTAWSPOLICIES" "List all AWS policies"; if [ $bCmd -gt 0 ] ; then
           done
 fi
 
-COMMANDPROC "ATTACHPOLICYSET" "Attach all policies specified in policyset.txt to user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYSETATTACH,ATTACHPOLICYSET" "Attach all policies specified in policyset.txt to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT" "Profile not specified"
           assert "$USER" "Profile not specified"
           policysetATTACH
 fi
-COMMANDPROC "REMOVEPOLICYSET" "Remove all policies specified in policyset.txt from user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYSETREMOVE,REMOVEPOLICYSET" "Remove all policies specified in policyset.txt from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT" "Profile not specified"
           assert "$USER" "Profile not specified"
           policysetREMOVE
@@ -820,7 +883,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: KEY PAIR Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "CREATEKEYPAIR" "Create a set of keypairs"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "KEYPAIRCREATE,CREATEKEYPAIR" "Create a set of keypairs" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Key Name not specified"
      $AWS ec2 create-key-pair --key-name $THING --query 'KeyMaterial' > $THING.pem
@@ -830,7 +893,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: ACCESS KEY Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "REPLACEACCESSKEYS" "Delete and replace access keys"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCESSKEYREPLACE,REPLACEACCESSKEYS" "Delete and replace access keys"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           confirm
           wipeACCESSKEYS
@@ -838,17 +901,17 @@ COMMANDPROC "REPLACEACCESSKEYS" "Delete and replace access keys"; if [ $bCmd -gt
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
           cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U,A);}'
 fi
-COMMANDPROC "CREATEACCESSKEY" "Create access keys for user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCESSKEYCREATE,CREATEACCESSKEY" "Create access keys for user"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
           cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
 fi
-COMMANDPROC "LISTACCESSKEYS" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCESSKEYSLIST,LISTACCESSKEYS" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
 fi
-COMMANDPROC "DELETEACCESSKEYS" "Delete all access keys attached to user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCESSKEYSDELETE,DELETEACCESSKEYS" "Delete all access keys attached to user"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           confirm
           wipeACCESSKEYS
@@ -856,46 +919,46 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: USER Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "CREATEREADMINUSER" "Create admin user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATEADMIN,CREATEREADMINUSER" "Create admin user" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
           optionalGROUPADD
 fi
-COMMANDPROC "CREATEREADONLYUSER" "Create readonly user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATEREADONLY,CREATEREADONLYUSER" "Create readonly user" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           policyATTACH arn:aws:iam::aws:policy/ReadOnlyAccess
           optionalGROUPADD
 fi
-COMMANDPROC "CREATEUSERNOKEY" "Create a user with no access keys"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATENOKEY,CREATEUSERNOKEY" "Create a user with no access keys" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           optionalGROUPADD
 fi
-COMMANDPROC "CREATEUSER" "Create a user and assign access keys"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           optionalGROUPADD
           createACCESSKEY
 fi
-COMMANDPROC "CHANGEPASSWORD" "Change a users password"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "PASSWORDCHANGE,CHANGEPASSWORD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
-COMMANDPROC "SCRAMPASSWORD" "Make a users password unkown (scram)"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "PASSWORDSCRAM,SCRAMPASSWORD" "Make a users password unkown (scram)" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
 fi
-COMMANDPROC "DELETEUSER" "Delete user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERDELETE,DELETEUSER" "Delete user" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           wipeUSER
           deleteUSER
 fi
-COMMANDPROC "LISTUSERS" "User listing"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLIST,LISTUSERS" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -903,7 +966,7 @@ COMMANDPROC "LISTUSERS" "User listing"; if [ $bCmd -gt 0 ] ; then
           done
           cat $Tmp | column -t
 fi
-COMMANDPROC "LISTUSERS2" "User listing (simple format)"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLIST-2,LISTUSERS2" "User listing (simple format)" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -911,7 +974,7 @@ COMMANDPROC "LISTUSERS2" "User listing (simple format)"; if [ $bCmd -gt 0 ] ; th
           done
           cat $Tmp
 fi
-COMMANDPROC "LISTUSERS-JSON" "User list in json format"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLIST-JSON,LISTUSERS-JSON" "User list in json format" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -920,7 +983,7 @@ COMMANDPROC "LISTUSERS-JSON" "User list in json format"; if [ $bCmd -gt 0 ] ; th
           cat $Tmp | gawk '
           BEGIN {print "[";c="";} { printf "%s", c "\"" $0 "\"";c=",\n"; } END {print "\n]"}'
 fi
-COMMANDPROC "USERMENU" "Menu driven user information"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERMENU" "Menu driven user information" "-a"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT" "Profile not specified"
           buildUSERLIST  $ACCOUNT
           clean
@@ -942,7 +1005,7 @@ COMMANDPROC "USERMENU" "Menu driven user information"; if [ $bCmd -gt 0 ] ; then
           chmod 777 $Tmp
           $Tmp
 fi
-COMMANDPROC "DESCRIBEUSERS" "Lists groups and policies associated with user/userlist"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERDESCRIBE,DESCRIBEUSERS,DU" "Lists groups and policies associated with user/userlist" "-a -u"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      clean
      for ITEM in $ACCOUNT; do
@@ -968,7 +1031,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: ROLE Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ROLESLIST,LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -980,20 +1043,20 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: GROUP Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "CREATEGROUP" "Create group in profile"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPCREATE" "Create group in profile" "-a -t"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING"   "Group not specified"
                clean
                $AWS iam create-group --group-name $THING
                $AWS iam list-groups  --query "Groups[*].[GroupName,CreateDate,Arn]"
 fi
-COMMANDPROC "DELETEGROUP" "Delete group from profile by group name"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPDELETE" "Delete group from profile by group name" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
                assert "$USERNAME" "Username not specified"
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING" "Group not specified"
                $AWS iam delete-group --group-name $THING
 fi
-COMMANDPROC "LISTGROUPS" "List groups in profile"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "LISTGROUPS" "List groups in profile" "-a"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                clean
                for ITEM in $ACCOUNT; do
@@ -1009,7 +1072,7 @@ COMMANDPROC "LISTUSERSINGROUP" "List users in group"; if [ $bCmd -gt 0 ] ; then
               done
               USERLIST=""
 fi
-COMMANDPROC "ADDUSERTOGROUP" "Add user/userlist to group"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPADDUSER" "Add user/userlist to group" "-a -t"; if [ $bCmd -gt 0 ] ; then
               assertACCOUNTandTHING "Group-Name"
               buildUSERLIST $ACCOUNT
               print $USERLIST
@@ -1022,10 +1085,10 @@ COMMANDPROC "LISTUSERGROUPS" "List groups attached to user"; if [ $bCmd -gt 0 ] 
                assertACCOUNTandUSERNAME
                aws --profile $ACCOUNT iam list-groups-for-user --user-name $USERNAME --query "Groups[*].[GroupName]" --output text
 fi
-COMMANDPROC "REMOVEUSERFROMALLGROUPS" "Remove all groups atttach to user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPREMOVEALLUSERS" "Remove all groups atttach to user"; if [ $bCmd -gt 0 ] ; then
     wipeGROUPS
 fi
-COMMANDPROC "REMOVEUSERFROMGROUP" "Remove user from group by group name"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPREMOVEUSER" "Remove user from group by group name"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$USERNAME" "Username not specified"
                assert "$THING" "Group name not specified"
@@ -1036,50 +1099,30 @@ fi
 # These commands operate on users
 # ----------------------------------------------------
 
-COMMANDPROC "IAMPOLICYBYARN-REMOVE" "Detach policy from user by ARN"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
-               policyREMOVE $THING
-fi
-COMMANDPROC "IAMPOLICYBYARN-ADD" "Attach policy to user by ARN"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
-               policyATTACH $THING
-fi
-COMMANDPROC "IAMPOLICYBYNAME-REMOVE" "Detach local policy from user by policy name"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandTHING "Policy-Name"
-               ACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               policyREMOVE "arn:aws:iam::"$ACCT":policy/"$THING
-               ACCT=""
-fi
-COMMANDPROC "IAMPOLICYBYNAME-ADD" "Attach local policy to user by policy name"; if [ $bCmd -gt 0 ] ; then
-               assertACCOUNTandTHING "Policy-Name"
-               ACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-               policyATTACH "arn:aws:iam::"$ACCT":policy/"$THING
-               ACCT=""
-fi
 
 THIS="arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
-COMMANDPROC "IAMUSERCODECOMMITPOWERUSER-ADD" "Add "$THIS" to user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYCODECOMMITPOWERUSER-ADD,IAMUSERCODECOMMITPOWERUSER-ADD" "Add "$THIS" to user"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                policyATTACH $THIS
 fi
 THIS="arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
-COMMANDPROC "IAMUSERCODECOMMITPOWERUSER-REMOVE" "Remove "$THIS" from user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYCODECOMMITPOWERUSER-REMOVE,IAMUSERCODECOMMITPOWERUSER-REMOVE" "Remove "$THIS" from user"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                policyREMOVE $THIS
 fi
 THIS="arn:aws:iam::aws:policy/IAMUserChangePassword"
-COMMANDPROC "IAMUSERCHANGEPASSWORD-ADD" "Add "$THIS" to user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYUSERCHANGEPASSWORD-ADD,IAMUSERCHANGEPASSWORD-ADD" "Add "$THIS" to user"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                policyATTACH $THIS
 fi
 THIS="arn:aws:iam::aws:policy/IAMUserChangePassword"
-COMMANDPROC "IAMUSERCHANGEPASSWORD-REMOVE" "Remove "$THIS" from user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYUSERCHANGEPASSWORD-REMOVE,IAMUSERCHANGEPASSWORD-REMOVE" "Remove "$THIS" from user"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                policyREMOVE $THIS
 fi
 
 
-COMMANDPROC "SWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                policyATTACH $POLICYADD
                groupREMOVE $GROUPREMOVE
@@ -1451,38 +1494,40 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: UTILITY Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "NEWPOLICYDOC" "Create new this.json from policydoc.json template"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILNEWPOLICYDOC,NEWPOLICYDOC" "Create new this.json from policydoc.json template"; if [ $bCmd -gt 0 ] ; then
      cp policydoc.json this.json
 fi
-COMMANDPROC "TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILTIME,TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
 fi
-COMMANDPROC "ACCOUNTNUMBER" "Print account number"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILACCOUNTNUMBER,ACCOUNTNUMBER" "Print account number"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
 fi
-COMMANDPROC "COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; then
      cat $CuuCommandFile
 fi
-COMMANDPROC "COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
+     rm $Tmp  >/dev/null 2>&1
      LIST=`cat $CuuCommandFile`
      for ITEM in $LIST; do
-          printf "%-40s-- %s\n" $ITEM "${INFO[$ITEM]}"
+          SZOPTO="${OPTO[$ITEM]}"
+          if [ "$SZOPTO" == "" ] ; then
+               SZOPTO="-a"
+          fi
+          typeset -l v=$ITEM
+          printf "%-36s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
      done
+     cat $Tmp | sort
      NOTHING=0
      LIST=""
 fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
-     LIST=`cat $CuuCommandFile`
-     for ITEM in $LIST; do
-          printf "%-40s-- %s\n" $ITEM "${INFO[$ITEM]}"
-     done
+COMMANDPROC "TESTHELLOWORLD,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
      NOTHING=0
-     LIST=""
 fi
 
 # -----------------------------------------------------------------------------------------------------------------------

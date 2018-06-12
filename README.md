@@ -112,99 +112,228 @@ KP=                                   ; Key Pair Name
 <pre>
 cuu command list
   
-ACCOUNTNUMBER              ADDUSERTOGROUP                ATTACHPOLICYSET                 ATTACHPOLICYTOALLUSERS
-ATTACHPOLICYTOUSER         CHANGEPASSWORD                CLOUDTRAIL-ACTIVE               CLOUDTRAILMENU
-CLOUDTRAIL-USER            CLOUDTRAIL-WATCH              COMMANDLIST                     CREATEACCESSKEY
-CREATEGROUP                CREATEKEYPAIR                 CREATEPOLICY                    CREATEREADMINUSER
-CREATEREADONLYUSER         CREATEUSER                    CREATEUSERNOKEY                 CREATEVPC-2SUBNETS
-DELETEACCESSKEYS           DELETEGROUP                   DELETEPOLICY                    DELETEUSER
-DELETEVPC                  DESCRIBEUSERS                 DETACHUSERPOLICIES              EC2
-EC2-LIST                   EC2-SG                        EC2-SGSUM                       EC2-SPARK
-EC2-UTIL                   GETALLPOLICIES                GETLOCALPOLICIES                GETPOLICY
-IAMPOLICYBYARN-ADD         IAMPOLICYBYARN-REMOVE         IAMPOLICYBYNAME-ADD             IAMPOLICYBYNAME-REMOVE
-IAMUSERCHANGEPASSWORD-ADD  IAMUSERCHANGEPASSWORD-REMOVE  IAMUSERCODECOMMITPOWERUSER-ADD  IAMUSERCODECOMMITPOWERUSER-REMOVE
-LISTACCESSKEYS             LISTALLPOLICIES               LISTAWSPOLICIES                 LISTGROUPS
-LISTLOCALPOLICIES          LISTROLES                     LISTUSERGROUPS                  LISTUSERPOLICIES
-LISTUSERS                  LISTUSERS2                    LISTUSERSINGROUP                LISTUSERS-JSON
-NEWPOLICYDOC               PUBLISH                       REMOVEPOLICYSET                 REMOVEUSERFROMALLGROUPS
-REMOVEUSERFROMGROUP        REPLACEACCESSKEYS             SCRAMPASSWORD                   SWAP
-TEST                       TEST2                         TIME                            UPDATEPOLICY
+ACCESSKEYCREATE
+ACCESSKEYREPLACE                       ACCESSKEYSDELETE                          ACCESSKEYSLIST                    ACCOUNTNUMBER(alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+(alias)                                (alias)                                   (alias)                           (alias)
+ATTACHPOLICYSET(alias)                 ATTACHPOLICYTOALLUSERS                    ATTACHPOLICYTOUSER                CHANGEPASSWORD(alias)
+CLOUDTRAIL-ACTIVE                      CLOUDTRAILMENU                            CLOUDTRAIL-USER                   CLOUDTRAIL-WATCH
+COMMANDLIST(alias)                     CREATEACCESSKEY(alias)                    CREATEKEYPAIR(alias)              CREATEREADMINUSER(alias)
+CREATEREADONLYUSER(alias)              CREATEUSER(alias)                         CREATEUSERNOKEY(alias)            CREATEVPC-2SUBNETS(alias)
+DELETEACCESSKEYS(alias)                DELETEUSER(alias)                         DELETEVPC(alias)                  DESCRIBEUSERS(alias)
+DETACHUSERPOLICIES                     DU                                        EC2                               EC2-LIST
+EC2-SG                                 EC2-SGSUM                                 EC2-SPARK                         EC2-UTIL
+GAP                                    GETALLPOLICIES(alias)                     GETLOCALPOLICIES(alias)           GETPOLICY
+GLP                                    GROUPADDUSER                              GROUPCREATE                       GROUPDELETE
+GROUPREMOVEALLUSERS                    GROUPREMOVEUSER                           IAMUSERCHANGEPASSWORD-ADD(alias)  IAMUSERCHANGEPASSWORD-REMOVE(alias)
+IAMUSERCODECOMMITPOWERUSER-ADD(alias)  IAMUSERCODECOMMITPOWERUSER-REMOVE(alias)  KEYPAIRCREATE                     LISTACCESSKEYS(alias)
+LISTALLPOLICIES(alias)                 LISTAWSPOLICIES(alias)                    LISTGROUPS                        LISTLOCALPOLICIES(alias)
+LISTROLES(alias)                       LISTUSERGROUPS                            LISTUSERPOLICIES                  LISTUSERS2(alias)
+LISTUSERS(alias)                       LISTUSERSINGROUP                          LISTUSERS-JSON(alias)             NEWPOLICYDOC(alias)
+PASSWORDCHANGE                         PASSWORDSCRAM                             POLICYBYARN-ADD                   POLICYBYARN-REMOVE
+POLICYBYNAME-ADD                       POLICYBYNAME-REMOVE                       POLICYCODECOMMITPOWERUSER-ADD     POLICYCODECOMMITPOWERUSER-REMOVE
+POLICYCREATE                           POLICYDELETE                              POLICYGETALL                      POLICYGETLOCAL
+POLICYLISTALL                          POLICYLISTAWS                             POLICYLISTLOCAL                   POLICYSETATTACH
+POLICYSETREMOVE                        POLICYUPDATE                              POLICYUSERCHANGEPASSWORD-ADD      POLICYUSERCHANGEPASSWORD-REMOVE
+PUBLISH                                REMOVEPOLICYSET(alias)                    REPLACEACCESSKEYS(alias)          ROLESLIST
+SCRAMPASSWORD(alias)                   TEST                                      TEST2                             TIME(alias)
+UPDATEPOLICY(alias)                    USERCREATE                                USERCREATEADMIN                   USERCREATENOKEY
+USERCREATEREADONLY                     USERDELETE                                USERDESCRIBE                      USERLIST
+USERLIST-2                             USERLIST-JSON                             USERMENU                          UTILACCOUNTNUMBER
+UTILCOMMANDLIST                        UTILNEWPOLICYDOC                          UTILSWAP                          UTILTIME
+VPCCREATE                              VPCDELETE                                 WORLD                             WWEC2
   
   
-ACCOUNTNUMBER                           -- Print account number
-ADDUSERTOGROUP                          -- Add user/userlist to group
-ATTACHPOLICYSET                         -- Attach all policies specified in policyset.txt to user
-ATTACHPOLICYTOALLUSERS                  -- Attach policy to all users
-ATTACHPOLICYTOUSER                      -- Attach policy to user
-CHANGEPASSWORD                          -- Change a users password
-CLOUDTRAIL-ACTIVE                       -- Cloudtrail watch all activity in the time window
-CLOUDTRAILMENU                          -- Menu interface to pick and watch users via cloudtrail
-CLOUDTRAIL-USER                         -- Tracks a user's activity via cloud trail
-CLOUDTRAIL-WATCH                        -- Cloudtrail watch a user across multiple profiles
-COMMANDLIST                             -- List Commands
-COMMANDS                                -- Command help
-CREATEACCESSKEY                         -- Create access keys for user
-CREATEGROUP                             -- Create group in profile
-CREATEKEYPAIR                           -- Create a set of keypairs
-CREATEPOLICY                            -- Create policy bu name and upload policy document this.json
-CREATEREADMINUSER                       -- Create admin user
-CREATEREADONLYUSER                      -- Create readonly user
-CREATEUSER                              -- Create a user and assign access keys
-CREATEUSERNOKEY                         -- Create a user with no access keys
-CREATEVPC-2SUBNETS                      -- Create a Two Subnet VPC
-DELETEACCESSKEYS                        -- Delete all access keys attached to user
-DELETEGROUP                             -- Delete group from profile by group name
-DELETEPOLICY                            -- Delete local policy ARN
-DELETEUSER                              -- Delete user
-DELETEVPC                               -- Delete VPC
-DESCRIBEUSERS                           -- Lists groups and policies associated with user/userlist
-DETACHUSERPOLICIES                      -- Detach all policies from user
-EC2                                     -- Describe Instances
-EC2-LIST                                -- EC2 List
-EC2-SG                                  -- Security Group Detail Report
-EC2-SGSUM                               -- Security Group Summary Report
-EC2-SPARK                               -- CloudWatch CPU Utilization with Spark Graphing
-EC2-UTIL                                -- CloudWatch CPU Utilization
-GETALLPOLICIES                          -- Get all policy documents
-GETLOCALPOLICIES                        -- Get local policy documents
-GETPOLICY                               -- Get policy
-IAMPOLICYBYARN-ADD                      -- Attach policy to user by ARN
-IAMPOLICYBYARN-REMOVE                   -- Detach policy from user by ARN
-IAMPOLICYBYNAME-ADD                     -- Attach local policy to user by policy name
-IAMPOLICYBYNAME-REMOVE                  -- Detach local policy from user by policy name
-IAMUSERCHANGEPASSWORD-ADD               -- Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
-IAMUSERCHANGEPASSWORD-REMOVE            -- Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
-IAMUSERCODECOMMITPOWERUSER-ADD          -- Add arn:aws:iam::aws:policy/AWSCodeCommitPowerUser to user
-IAMUSERCODECOMMITPOWERUSER-REMOVE       -- Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
-LISTACCESSKEYS                          -- List a users access keys
-LISTALLPOLICIES                         -- List all policies
-LISTAWSPOLICIES                         -- List all AWS policies
-LISTGROUPS                              -- List groups in profile
-LISTLOCALPOLICIES                       -- List local policies
-LISTROLES                               -- List Roles
-LISTUSERGROUPS                          -- List groups attached to user
-LISTUSERPOLICIES                        -- List policies atttached to user
-LISTUSERS2                              -- User listing (simple format)
-LISTUSERSINGROUP                        -- List users in group
-LISTUSERS-JSON                          -- User list in json format
-LISTUSERS                               -- User listing
-NEWPOLICYDOC                            -- Create new this.json from policydoc.json template
-PUBLISH                                 -- Publish cuureport.txt
-REMOVEPOLICYSET                         -- Remove all policies specified in policyset.txt from user
-REMOVEUSERFROMALLGROUPS                 -- Remove all groups atttach to user
-REMOVEUSERFROMGROUP                     -- Remove user from group by group name
-REPLACEACCESSKEYS                       -- Delete and replace access keys
-SCRAMPASSWORD                           -- Make a users password unkown (scram)
-SWAP                                    -- Swap a Policy for a Group
-TEST2                                   -- Test Command Two
-TEST                                    -- Test Command
-TIME                                    -- Print time window
-UPDATEPOLICY                            -- Update policy
-USERMENU                                -- Menu driven user information
-WORLD                                   -- CloudTrail report for 100 hour window for user across all regions
-WWEC2                                   -- Another form of describe instances
+accesskeycreate                      -a         Create access keys for user
+accesskeyreplace                     -a         Delete and replace access keys
+accesskeysdelete                     -a         Delete all access keys attached to user
+accesskeyslist                       -a         List a users access keys
+accountnumber(alias)                 -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+(alias)                              -a         
+attachpolicyset(alias)               -a         
+attachpolicytoallusers               -a -t      Attach policy to all users
+attachpolicytouser                   -a -u      Attach policy to user
+changepassword(alias)                -a         
+cloudtrail-active                    -a         Cloudtrail watch all activity in the time window
+cloudtrailmenu                       -a         Menu interface to pick and watch users via cloudtrail
+cloudtrail-user                      -a         Tracks a user's activity via cloud trail
+cloudtrail-watch                     -a         Cloudtrail watch a user across multiple profiles
+commandlist(alias)                   -a         
+commands(alias)                      -a         
+createaccesskey(alias)               -a         
+createkeypair(alias)                 -a         
+createreadminuser(alias)             -a         
+createreadonlyuser(alias)            -a         
+createuser(alias)                    -a         
+createusernokey(alias)               -a         
+createvpc-2subnets(alias)            -a         
+deleteaccesskeys(alias)              -a         
+deleteuser(alias)                    -a         
+deletevpc(alias)                     -a         
+describeusers(alias)                 -a         
+detachuserpolicies                   -a -u      Detach all policies from user
+du                                   -a -u      Lists groups and policies associated with user/userlist
+ec2                                  -a         Describe Instances
+ec2-list                             -a         EC2 List
+ec2-sg                               -a         Security Group Detail Report
+ec2-sgsum                            -a         Security Group Summary Report
+ec2-spark                            -a         CloudWatch CPU Utilization with Spark Graphing
+ec2-util                             -a         CloudWatch CPU Utilization
+gap                                  -a         Get all policy documents
+getallpolicies(alias)                -a         
+getlocalpolicies(alias)              -a         
+getpolicy                            -a -t      Get policy
+glp                                  -a         Get local policy documents
+groupadduser                         -a -t      Add user/userlist to group
+groupcreate                          -a -t      Create group in profile
+groupdelete                          -a -u -t   Delete group from profile by group name
+groupremoveallusers                  -a         Remove all groups atttach to user
+groupremoveuser                      -a         Remove user from group by group name
+iamuserchangepassword-add(alias)     -a         
+iamuserchangepassword-remove(alias)  -a         
+iamusercodecommitpoweruser-add(alias) -a         
+iamusercodecommitpoweruser-remove(alias) -a         
+keypaircreate                        -a -t      Create a set of keypairs
+listaccesskeys(alias)                -a         
+listallpolicies(alias)               -a         
+listawspolicies(alias)               -a         
+listgroups                           -a         List groups in profile
+listlocalpolicies(alias)             -a         
+listroles(alias)                     -a         
+listusergroups                       -a         List groups attached to user
+listuserpolicies                     -a -u      List policies atttached to user
+listusers2(alias)                    -a         
+listusers(alias)                     -a         
+listusersingroup                     -a         List users in group
+listusers-json(alias)                -a         
+newpolicydoc(alias)                  -a         
+passwordchange                       -a -u -p   Change a users password
+passwordscram                        -a -u      Make a users password unkown (scram)
+policybyarn-add                      -a -u -t   Attach policy to user by ARN
+policybyarn-remove                   -a -u -t   Detach policy from user by ARN
+policybyname-add                     -a -t      Attach local policy to user by policy name
+policybyname-remove                  -a -t      Detach local policy from user by policy name
+policycodecommitpoweruser-add        -a         Add arn:aws:iam::aws:policy/AWSCodeCommitPowerUser to user
+policycodecommitpoweruser-remove     -a         Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
+policycreate                         -a -t      Create policy bu name and upload policy document this.json
+policydelete                         -a -t      Delete local policy ARN
+policygetall                         -a         Get all policy documents
+policygetlocal                       -a         Get local policy documents
+policylistall                        -a         List all policies
+policylistaws                        -a         List all AWS policies
+policylistlocal                      -a         List local policies
+policysetattach                      -a -u      Attach all policies specified in policyset.txt to user
+policysetremove                      -a -u      Remove all policies specified in policyset.txt from user
+policyupdate                         -a -t -D   Update policy
+policyuserchangepassword-add         -a         Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
+policyuserchangepassword-remove      -a         Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
+publish                              -a         Publish cuureport.txt
+removepolicyset(alias)               -a         
+replaceaccesskeys(alias)             -a         
+roleslist                            -a         List Roles
+scrampassword(alias)                 -a         
+test2                                -a         Test Command Two
+test                                 -a         Test Command
+time(alias)                          -a         
+updatepolicy(alias)                  -a         
+usercreateadmin                      -a -u -p   Create admin user
+usercreate                           -a -u -p   Create a user and assign access keys
+usercreatenokey                      -a -u -p   Create a user with no access keys
+usercreatereadonly                   -a -u -p   Create readonly user
+userdelete                           -a -u      Delete user
+userdescribe                         -a -u      Lists groups and policies associated with user/userlist
+userlist-2                           -a         User listing (simple format)
+userlist                             -a         User listing
+userlist-json                        -a         User list in json format
+usermenu                             -a         Menu driven user information
+utilaccountnumber                    -a         Print account number
+utilcommandlist                      -a         List Commands
+utilcommands                         -a         Command help
+utilnewpolicydoc                     -a         Create new this.json from policydoc.json template
+utilswap                             -a         Swap a Policy for a Group
+utiltime                             -a         Print time window
+vpccreate                            -a -r      Create a Two Subnet VPC
+vpcdelete                            -a -r -t   Delete VPC
+world                                -a         CloudTrail report for 100 hour window for user across all regions
+wwec2                                -a         Another form of describe instances
+</pre>
+<pre>
+User Commands  
+usercreateadmin                      -a -u -p   Create admin user
+usercreate                           -a -u -p   Create a user and assign access keys
+usercreatenokey                      -a -u -p   Create a user with no access keys
+usercreatereadonly                   -a -u -p   Create readonly user
+userdelete                           -a -u      Delete user
+userdescribe                         -a -u      Lists groups and policies associated with user/userlist
+userlist-2                           -a         User listing (simple format)
+userlist                             -a         User listing
+userlist-json                        -a         User list in json format
+usermenu                             -a         Menu driven user information
+  
+Policy Commands  
+policybyarn-add                      -a -u -t   Attach policy to user by ARN
+policybyarn-remove                   -a -u -t   Detach policy from user by ARN
+policybyname-add                     -a -t      Attach local policy to user by policy name
+policybyname-remove                  -a -t      Detach local policy from user by policy name
+policycodecommitpoweruser-add        -a         Add arn:aws:iam::aws:policy/AWSCodeCommitPowerUser to user
+policycodecommitpoweruser-remove     -a         Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
+policycreate                         -a -t      Create policy bu name and upload policy document this.json
+policydelete                         -a -t      Delete local policy ARN
+policygetall                         -a         Get all policy documents
+policygetlocal                       -a         Get local policy documents
+policylistall                        -a         List all policies
+policylistaws                        -a         List all AWS policies
+policylistlocal                      -a         List local policies
+policysetattach                      -a -u      Attach all policies specified in policyset.txt to user
+policysetremove                      -a -u      Remove all policies specified in policyset.txt from user
+policyupdate                         -a -t -D   Update policy
+policyuserchangepassword-add         -a         Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
+policyuserchangepassword-remove      -a         Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
+  
 </pre>
 <pre>
   
-Mon Jun 11 20:35:56 EDT 2018
+Tue Jun 12 12:52:42 EDT 2018
 </pre>
