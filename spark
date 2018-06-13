@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# -------------------------------------------------------------------------
+# This is a modified version of spark from https://github.com/holman/spark
+# -------------------------------------------------------------------------
+# spark adapted from
+# https://github.com/holman/spark
+# https://datacollective.org/sparkblocks
+_echo() {
+  if [ "X$1" = "X-n" ]; then
+    shift
+    printf "%s" "$*"
+  else
+    printf "%s\n" "$*"
+  fi
+}
+
+spark() {
+  local n numbers=
+  # find min/max values
+  local min=0xffffffff max=0
+  for n in ${@//,/ }
+  do
+    # on Linux (or with bash4) we could use `printf %.0f $n` here to
+    # round the number but that doesn't work on OS X (bash3) nor does
+    # `awk '{printf "%.0f",$1}' <<< $n` work, so just cut it off
+    n=${n%.*}
+    (( n < min )) && min=$n
+    (( n > max )) && max=$n
+    numbers=$numbers${numbers:+ }$n
+  done
+  rmax=$max
+  rmin=$min
+  max=100
+  min=0
+  local ticks=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
+  # use a high tick if data is constant
+  (( min == max )) && ticks=(▅ ▆)
+  local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
+  (( f < 1 )) && f=1
+  if [ "$LABEL" != "" ]; then
+       echo -n $LABEL
+       echo -e -n " "
+       echo -n $Y
+       echo -e -n "\t"
+       echo -n $rmin"%"
+       echo -e -n "\t"
+       echo -n $rmax"%"
+       echo -e -n "\t"
+       echo -n $TIME"hrs"
+       echo -e -n "\t"
+       echo -n $QUANTA
+       echo -e -n "\t"
+  fi
+  for n in $numbers
+  do
+    _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+  done
+  _echo
+}
+
+TIME=""
+Y=""
+LABEL=""
+while getopts "l:y:t:q:" opt; do
+  case ${opt} in
+    q) QUANTA="-"
+       if [ "$OPTARG" == "3600" ]; then
+           QUANTA="1hr"
+       fi
+       if [ "$OPTARG" == "900" ]; then
+           QUANTA="15min"
+       fi
+       if [ "$OPTARG" == "300" ]; then
+           QUANTA="5min"
+       fi
+       ;;
+    t) TIME=$OPTARG
+       ;;
+    y) Y=$OPTARG
+       ;;
+    l) LABEL=$OPTARG
+       ;;
+  esac
+done
+shift $(($OPTIND - 1))
+spark ${@:-`cat`}

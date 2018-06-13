@@ -25,7 +25,6 @@ rm $Tmp  >/dev/null 2>&1
 # CUU - An AWS CLI Wrapper
 # M <pre>
 usage(){
-     print ""
      print "Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]"
      print "      -a  operand:  cli profile name      (from .aws/config)"
      print "      -u  operand:  username"
@@ -48,75 +47,6 @@ usage(){
      print "          ----------------------------------------------------------------------------------------------"
 # M </pre>
 # README.md End
-     print "Quick Menus"
-     print "     dum    describeusermenu         -a            Interactive user menu, Describes users"
-     print "     ctm    cloudtrailmenu           -a            Interactive user menu, CloudTrail 48Hr Audit Report"
-     print "User Commands"
-     print "     du     describeusers            -a :PL:       List users and their attached groups and policies" 
-     print "     lu     listusers                -a :PL:       List users" 
-     print "     lu2    listusers2               -a :PL:       List users simple form" 
-     print "            deleteuser               -a -u         Delete the user"
-     print "     du     describeusers            -a :PL:       List users and their attached groups and policies" 
-     print "            createuser               -a -u -p      Creates with no privledges"
-     print "            createadminuser          -a -u -p      Creates a user with Administor Access"
-     print "            createreadonlyuser       -a -u -p      Creates a user with Read Only"
-     print "     scram  scrampassword            -a -u         Assignis the user an unknown (scrammed) password"
-     print "     cp     changepassword           -a -u -p      Changes a user password"
-     print "                                                   For commands above, User will change password"
-     print "                                                   after first login.  Password may be set in ~/.cuu.txt"
-     print "Access Key Commands"
-     print "     lak    listaccesskeys           -a -u         List the users access keys"
-     print "     rak    replaceaccesskeys        -a -u         Deletes all keys for user, Creates a single new key"
-     print "     cak    createaccesskey          -a -u         Creates an access key for the user"
-     print "     dak    deleteaccesskeys         -a -u         Deletes all the users access keys"
-     print "Policy Commands"
-     print "            createpolicy             -a -t         Create new policy (-t) with policydoc.json template"
-     print "            deletepolicy             -a -t         Delete policy by name (-t)"
-     print "     lp     listallpolicies          -a            Lists all defined policies"
-     print "     lpl    listlocalpoliciesl       -a            Lists local (user managed) policies"
-     print "     lpa    listawspolicies          -a            Lists aws policies"
-     print "     upp    updatepolicy             -a -t -D      Update local policy name (-t) with policy doc (-D, use file://)"
-     print "            attachpolicyset          -a -u         Attach policy ARNs listed in file policyset.txt to user (-u)"
-     print "            removepolicyset          -a -u         Removes policy ARNs listed in policyset.txt to user (-u)"
-     print "     gap    getallpolicies           -a <-t regex> Get all policy docs defined for this profile"
-     print "     glp    getlocalpolicies         -a <-t regex> Get all local policy docs defined for this profile"
-     print "                                                   Use regex for a specific policy"
-     print "            listuserpolicies         -a -u"
-     print "            detachuserpolicies       -a -u"
-     print "            attachpolicytouser       -a -u -t      Specify the policy arn (-t)"
-     print "Role Commands"
-     print "     lr     listroles                -a            List all roles defined" 
-     print "Group Commands"
-     print "     lg     listgroups               -a            List all groups defined" 
-     print "            listusergroups           -a -u         Lists groups associated with user"
-     print "            listusersingroup         -a -u -t      Lists the users in  group (-t)"
-     print "            addusertogroup           -a -u -t      Add user to a group (-t)"
-     print "            removeuserfromgroup         -a -u -t      Remove user group (-t)"
-     print "            removeuserfromallgroups  -a -u         Remove user from all groups"
-     print "VPC and EC2 Commands"
-     print "            ec2                      -a            List instances and securitygroups"
-     print "            ec2-sg                   -a            Security groups detail listing"
-     print "            ec2-sgsum                -a            Security groups summary listing (incl. empty SGs)"
-     print "     vpc2   createvpc-2subnets       -a -r         Creates an internet accessible VPC with Pub\Priv Subnets"
-     print "            deletevpc             -a -r -t <vpc>   Deletes a VPC (-t vpcid)"
-     print "            createkeypair            -a -u         Creates a Key Pair"
-     print "CloudTrail Commands"
-     print "     ca     cloudtrail-active     -a -T         Lists active users in time window"
-     print "     cu     cloudtrail-user       -a -T -u :UL: Lists user activity in time window"
-     print "     cz     cloudtrail-allusers   -a -T         Runs cloudtrail-users for all users"
-     print "     cw     cloudtrail-watch      -T            Runs cloudtrail-users for each profile in PROFILELIST"
-     print "                                                   on the WATCHUSER in ~/.cuu.txt"
-     print "                                                   -T specifies time window in hour"
-     print "Specific Policy Commands"
-     print "            iamuserchangepassword-add    -a -u :UL: Adds Policy"
-     print "            iamuserchangepassword-remove -a -u :UL: Removes Policy"
-     print "Other"
-     print "            time                     -T            Print time window"
-     print "            accountnumber            -a            Prints the account number for profile (-a)"
-     print "            commands                               Lists all the cuu commands"
-     print ""
-     print "Note: Abbreviations are applied to output fields to limit line length"
-     print "            -d will limit abbreviations"
 }
 commandABBREVIATIONS() {
 	case "$COMMAND" in
@@ -423,7 +353,7 @@ ISOTIME="no"
 BIGNAMES="no" 
 BIGEVENTS="no" 
 SUMMARY="no" 
-while getopts "jr:Ff:D:dn:c:Ru:a:p:t:ihbSZBET:" arg
+while getopts "jr:Ff:D:dn:c:Ru:a:p:t:ihbSZBET:Q:" arg
 do
 	case $arg in
             S) SUMMARY="yes" ;;
@@ -438,6 +368,7 @@ do
             D) DOCUMENT=$OPTARG ;;
             n) COUNT=$OPTARG ;;
             T) TIMEFACTOR=$OPTARG ;;
+            Q) QUANTAFACTOR=$OPTARG ;;
             c) COMMAND=$OPTARG ;;
             u) USERNAME=$OPTARG
                if [ "$USERNAME" == "ALLUSERS" ] ; then
@@ -455,7 +386,9 @@ do
             R) SHOWRAW="yes" ;;
             p) PASSWORD=$OPTARG ;;
             t) THING=$OPTARG ;;
-	    h) usage; exit 0 ;;
+	    h) usage 
+               cuu -c commands
+               exit 0 ;;
             a) ACCOUNT=$OPTARG
                if [ "$ACCOUNT" == "ALL" ] ; then
                    ACCOUNT=$PROFILELIST
@@ -562,6 +495,22 @@ COMMANDPROC() {
 
 
      return 0
+}
+COMMANDLIST() {
+     rm $Tmp  >/dev/null 2>&1
+     LIST=`cat $CuuCommandFile`
+     for ITEM in $LIST; do
+          SZOPTO="${OPTO[$ITEM]}"
+          if [ "$SZOPTO" == "" ] ; then
+               SZOPTO="-a"
+          fi
+          typeset -l v=$ITEM
+          printf "     %-33s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
+     done
+     cp $Tmp fed
+     cat $Tmp | sort
+     NOTHING=0
+     LIST=""
 }
 COMMANDINFO() {
     INFO[$szCmd]="$1"
@@ -1174,21 +1123,22 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
 fi
 COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
-               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT '
+               assert "QUANTAFACTOR" "Capture Period (3600,900,300) not specified"
+               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
                @include "cuu.awk"
                {
-               sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 3600 --namespace AWS/EC2 --statistics Maximum \
-                   --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterday(1) " --end-time " isonow()
+               sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period " Q " --namespace AWS/EC2 --statistics Maximum \
+                   --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterhour(T) " --end-time " isonow()
                print "INSTANCE " $0
                system(sz)
-           } ' | gawk '
+           } ' | gawk -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
            @include "cuu.awk" 
            BEGIN {ct=1;fc=0;file="file0"}
            END {print ""}
-           /XXINSTANCE/ {printf("\n./spark ",$1)}
-           /INSTANCE/ {close(file);fc++;file="file" fc}
-           /INSTANCE/ {printf("%s\n",$0)}
-           /DATAPOINTS/ {ct++;printf("%5.2f\n", $2) >> file}
+           /INSTANCE i-/ {close(file);fc++;file="file" fc}
+           /INSTANCE i-/ {sz=sprintf("\nspark -q %s -t %s -y CPU-Max -l %s ", Q, T, $2)}
+           /DATAPOINTS/ {printf("%s ",sz);sz=""}
+           /DATAPOINTS/ {ct++;printf("%5.2f ", $2) }
            ' 
            fi
 
@@ -1488,20 +1438,7 @@ COMMANDPROC "UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; 
      cat $CuuCommandFile
 fi
 COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
-     rm $Tmp  >/dev/null 2>&1
-     LIST=`cat $CuuCommandFile`
-     for ITEM in $LIST; do
-          SZOPTO="${OPTO[$ITEM]}"
-          if [ "$SZOPTO" == "" ] ; then
-               SZOPTO="-a"
-          fi
-          typeset -l v=$ITEM
-          printf "     %-33s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
-     done
-     cp $Tmp fed
-     cat $Tmp | sort
-     NOTHING=0
-     LIST=""
+     COMMANDLIST
 fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations

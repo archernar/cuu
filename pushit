@@ -78,6 +78,7 @@ git add readme.awk
 git add README.md 
 git add cuu.awk
 git add pushit
+git add spark
 git add cuu
 
 git commit -m "Update"
