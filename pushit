@@ -12,12 +12,13 @@ do
             l) LOCAL="yes" ;;
         esac
 done
+ANON=`date`
 
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 echo "<pre>" > README.md
 
-gawk -f readme.awk cuu  >> README.md
+gawk -v ANON=$ANON -f readme.awk cuu  >> README.md
 
 cat usage.txt >> README.md
 

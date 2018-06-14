@@ -17,6 +17,7 @@ BEGIN {
 /^[#] README[.]md Start/,/^[#] README[.]md End/ {
      sz = $0
      sub(/^.*print ["]/,"",sz);
+     sub(/BUILDDATE/,ANON,sz);
      sub(/["]$/,"",sz);
      sub(/^[#] M /,"",sz);
      if (sz ~ /^[#] README[.]md.*/) pr=0;
