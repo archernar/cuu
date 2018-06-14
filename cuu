@@ -1036,8 +1036,8 @@ COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0
      DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
      FNAME="cuureport"-$EPOCHTIME".txt"
      print $FNAME
-     cp cuureport.txt $FNAME
-     aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-type text/plain > $Tmp
+     cat cuureport.txt > $FNAME
+     aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-encoding ISO-8559-6 --content-type text/plain > $Tmp
      aws --profile $ACCOUNT s3 ls s3://ecd3pub --recursive
      java Gpurl us-east-1 ecd3pub $FNAME 15
 fi
@@ -1122,25 +1122,36 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
            ' 
 fi
 COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing"; if [ $bCmd -gt 0 ] ; then
+#              aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19)
+#              print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
                assert "$ACCOUNT" "Profile not specified"
                assert "QUANTAFACTOR" "Capture Period (3600,900,300) not specified"
-               aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
-               @include "cuu.awk"
-               {
-               sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period " Q " --namespace AWS/EC2 --statistics Maximum \
-                   --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterhour(T) " --end-time " isonow()
-               print "INSTANCE " $0
-               system(sz)
-           } ' | gawk -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
-           @include "cuu.awk" 
-           BEGIN {ct=1;fc=0;file="file0"}
-           END {print ""}
-           /INSTANCE i-/ {close(file);fc++;file="file" fc}
-           /INSTANCE i-/ {sz=sprintf("\nspark -q %s -t %s -y CPU-Max -l %s ", Q, T, $2)}
-           /DATAPOINTS/ {printf("%s ",sz);sz=""}
-           /DATAPOINTS/ {ct++;printf("%5.2f ", $2) }
-           ' 
-           fi
+               rm -rf $Tmp  >/dev/null 2>&1
+               LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+               for ITEM in $LIST; do
+                    TNAME=`$AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value --output text | gawk '@include "trim.awk";{
+                                    sz=$0;
+                                    gsub(/[ ]/,"-",sz);
+                                    sz=cutpad(sz,16,"-");
+                                    printf("%s",sz);
+                    }'`
+                     print "TNAME " $TNAME >> $Tmp
+                     print "INSTANCE " $ITEM >> $Tmp
+                     $AWS cloudwatch get-metric-statistics --metric-name CPUUtilization --period $QUANTAFACTOR --namespace AWS/EC2 --statistics Maximum \
+                                                           --dimensions Name=InstanceId,Value=$ITEM --start-time $ISOAGO --end-time $ISOANON >> $Tmp
+               done
+               cp $Tmp zzed
+               cat $Tmp | gawk -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR -v A=$ACCOUNT '
+                   @include "cuu.awk" 
+                   BEGIN {ct=1;fc=0;file="file0"}
+                   END {print ""}
+                   /TNAME/ {szname=$2;}
+                   /INSTANCE.*i-/ {close(file);fc++;file="file" fc}
+                   /INSTANCE.*i-/ {sz=sprintf("\nspark -n %s -a %s -q %s -t %s -y CPU-Max -l %s ", szname, A, Q, T, $2)}
+                   /DATAPOINTS/ {printf("%s ",sz);sz="";szname="";}
+                   /DATAPOINTS/ {ct++;printf("%5.2f ", $2) }
+               ' 
+fi
 
 COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"

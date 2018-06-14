@@ -38,7 +38,11 @@ spark() {
   local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
   (( f < 1 )) && f=1
   if [ "$LABEL" != "" ]; then
+       echo -n $ACCOUNT
+       echo -e -n " "
        echo -n $LABEL
+       echo -e -n " "
+       echo -n $NAME
        echo -e -n " "
        echo -n $Y
        echo -e -n "\t"
@@ -61,8 +65,12 @@ spark() {
 TIME=""
 Y=""
 LABEL=""
-while getopts "l:y:t:q:" opt; do
+while getopts "l:y:t:q:a:n:" opt; do
   case ${opt} in
+    n) NAME=$OPTARG
+       ;;
+    a) ACCOUNT=$OPTARG
+       ;;
     q) QUANTA="-"
        if [ "$OPTARG" == "3600" ]; then
            QUANTA="1hr"
