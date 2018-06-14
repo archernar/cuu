@@ -1,25 +1,28 @@
 # CUU - An AWS CLI Wrapper
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
-      -a  operand:  cli profile name      (from .aws/config)
+  operands
+      -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
       -u  operand:  username
       -p  operand:  password    (default may be set in ~/.cuu.txt)
       -t  operand:  thing name  (specify a resource or object name)
-      -T  operand:  time window in hours (to specify now-T to now)
-      -h  display usage
-      -d  limits abbreviations
-      -D  Specify a document\file to upload (e.g. a policy document)
-      -j  use long datetime fields
-      -F  force mode, do not confirm any command
-      -B  show full user names
-      -E  show event names
-      -R  show raw records in output
-      -Z  output iso time
-      -i  interactive mode ('q' to quit)
+      -T  operand:  time window in hours (to specify (now minus T) to now)
+      -D  operand:  specify a document\file to upload (e.g. a policy document)
+  flags
+      -h  flag:     display usage
+      -d  flag:     limits abbreviations
+      -j  flag:     use long datetime fields
+      -F  flag:     force mode, do not confirm any command
+      -B  flag:     show full user names
+      -E  flag:     show event names
+      -R  flag:     show raw records in output
+      -Z  flag:     output iso time
+      -i  flag:     interactive mode ('q' to quit)
       -c  command:
           Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
           Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
           ----------------------------------------------------------------------------------------------
+  commands
 </pre>
 <pre>
 cuu commands
@@ -123,7 +126,7 @@ PROFILELIST=
 POLICYLIST=
 GROUPREMOVE=
 POLICYADD=
-TIMEFACTOR=1                          ; In minutes
+TIMEFACTOR=1                          ; In hours
 MYCIDR=                               ; My CIDR
 AMI=                                  ; AMI for instances
 SG=                                   ; Security Group for instances
@@ -135,5 +138,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Wed Jun 13 22:50:55 EDT 2018
+Thu Jun 14 07:06:15 EDT 2018
 </pre>
