@@ -390,7 +390,7 @@ do
             R) SHOWRAW="yes" ;;
             p) PASSWORD=$OPTARG ;;
             t) THING=$OPTARG ;;
-	    h) usage 
+	    h) cat usage.txt 
                cuu -c commands
                exit 0 ;;
             a) ACCOUNT=$OPTARG
