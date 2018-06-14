@@ -76,6 +76,8 @@ echo "</pre>" >> README.md
 
 git add readme.awk
 git add README.md 
+git add indent.awk
+git add noindent.awk
 git add cuu.awk
 git add trim.awk
 git add pushit
