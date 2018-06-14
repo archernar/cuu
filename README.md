@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Thu Jun 14 08:36:43 EDT 2018
+       build date: Thu Jun 14 08:37:12 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -23,7 +23,6 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -c  command:
           Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
           Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
-          ----------------------------------------------------------------------------------------------
   commands
 User Commands  
      usercreateadmin                   -a -u -p   Create admin user
@@ -136,5 +135,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Thu Jun 14 08:36:44 EDT 2018
+Thu Jun 14 08:37:12 EDT 2018
 </pre>
