@@ -1,30 +1,27 @@
-# CUU - An AWS CLI Wrapper
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
-  operands
-      -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
-      -u  operand:  username
-      -p  operand:  password    (default may be set in ~/.cuu.txt)
-      -t  operand:  thing name  (specify a resource or object name)
-      -T  operand:  time window in hours (to specify (now minus T) to now)
-      -D  operand:  specify a document\file to upload (e.g. a policy document)
-  flags
-      -h  flag:     display usage
-      -d  flag:     limits abbreviations
-      -j  flag:     use long datetime fields
-      -F  flag:     force mode, do not confirm any command
-      -B  flag:     show full user names
-      -E  flag:     show event names
-      -R  flag:     show raw records in output
-      -Z  flag:     output iso time
-      -i  flag:     interactive mode ('q' to quit)
-      -c  command:
-          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
-          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
-          ----------------------------------------------------------------------------------------------
-  commands
-</pre>
-<pre>
+
+operands
+    -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
+    -u  operand:  username
+    -p  operand:  password    (default may be set in ~/.cuu.txt)
+    -t  operand:  thing name  (specify a resource or object name)
+    -T  operand:  time window in hours (to specify (now minus T) to now)
+    -D  operand:  specify a document\file to upload (e.g. a policy document)
+flags
+    -h  flag:     display usage
+    -d  flag:     limits abbreviations
+    -j  flag:     use long datetime fields
+    -F  flag:     force mode, do not confirm any command
+    -B  flag:     show full user names
+    -E  flag:     show event names
+    -R  flag:     show raw records in output
+    -Z  flag:     output iso time
+    -i  flag:     interactive mode ('q' to quit)
+    -c  command:
+        Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
+        Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
+commands
 cuu commands
   
 User Commands  
@@ -138,5 +135,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Thu Jun 14 07:06:15 EDT 2018
+Thu Jun 14 07:12:20 EDT 2018
 </pre>

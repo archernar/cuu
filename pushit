@@ -6,10 +6,13 @@ trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 
 
-gawk -f readme.awk cuu  > README.md
+# gawk -f readme.awk cuu  > README.md
 
 cuu -c utilcommands | grep -v alias  > $Tmp
-echo "<pre>" >> README.md
+
+echo "<pre>" > README.md
+
+cat usage.txt >> README.md
 echo "cuu commands" >> README.md
 echo "  " >> README.md
 
@@ -52,7 +55,6 @@ cat $Tmp | egrep "^[ ]*cloudtrail" >> README.md
 echo "  " >> README.md
 echo "Utility Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*util" >> README.md
-
 
 
 echo "  " >> README.md
