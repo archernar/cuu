@@ -20,8 +20,6 @@ echo "<pre>" > README.md
 
 gawk -v ANON="$ANON" -f readme.awk cuu  >> README.md
 
-cat usage.txt >> README.md
-
 echo "User Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*user" >> README.md
 echo "  " >> README.md
