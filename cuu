@@ -1,5 +1,6 @@
 #!/usr/bin/ksh
 Tmp="/tmp/$$"
+Tmp2="/tmp/$$_$$"
 TmpDir="/tmp/dir$$"
 CuuCommandFile="/tmp/CuuCommandFile$$"
 trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
@@ -1140,17 +1141,18 @@ COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing"; if [ $
                      $AWS cloudwatch get-metric-statistics --metric-name CPUUtilization --period $QUANTAFACTOR --namespace AWS/EC2 --statistics Maximum \
                                                            --dimensions Name=InstanceId,Value=$ITEM --start-time $ISOAGO --end-time $ISOANON >> $Tmp
                done
-               cp $Tmp zzed
                cat $Tmp | gawk -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR -v A=$ACCOUNT '
-                   @include "cuu.awk" 
-                   BEGIN {ct=1;fc=0;file="file0"}
+                   @include "trim.awk" 
+                   BEGIN {dname=cutpad("NA",16,"-");}
                    END {print ""}
-                   /TNAME/ {szname=$2;}
-                   /INSTANCE.*i-/ {close(file);fc++;file="file" fc}
+                   /TNAME/ {szname=$2;if (szname=="") szname=dname;}
                    /INSTANCE.*i-/ {sz=sprintf("\nspark -n %s -a %s -q %s -t %s -y CPU-Max -l %s ", szname, A, Q, T, $2)}
-                   /DATAPOINTS/ {printf("%s ",sz);sz="";szname="";}
+                   /DATAPOINTS/ {printf("%s ",sz);sz="";szname=dname;}
                    /DATAPOINTS/ {ct++;printf("%5.2f ", $2) }
-               ' 
+               ' > $Tmp2
+               chmod 777 $Tmp2
+               $Tmp2
+
 fi
 
 COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
