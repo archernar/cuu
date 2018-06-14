@@ -1125,13 +1125,17 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
 fi
-COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t"; if [ $bCmd -gt 0 ] ; then
 #              aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19)
 #              print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
                assert "$ACCOUNT" "Profile not specified"
                assert "QUANTAFACTOR" "Capture Period (3600,900,300) not specified"
                rm -rf $Tmp  >/dev/null 2>&1
-               LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+               if [ "$THING" == "" ] ; then
+                    LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+               else
+                   LIST=$THING
+               fi
                for ITEM in $LIST; do
                     TNAME=`$AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value --output text | gawk '@include "trim.awk";{
                                     sz=$0;

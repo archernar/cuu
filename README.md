@@ -91,7 +91,7 @@ EC2 Commands
      ec2-list                          -a         EC2 List
      ec2-sg                            -a         Security Group Detail Report
      ec2-sgsum                         -a         Security Group Summary Report
-     ec2-spark                         -a         CloudWatch CPU Utilization with Spark Graphing
+     ec2-spark                         -a -t      CloudWatch CPU Utilization with Spark Graphing
      ec2-util                          -a         CloudWatch CPU Utilization
   
 CloudTrail Commands  
@@ -133,5 +133,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Thu Jun 14 07:16:41 EDT 2018
+Thu Jun 14 07:27:59 EDT 2018
 </pre>
