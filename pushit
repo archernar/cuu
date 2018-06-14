@@ -13,8 +13,6 @@ cuu -c utilcommands | grep -v alias  > $Tmp
 echo "<pre>" > README.md
 
 cat usage.txt >> README.md
-echo "cuu commands" >> README.md
-echo "  " >> README.md
 
 echo "User Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*user" >> README.md

@@ -22,8 +22,6 @@ flags
         Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
         Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
 commands
-cuu commands
-  
 User Commands  
      usercreateadmin                   -a -u -p   Create admin user
      usercreate                        -a -u -p   Create a user and assign access keys
@@ -135,5 +133,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Thu Jun 14 07:12:20 EDT 2018
+Thu Jun 14 07:13:27 EDT 2018
 </pre>
