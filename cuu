@@ -526,7 +526,12 @@ COMMANDINFO() {
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "TEST" "Test Command"; if [ $bCmd -gt 0 ] ; then
-     figlet $COMMAND
+     LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+     THIS=" --filters "
+     for ITEM in $LIST; do
+#          time $AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM  --query 'Reservations[*].Instances[*].Tags[?Key==`Name`].Value'
+           $AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value
+      done
      exit 1
      NOTHING=0
 fi
