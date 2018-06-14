@@ -22,10 +22,10 @@ rm $Tmp  >/dev/null 2>&1
 #                               | |_| | (_| |\ V  V /|   <  |  _ <| |_| | |  __/\__ \
 #                                \____|\__,_| \_/\_/ |_|\_\ |_| \_\\__,_|_|\___||___/
 # ---------------------------------------------------------------------------------------------------------
-# README.md Start
 # CUU - An AWS CLI Wrapper
 # M <pre>
 usage(){
+# README.md Start
      print "Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]"
      print "  operands"
      print "      -a  operand:  cli profile name, maps to AWS account  (from .aws/config)"
@@ -49,8 +49,8 @@ usage(){
      print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
      print "          ----------------------------------------------------------------------------------------------"
      print "  commands"
-# M </pre>
 # README.md End
+# M </pre>
 }
 commandABBREVIATIONS() {
 	case "$COMMAND" in

@@ -5,12 +5,19 @@ trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 
-
-# gawk -f readme.awk cuu  > README.md
+LOCAL=""
+while getopts "l" arg
+do
+	case $arg in
+            r) LOCAL="yes" ;;
+        esac
+done
 
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 echo "<pre>" > README.md
+
+gawk -f readme.awk cuu  >> README.md
 
 cat usage.txt >> README.md
 
@@ -67,7 +74,6 @@ echo "</pre>" >> README.md
 # cuu -c commands | sort  >> README.md
 
 
-
 echo "<pre>" >> README.md
 echo "  " >> README.md
 date >> README.md
@@ -85,5 +91,8 @@ git add spark
 git add cuu
 
 git commit -m "Update"
-git push -u origin master
+
+if [ "$LOCAL" == "" ] ; then
+     git push -u origin master
+fi
 
