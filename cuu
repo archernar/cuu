@@ -29,6 +29,7 @@ usage(){
      print "Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]"
      print "  info"
      print "       build date: BUILDDATE"
+     print "       repo:       https://github.com/archernar/cuu"
      print "  operands"
      print "      -a  operand:  cli profile name, maps to AWS account  (from .aws/config)"
      print "      -u  operand:  username"
