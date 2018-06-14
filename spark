@@ -30,6 +30,10 @@ spark() {
   done
   rmax=$max
   rmin=$min
+#   rmax=`echo $max | gawk '@include "trim.awk";{sz=$0;printf("%s",cutpad(sz,5," "))}'`
+#   rmin=`echo $min | gawk '@include "trim.awk";{sz=$0;printf("%s",cutpad(sz,5,"-"))}'`
+  rmax=`echo $max | gawk '@include "trim.awk";{sz=$0;printf("%3s",sz)}'`
+  rmin=`echo $min | gawk '@include "trim.awk";{sz=$0;printf("%3s",sz)}'`
   max=100
   min=0
   local ticks=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
@@ -44,16 +48,18 @@ spark() {
        echo -e -n " "
        echo -n $NAME
        echo -e -n " "
+       echo -n $MACH
+       echo -e -n " "
        echo -n $Y
-       echo -e -n "\t"
-       echo -n $rmin"%"
-       echo -e -n "\t"
-       echo -n $rmax"%"
-       echo -e -n "\t"
+       echo -e -n " "
+       echo -n "$rmin""%"
+       echo -e -n " "
+       echo -n "$rmax""%"
+       echo -e -n " "
        echo -n $TIME"hrs"
-       echo -e -n "\t"
+       echo -e -n " "
        echo -n $QUANTA
-       echo -e -n "\t"
+       echo -e -n " "
   fi
   for n in $numbers
   do
@@ -65,8 +71,10 @@ spark() {
 TIME=""
 Y=""
 LABEL=""
-while getopts "l:y:t:q:a:n:" opt; do
+while getopts "m:l:y:t:q:a:n:" opt; do
   case ${opt} in
+    m) MACH=$OPTARG
+       ;;
     n) NAME=$OPTARG
        ;;
     a) ACCOUNT=$OPTARG

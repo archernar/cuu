@@ -1138,32 +1138,57 @@ COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t"
                assert "$ACCOUNT" "Profile not specified"
                assert "QUANTAFACTOR" "Capture Period (3600,900,300) not specified"
                rm -rf $Tmp  >/dev/null 2>&1
+
+#              instance-state-name - The state of the instance (pending | running | shutting-down | terminated | stopping | stopped ).
+
+
                if [ "$THING" == "" ] ; then
-                    LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+                    LIST=`$AWS ec2 describe-instances --filters Name=instance-state-name,Values=running --query "Reservations[].Instances[].[InstanceId]"`
                else
                    LIST=$THING
                fi
+               typeset -i CT
+               typeset -i CTT
+               let CT=0
                for ITEM in $LIST; do
+                   let CT=$CT+1
+               done
+               print $CT" running instances"
+               let CTT=$CT
+               let CT=0
+               for ITEM in $LIST; do
+                    let CT=$CT+1
+                    print "Getting CloudWatch Data for "$ITEM" "$CT" of "$CTT
+                    TYE=`$AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM --query "Reservations[].Instances[].InstanceType" |gawk '@include "trim.awk";{
+                                  sz=$0;
+                                  gsub(/[ ]/,"-",sz);
+                                  sz=cutpad(sz,8,"_");
+                                  printf("%s",sz);
+                    }'`
                     TNAME=`$AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value --output text | gawk '@include "trim.awk";{
                                     sz=$0;
                                     gsub(/[ ]/,"-",sz);
-                                    sz=cutpad(sz,16,"-");
+                                    sz=cutpad(sz,16,"_");
                                     printf("%s",sz);
                     }'`
+                     print "TYE " $TYE >> $Tmp
                      print "TNAME " $TNAME >> $Tmp
                      print "INSTANCE " $ITEM >> $Tmp
                      $AWS cloudwatch get-metric-statistics --metric-name CPUUtilization --period $QUANTAFACTOR --namespace AWS/EC2 --statistics Maximum \
                                                            --dimensions Name=InstanceId,Value=$ITEM --start-time $ISOAGO --end-time $ISOANON >> $Tmp
                done
+               print "Done Getting CloudWatch Data"
                cat $Tmp | gawk -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR -v A=$ACCOUNT '
                    @include "trim.awk" 
                    BEGIN {dname=cutpad("NA",16,"-");}
                    END {print ""}
+                   /TYE/ {tyname=$2;if (tyname=="") tyname="NA";}
                    /TNAME/ {szname=$2;if (szname=="") szname=dname;}
-                   /INSTANCE.*i-/ {sz=sprintf("\nspark -n %s -a %s -q %s -t %s -y CPU-Max -l %s ", szname, A, Q, T, $2)}
+                   /INSTANCE.*i-/ {sz=sprintf("\nspark -m %s -n %s -a %s -q %s -t %s -y CPU-Max -l %s ", tyname, szname, A, Q, T, $2)}
                    /DATAPOINTS/ {printf("%s ",sz);sz="";szname=dname;}
                    /DATAPOINTS/ {ct++;printf("%5.2f ", $2) }
                ' > $Tmp2
+               cp $Tmp2 fed
                chmod 777 $Tmp2
                $Tmp2
 

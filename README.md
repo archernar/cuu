@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Thu Jun 14 13:41:05 EDT 2018
+       build date: Thu Jun 14 17:16:08 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -135,5 +135,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Thu Jun 14 13:41:06 EDT 2018
+Thu Jun 14 17:16:09 EDT 2018
 </pre>
