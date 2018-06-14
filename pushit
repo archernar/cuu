@@ -9,7 +9,7 @@ LOCAL=""
 while getopts "l" arg
 do
 	case $arg in
-            r) LOCAL="yes" ;;
+            l) LOCAL="yes" ;;
         esac
 done
 
