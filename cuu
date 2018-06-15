@@ -1155,8 +1155,8 @@ COMMANDPROC "EC2LIST,LISTEC2,LI" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; the
 
 fi
 
-typeset -A QUAG 
 COMMANDPROC "EC2SPARKMENU" "Instance Menu"; if [ $bCmd -gt 0 ] ; then
+               typeset -A QUAG 
                assert "$ACCOUNT" "Profile not specified"
                LIST=`$AWS ec2 describe-instances --filters Name=instance-state-name,Values=running --query "Reservations[].Instances[].[InstanceId]"`
                clean
@@ -1177,7 +1177,7 @@ COMMANDPROC "EC2SPARKMENU" "Instance Menu"; if [ $bCmd -gt 0 ] ; then
                     print "\""$NOM"\")" >> $Tmp
 
 
-                    print "cuu -a "$ACCOUNT" -t "$ITEM" -T 12 -Q 900 -c EC2-SPARK;;" >> $Tmp
+                    print "cuu -a "$ACCOUNT" -t "$ITEM" -T 12 -Q 900 -c EC2SPARK;;" >> $Tmp
                done
                print "\"Exit\") break;;" >> $Tmp
                print "esac" >> $Tmp
