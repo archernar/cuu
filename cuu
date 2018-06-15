@@ -1132,6 +1132,28 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
 fi
+COMMANDPROC "EC2LIST,LISTEC2,li" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ACC in $PROFILELIST; do
+                    aws --profile $ACC --output text ec2 describe-instances | egrep "TAGS|STATE|INST" | gawk '
+                        /^INSTANCES/ { 
+                        match($0, /[ \t]i-[0123456789abcdef]*/, arr);
+                        print "INSTANCEID " arr[0]; next; }
+                        /^STATE[^R]/ { print "STATE " $3; next; }
+                        /^TAGS[ \t]*Name[ \t]/ { sz = $0;gsub(/^TAG.*Name/,"",sz); print "NAME " sz; next; }
+                        ' | gawk '
+                            BEGIN {A="";B="";C="";}
+                            /^INSTANCEID/ {print A,B,C;A=$2;B="";C=""; }
+                            /^STATE/ {B=$2;}
+                            /^NAME/ {C=$2;}
+                        ' | gawk -v A=$ACC -f tabber.awk
+               done
+
+
+fi
+
+
 COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t"; if [ $bCmd -gt 0 ] ; then
 #              aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19)
 #              print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '

@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Thu Jun 14 17:16:08 EDT 2018
+       build date: Fri Jun 15 13:56:21 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -91,6 +91,7 @@ VPC Commands
 EC2 Commands  
      ec2                               -a         Describe Instances
      ec2-list                          -a         EC2 List
+     ec2list                           -a         List Instances
      ec2-sg                            -a         Security Group Detail Report
      ec2-sgsum                         -a         Security Group Summary Report
      ec2-spark                         -a -t      CloudWatch CPU Utilization with Spark Graphing
@@ -135,5 +136,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Thu Jun 14 17:16:09 EDT 2018
+Fri Jun 15 13:56:22 EDT 2018
 </pre>
