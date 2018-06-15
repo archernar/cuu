@@ -1155,8 +1155,38 @@ COMMANDPROC "EC2LIST,LISTEC2,LI" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; the
 
 fi
 
+typeset -A QUAG 
+COMMANDPROC "EC2SPARKMENU" "Instance Menu"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               LIST=`$AWS ec2 describe-instances --filters Name=instance-state-name,Values=running --query "Reservations[].Instances[].[InstanceId]"`
+               clean
+               print "PS3='Pick instance, enter choice:'" > $Tmp
+               print -n "select clean_menu in " >> $Tmp
+               TLIST=""
+               for ITEM in $LIST; do
+                    QUAG["$ITEM"]=`$AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value --output text`
+                    NOM=$ITEM"    ""${QUAG[$ITEM]}"
+                    print -n "\""$NOM"\" " >> $Tmp
+                    #print -n "\""$ITEM"-"$TNAME"\" " >> $Tmp
+               done
+               print "\"Exit\"" >> $Tmp
+               print "do" >> $Tmp
+               print "case \$clean_menu in" >> $Tmp
+               for ITEM in $LIST; do
+                    NOM=$ITEM"    ""${QUAG[$ITEM]}"
+                    print "\""$NOM"\")" >> $Tmp
 
-COMMANDPROC "EC2-SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t"; if [ $bCmd -gt 0 ] ; then
+
+                    print "cuu -a "$ACCOUNT" -t "$ITEM" -T 12 -Q 900 -c EC2-SPARK;;" >> $Tmp
+               done
+               print "\"Exit\") break;;" >> $Tmp
+               print "esac" >> $Tmp
+               print "done" >> $Tmp
+               chmod 777 $Tmp
+               $Tmp
+fi
+
+COMMANDPROC "EC2SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t"; if [ $bCmd -gt 0 ] ; then
 #              aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19)
 #              print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
                assert "$ACCOUNT" "Profile not specified"

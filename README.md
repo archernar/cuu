@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Fri Jun 15 15:07:42 EDT 2018
+       build date: Fri Jun 15 16:42:54 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -94,7 +94,8 @@ EC2 Commands
      ec2list                           -a         List Instances
      ec2-sg                            -a         Security Group Detail Report
      ec2-sgsum                         -a         Security Group Summary Report
-     ec2-spark                         -a -t      CloudWatch CPU Utilization with Spark Graphing
+     ec2spark                          -a -t      CloudWatch CPU Utilization with Spark Graphing
+     ec2sparkmenu                      -a         Instance Menu
      ec2-util                          -a         CloudWatch CPU Utilization
   
 CloudTrail Commands  
@@ -136,5 +137,5 @@ KP=                                   ; Key Pair Name
 </pre>
 <pre>
   
-Fri Jun 15 15:07:43 EDT 2018
+Fri Jun 15 16:42:55 EDT 2018
 </pre>
