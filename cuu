@@ -302,8 +302,10 @@ confirmset() {
      confirm
 }
 confirmprompt() {
-     print "   "$1
-     confirm
+     if [ "$FORCE" != "yes" ] ; then
+          print "   "$1
+          confirm
+     fi
 }
 confirm() {
      if [ "$FORCE" != "yes" ] ; then
@@ -1132,7 +1134,7 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
 fi
-COMMANDPROC "EC2LIST,LISTEC2,li" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2LIST,LISTEC2,LI" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ACC in $PROFILELIST; do
@@ -1147,7 +1149,7 @@ COMMANDPROC "EC2LIST,LISTEC2,li" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; the
                             /^INSTANCEID/ {print A,B,C;A=$2;B="";C=""; }
                             /^STATE/ {B=$2;}
                             /^NAME/ {C=$2;}
-                        ' | gawk -v A=$ACC -f tabber.awk
+                        ' | sort -k 2,2 | gawk -v A=$ACC -f tabber.awk
                done
 
 
