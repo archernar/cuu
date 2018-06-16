@@ -370,9 +370,13 @@ ISOTIME="no"
 BIGNAMES="no" 
 BIGEVENTS="no" 
 SUMMARY="no" 
-while getopts "jr:Ff:D:dn:c:Ru:a:p:t:ihbSZBET:Q:" arg
+S3BUCKET=""
+S3KEY="";
+while getopts "b:k:jr:Ff:D:dn:c:Ru:a:p:t:ihSZBET:Q:" arg
 do
 	case $arg in
+            b) S3BUCKET=$OPTARG ;;
+            k) S3KEY=$OPTARG ;;
             S) SUMMARY="yes" ;;
             B) BIGNAMES="yes" ;;
             E) BIGEVENTS="yes" ;;
@@ -1294,19 +1298,44 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: S3 Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "S3LIST,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LIST,S3LS,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM s3 ls| gawk -v A=$ITEM -f noindent.awk
+                    if [ "$S3BUCKET" == "" ] ; then
+                         aws --profile $ITEM s3 ls| gawk -v A=$ITEM -f noindent.awk
+                    else
+                         aws --profile $ITEM s3 ls s3://$S3BUCKET| gawk -v A=$ITEM -f noindent.awk
+                    fi
                done
 fi
-COMMANDPROC "S3LISTRECURSIVE,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LISTRECURSIVE,S3LSR,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM s3 ls --recursive | gawk -v A=$ITEM -f noindent.awk
+                    if [ "$S3BUCKET" == "" ] ; then
+                         aws --profile $ITEM s3 ls --recursive | gawk -v A=$ITEM -f noindent.awk
+                    else
+                         aws --profile $ITEM s3 ls --recursive s3://$S3BUCKET | gawk -v A=$ITEM -f noindent.awk
+                    fi
                done
+fi
+COMMANDPROC "S3PUT" "S3 Put Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$S3BUCKET"  "S3 Bucket not specified"
+     assert "$S3KEY"     "S3 Key not specified"
+     assert "$DOCUMENT"  "Document/Content/File not specified"
+     aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+     java Gpurl us-east-1 $S3BUCKET ecd3pub $S3KEY 5
+fi
+COMMANDPROC "S3REMOVE,S3RM" "S3 Put Object" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$S3BUCKET"  "S3 Bucket not specified"
+     assert "$S3KEY"     "S3 Key not specified"
+     confirm
+     aws --profile $ACCOUNT s3 rm s3://$S3BUCKET/$S3KEY
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
 

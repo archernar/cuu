@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sat Jun 16 08:44:05 EDT 2018
+       build date: Sat Jun 16 09:25:19 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -101,6 +101,8 @@ EC2 Commands
 S3 Commands  
      s3list                            -a         S3 List
      s3listrecursive                   -a         S3 Recursive List
+     s3put                             -a -b -k -d   S3 Put Object
+     s3remove                          -a -b -k   S3 Put Object
   
 CloudTrail Commands  
      cloudtrail-active                 -a         Cloudtrail watch all activity in the time window
@@ -144,5 +146,5 @@ REGIONLIST=                           ; Region List
 </pre>
 <pre>
   
-Sat Jun 16 08:44:06 EDT 2018
+Sat Jun 16 09:25:19 EDT 2018
 </pre>
