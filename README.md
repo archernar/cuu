@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Fri Jun 15 16:46:42 EDT 2018
+       build date: Sat Jun 16 08:20:10 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -134,8 +134,9 @@ SUBNET1=                              ; Public Subnet
 SUBNET2=                              ; Private Subnet
 IGWID=                                ; Internet Gateway ID
 KP=                                   ; Key Pair Name
+REGION=                               ; Region
 </pre>
 <pre>
   
-Fri Jun 15 16:46:43 EDT 2018
+Sat Jun 16 08:20:11 EDT 2018
 </pre>
