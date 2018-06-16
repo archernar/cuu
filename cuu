@@ -258,6 +258,9 @@ awsnull() {
 awsdbg() {
      printf "DBGOUT:   aws %s %s %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12
 }
+# -----------------------------------------------------------------------------------------------------------------------
+# -- ASSERTS
+# -----------------------------------------------------------------------------------------------------------------------
 assertfile() {
     if [ -a $1 ] ; then
          NOTHING=0
@@ -278,6 +281,21 @@ assert() {
          print $2
          exit 1
     fi
+}
+assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT() {
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$S3BUCKET"  "S3 Bucket not specified"
+     assert "$S3KEY"     "S3 Key not specified"
+     assert "$DOCUMENT"  "Document/Content/File not specified"
+}
+assertACCOUNTandS3BUCKET() {
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$S3BUCKET"  "S3 Bucket not specified"
+}
+assertACCOUNTandS3BUCKETandS3KEY() {
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$S3BUCKET"  "S3 Bucket not specified"
+     assert "$S3KEY"     "S3 Key not specified"
 }
 assertACCOUNTandUSERNAME() {
      assert "$ACCOUNT" "Profile not specified"
@@ -1320,25 +1338,99 @@ COMMANDPROC "S3LISTRECURSIVE,S3LSR,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt
                     fi
                done
 fi
+COMMANDPROC "S3URL" "Create a Signed URL" "-a -b -k" ; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEY
+     java Gpurl $REGION  $S3BUCKET $S3KEY 5
+fi
+COMMANDPROC "S3PUTTEXT" "S3 Put Text Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT
+     aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type text/plain
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3PUTHTML" "S3 Put HTML Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT
+     aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type text/html
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3PUTPDF" "S3 Put PDF Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT
+     aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type application/pdf
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3PUTPDFFILESET" "S3 Put PDF Fileset" "-a -b"; if [ $bCmd -gt 0 ] ; then
+    cat fileset | while read ITEM; do
+          print $ITEM
+          aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key "$ITEM" --body "./$ITEM" --content-type application/pdf
+     done
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3RMFILESET" "S3 Remove Fileset" "-a -b"; if [ $bCmd -gt 0 ] ; then
+    cat fileset | while read ITEM; do
+          print $ITEM
+          aws --profile $ACCOUNT s3 rm "s3://$S3BUCKET/$ITEM"
+     done
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
 COMMANDPROC "S3PUT" "S3 Put Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT"  "Profile not specified"
-     assert "$S3BUCKET"  "S3 Bucket not specified"
-     assert "$S3KEY"     "S3 Key not specified"
-     assert "$DOCUMENT"  "Document/Content/File not specified"
+     assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT
      aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
-     java Gpurl us-east-1 $S3BUCKET ecd3pub $S3KEY 5
+     # java Gpurl us-east-1 $S3BUCKET $S3KEY 5
 fi
 COMMANDPROC "S3REMOVE,S3RM" "S3 Put Object" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT"  "Profile not specified"
-     assert "$S3BUCKET"  "S3 Bucket not specified"
-     assert "$S3KEY"     "S3 Key not specified"
+     assertACCOUNTandS3BUCKETandS3KEY
      confirm
      aws --profile $ACCOUNT s3 rm s3://$S3BUCKET/$S3KEY
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
-
+COMMANDPROC "S3PRESIGN" "Presign S3 URL" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEY
+     confirm
+     aws --output json --profile $ACCOUNT s3 presign s3://$S3BUCKET/$S3KEY --expires-in 300
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3DELETEBUCKET" "Deletes a S3 Bucket" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api delete-bucket --bucket $S3BUCKET 
+fi
+COMMANDPROC "S3CREATEBUCKET-EUWEST1" "Create S3 Bucket in eu-west-1" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region eu-west-1 --create-bucket-configuration LocationConstraint=eu-west-1
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3CREATEBUCKET-EUCENTRAL1" "Create S3 Bucket in eu-central-1" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region eu-central-1 --create-bucket-configuration LocationConstraint=eu-central-1
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3CREATEBUCKET-USEAST1" "Create S3 Bucket in us-east-1" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region us-east-1
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3CREATEBUCKET-USEAST2" "Create S3 Bucket in us-east-2" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3CREATEBUCKET-USWEST1" "Create S3 Bucket in us-west-1" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region us-west-1 --create-bucket-configuration LocationConstraint=us-west-1
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+COMMANDPROC "S3CREATEBUCKET-USWEST2" "Create S3 Bucket in us-west-2" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
 
 
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  

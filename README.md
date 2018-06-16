@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sat Jun 16 09:25:19 EDT 2018
+       build date: Sat Jun 16 17:59:36 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -99,10 +99,24 @@ EC2 Commands
      ec2-util                          -a         CloudWatch CPU Utilization
   
 S3 Commands  
+     s3createbucket-eucentral1         -a -b      Create S3 Bucket in eu-central-1
+     s3createbucket-euwest1            -a -b      Create S3 Bucket in eu-west-1
+     s3createbucket-useast1            -a -b      Create S3 Bucket in us-east-1
+     s3createbucket-useast2            -a -b      Create S3 Bucket in us-east-2
+     s3createbucket-uswest1            -a -b      Create S3 Bucket in us-west-1
+     s3createbucket-uswest2            -a -b      Create S3 Bucket in us-west-2
+     s3deletebucket                    -a -b      Deletes a S3 Bucket
      s3list                            -a         S3 List
      s3listrecursive                   -a         S3 Recursive List
+     s3presign                         -a -b -k   Presign S3 URL
      s3put                             -a -b -k -d   S3 Put Object
+     s3puthtml                         -a -b -k -d   S3 Put HTML Object
+     s3putpdf                          -a -b -k -d   S3 Put PDF Object
+     s3putpdffileset                   -a -b      S3 Put PDF Fileset
+     s3puttext                         -a -b -k -d   S3 Put Text Object
      s3remove                          -a -b -k   S3 Put Object
+     s3rmfileset                       -a -b      S3 Remove Fileset
+     s3url                             -a -b -k   Create a Signed URL
   
 CloudTrail Commands  
      cloudtrail-active                 -a         Cloudtrail watch all activity in the time window
@@ -146,5 +160,5 @@ REGIONLIST=                           ; Region List
 </pre>
 <pre>
   
-Sat Jun 16 09:25:19 EDT 2018
+Sat Jun 16 17:59:37 EDT 2018
 </pre>
