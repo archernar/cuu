@@ -1,7 +1,8 @@
+# CUU - An AWS CLI Wrapper
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sat Jun 16 17:59:36 EDT 2018
+       build date: Sat Jun 16 18:04:56 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -160,5 +161,5 @@ REGIONLIST=                           ; Region List
 </pre>
 <pre>
   
-Sat Jun 16 17:59:37 EDT 2018
+Sat Jun 16 18:04:57 EDT 2018
 </pre>
