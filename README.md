@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sat Jun 16 08:32:11 EDT 2018
+       build date: Sat Jun 16 08:44:05 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -98,6 +98,10 @@ EC2 Commands
      ec2sparkmenu                      -a         Instance Menu
      ec2-util                          -a         CloudWatch CPU Utilization
   
+S3 Commands  
+     s3list                            -a         S3 List
+     s3listrecursive                   -a         S3 Recursive List
+  
 CloudTrail Commands  
      cloudtrail-active                 -a         Cloudtrail watch all activity in the time window
      cloudtrailmenu                    -a         Menu interface to pick and watch users via cloudtrail
@@ -140,5 +144,5 @@ REGIONLIST=                           ; Region List
 </pre>
 <pre>
   
-Sat Jun 16 08:32:12 EDT 2018
+Sat Jun 16 08:44:06 EDT 2018
 </pre>

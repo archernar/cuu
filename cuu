@@ -1291,6 +1291,27 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
            fi
 
 
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: S3 Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "S3LIST,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM s3 ls| gawk -v A=$ITEM -f noindent.awk
+               done
+fi
+COMMANDPROC "S3LISTRECURSIVE,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
+               buildPROFILELIST
+               clean
+               for ITEM in $PROFILELIST; do
+                    aws --profile $ITEM s3 ls --recursive | gawk -v A=$ITEM -f noindent.awk
+               done
+fi
+
+
+
+
 # aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: CLOUD TRAIL Operations
