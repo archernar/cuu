@@ -1,7 +1,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sat Jun 16 08:20:10 EDT 2018
+       build date: Sat Jun 16 08:30:34 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -109,6 +109,7 @@ Utility Commands
      utilaccountnumber                 -a         Print account number
      utilcommandlist                   -a         List Commands
      utilcommands                      -a         Command help
+     utilconfig                        -a         Edit Configuration File ~/.cuu.txt
      utilnewpolicydoc                  -a         Create new this.json from policydoc.json template
      utilpublish                       -a         Publish cuureport.txt
      utilswap                          -a         Swap a Policy for a Group
@@ -138,5 +139,5 @@ REGION=                               ; Region
 </pre>
 <pre>
   
-Sat Jun 16 08:20:11 EDT 2018
+Sat Jun 16 08:30:35 EDT 2018
 </pre>

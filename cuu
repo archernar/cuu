@@ -1080,6 +1080,9 @@ COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
                policyATTACH $POLICYADD
                groupREMOVE $GROUPREMOVE
 fi
+COMMANDPROC "UTILCONFIG,CONFIG" "Edit Configuration File ~/.cuu.txt"; if [ $bCmd -gt 0 ] ; then
+               vi ~/.cuu.txt
+fi
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: EC2 Operations
