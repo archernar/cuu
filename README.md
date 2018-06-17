@@ -2,7 +2,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 12:01:54 EDT 2018
+       build date: Sun Jun 17 12:02:15 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -140,7 +140,7 @@ Utility Commands
      utiltime                          -a         Print time window
   
 </pre>
-## Command Aliases
+### Command Aliases
 <pre>
 ACCESSKEYCREATE                  CREATEACCESSKEY                                  
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
@@ -266,5 +266,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 <pre>
   
-Sun Jun 17 12:01:56 EDT 2018
+Sun Jun 17 12:02:17 EDT 2018
 </pre>

@@ -69,7 +69,7 @@ echo "  " >> README.md
 echo "</pre>" >> README.md
 
 
-echo "## Command Aliases" >> README.md
+echo "### Command Aliases" >> README.md
 echo "<pre>" >> README.md
 cuu -c aliaslist >> README.md
 echo "  " >> README.md
