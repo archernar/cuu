@@ -1,9 +1,9 @@
 # CUU - An AWS CLI Wrapper
-### User Commands  
+### Commands  
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 12:06:11 EDT 2018
+       build date: Sun Jun 17 12:07:40 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -264,5 +264,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Sun Jun 17 12:06:13 EDT 2018
+Sun Jun 17 12:07:42 EDT 2018
 </pre>
