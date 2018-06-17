@@ -17,13 +17,14 @@ print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 print "# CUU - An AWS CLI Wrapper" > README.md
-
-echo "### Commands  " >> README.md
 echo "<pre>" >> README.md
 gawk -v ANON="$ANON" -f readme.awk cuu  >> README.md
 cat $Tmp | egrep "^[ ]*user" >> README.md
-echo "  " >> README.md
+echo "</pre>" >> README.md
 
+
+echo "### Commands  " >> README.md
+echo "<pre>" >> README.md
 echo "Password Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*password" >> README.md
 echo "  " >> README.md

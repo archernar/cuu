@@ -1,9 +1,8 @@
 # CUU - An AWS CLI Wrapper
-### Commands  
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 12:07:40 EDT 2018
+       build date: Sun Jun 17 12:09:47 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -37,7 +36,9 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
      userlist                          -a         User listing
      userlist-json                     -a         User list in json format
      usermenu                          -a         Menu driven user information
-  
+</pre>
+### Commands  
+<pre>
 Password Commands  
      passwordchange                    -a -u -p   Change a users password
      passwordscram                     -a -u      Make a users password unkown (scram)
@@ -264,5 +265,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Sun Jun 17 12:07:42 EDT 2018
+Sun Jun 17 12:09:49 EDT 2018
 </pre>
