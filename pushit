@@ -64,9 +64,15 @@ cat $Tmp | egrep "^[ ]*cloudtrail" >> README.md
 echo "  " >> README.md
 echo "Utility Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*util" >> README.md
-
+echo "  " >> README.md
 
 echo "  " >> README.md
+echo "  " >> README.md
+echo "Command Aliases  " >> README.md
+cuu -c aliaslist >> README.md
+echo "  " >> README.md
+
+
 echo "</pre>" >> README.md
 
 

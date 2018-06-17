@@ -2,7 +2,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 11:04:13 EDT 2018
+       build date: Sun Jun 17 11:57:53 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -139,6 +139,107 @@ Utility Commands
      utilswap                          -a         Swap a Policy for a Group
      utiltime                          -a         Print time window
   
+  
+  
+Command Aliases  
+ACCESSKEYCREATE                  CREATEACCESSKEY                                  
+ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
+ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
+ACCESSKEYSLIST                   LISTACCESSKEYS                                   
+CLOUDTRAIL-ACTIVE                                                                 
+CLOUDTRAIL-USER                                                                   
+CLOUDTRAIL-WATCH                                                                  
+CLOUDTRAILMENU                                                                    
+CLOUDTRAILWORLD                  WORLD                                            
+EC2                                                                               
+EC2-LIST                                                                          
+EC2-SG                                                                            
+EC2-SGSUM                                                                         
+EC2-UTIL                                                                          
+EC2LIST                          LISTEC2                  LI                      
+EC2SPARK                                                                          
+EC2SPARKMENU                                                                      
+GROUPADDUSER                                                                      
+GROUPCREATE                                                                       
+GROUPDELETE                                                                       
+GROUPLIST                        LISTGROUPS                                       
+GROUPLISTUSERS                   LISTUSERSINGROUP                                 
+GROUPREMOVEALLUSERS                                                               
+GROUPREMOVEUSER                                                                   
+GROUPSFORUSER                    LISTUSERGROUPS                                   
+KEYPAIRCREATE                    CREATEKEYPAIR                                    
+PASSWORDCHANGE                   CHANGEPASSWORD                                   
+PASSWORDSCRAM                    SCRAMPASSWORD                                    
+POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                           
+POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                               
+POLICYBYARN-ADD                                                                   
+POLICYBYARN-REMOVE                                                                
+POLICYBYNAME-ADD                                                                  
+POLICYBYNAME-REMOVE                                                               
+POLICYCODECOMMITPOWERUSER-ADD    IAMUSERCODECOMMITPOWERUSER-ADD                         
+POLICYCODECOMMITPOWERUSER-REMOVE IAMUSERCODECOMMITPOWERUSER-REMOVE                         
+POLICYCREATE                                                                      
+POLICYDELETE                                                                      
+POLICYGET                        GETPOLICY                                        
+POLICYGETALL                     GETALLPOLICIES           GAP                     
+POLICYGETLOCAL                   GETLOCALPOLICIES         GLP                     
+POLICYLISTALL                    LISTALLPOLICIES                                  
+POLICYLISTAWS                    LISTAWSPOLICIES                                  
+POLICYLISTLOCAL                  LISTLOCALPOLICIES                                
+POLICYLISTUSER                   LISTUSERPOLICIES                                 
+POLICYSETATTACH                  ATTACHPOLICYSET                                  
+POLICYSETREMOVE                  REMOVEPOLICYSET                                  
+POLICYUPDATE                     UPDATEPOLICY                                     
+POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                         
+POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                         
+POLICYUSERDETACHALL              DETACHUSERPOLICIES                               
+ROLESLIST                        LISTROLES                                        
+S3COPY                                                                            
+S3COPY-1MINUTE                                                                    
+S3CREATEBUCKET-EUCENTRAL1                                                         
+S3CREATEBUCKET-EUWEST1                                                            
+S3CREATEBUCKET-USEAST1                                                            
+S3CREATEBUCKET-USEAST2                                                            
+S3CREATEBUCKET-USWEST1                                                            
+S3CREATEBUCKET-USWEST2                                                            
+S3DELETEBUCKET                                                                    
+S3LIST                           S3LS                     LB                      
+S3LISTRECURSIVE                  S3LSR                    LBR                     
+S3PRESIGN                                                                         
+S3PUT                                                                             
+S3PUTHTML                                                                         
+S3PUTPDF                                                                          
+S3PUTPDFFILESET                                                                   
+S3PUTTEXT                                                                         
+S3REMOVE                         S3RM                                             
+S3RMFILESET                                                                       
+S3URL                                                                             
+TEST                                                                              
+TEST2                                                                             
+USERCREATE                       CREATEUSER                                       
+USERCREATEADMIN                  CREATEREADMINUSER                                
+USERCREATENOKEY                  CREATEUSERNOKEY                                  
+USERCREATEREADONLY               CREATEREADONLYUSER                               
+USERDELETE                       DELETEUSER                                       
+USERDESCRIBE                     DESCRIBEUSERS            DU                      
+USERLIST                         LISTUSERS                                        
+USERLIST-2                       LISTUSERS2                                       
+USERLIST-JSON                    LISTUSERS-JSON                                   
+USERMENU                                                                          
+UTILACCOUNTNUMBER                ACCOUNTNUMBER                                    
+UTILALIAS                        ALIAS                                            
+UTILALIASLIST                    ALIASLIST                                        
+UTILCOMMANDLIST                  COMMANDLIST                                      
+UTILCOMMANDS                     COMMANDS                                         
+UTILCONFIG                       CONFIG                                           
+UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
+UTILPUBLISH                      PUBLISH                                          
+UTILSWAP                                                                          
+UTILTIME                         TIME                                             
+VPCCREATE                        CREATEVPC-2SUBNETS                               
+VPCDELETE                        DELETEVPC                                        
+WWEC2                                                                             
+  
 </pre>
 <pre>
 ~/.cuu.txt  can contain defaults for these settings
@@ -165,5 +266,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 <pre>
   
-Sun Jun 17 11:04:14 EDT 2018
+Sun Jun 17 11:57:55 EDT 2018
 </pre>

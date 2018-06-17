@@ -523,10 +523,12 @@ rm -rf $CuuCommandFile  >/dev/null 2>&1
 CUUABEND() { print "CUU Internal Error!"; print "     Duplicate Command: "$1; exit 1; }
 
 typeset -A COMMANDSET
+typeset -A COMMANDALIASES
 CMDRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "##"}'`
 COMMANDPROC() {
      bCmd=0
      THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($1)}'`
+     COMMANDALIASES["$THISCMD"]="$1"
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD >> $CuuCommandFile
@@ -1102,6 +1104,7 @@ COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0
      aws --profile $ACCOUNT s3 ls s3://$PUBLISHBUCKET --recursive
      java Gpurl $REGION $PUBLISHBUCKET $FNAME 15
 fi
+
 
 COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
@@ -1749,6 +1752,14 @@ COMMANDPROC "UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; 
 fi
 COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
      COMMANDLIST
+fi
+COMMANDPROC "UTILALIAS,ALIAS" "Command Alias" "-a"; if [ $bCmd -gt 0 ] ; then
+     print "Aliases for "$THING": "${COMMANDALIASES[$THING]}
+fi
+COMMANDPROC "UTILALIASLIST,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ; then
+     for ITEM in ${COMMANDALIASES[@]}; do
+         echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s\n", trim($1), trim($2), trim($3) }'
+     done
 fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
