@@ -98,5 +98,19 @@ function isoyesterminute(n) {
      return strftime(fmt, (systime() + (4 * 3600)) - (1 * 60 * n) )
 }
 
-
+function isofutureday(n) {
+     fmt = "%Y-%m-%dT%H:%M:%SZ";
+     if ( n <=0 ) n = 1;
+     return strftime(fmt, (systime() + (4 * 3600)) + (24 * 3600 * n) )
+}
+function isofuturehour(n) {
+     fmt = "%Y-%m-%dT%H:%M:%SZ";
+     if ( n <=0 ) n = 1;
+     return strftime(fmt, (systime() + (4 * 3600)) + (1 * 3600 * n) )
+}
+function isofutureminute(n) {
+     fmt = "%Y-%m-%dT%H:%M:%SZ";
+     if ( n <=0 ) n = 1;
+     return strftime(fmt, (systime() + (4 * 3600)) + (1 * 60 * n) )
+}
 

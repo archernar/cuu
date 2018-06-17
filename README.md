@@ -2,7 +2,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sat Jun 16 18:04:56 EDT 2018
+       build date: Sun Jun 17 11:04:13 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -21,6 +21,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -R  flag:     show raw records in output
       -Z  flag:     output iso time
       -i  flag:     interactive mode ('q' to quit)
+      -C  flag:     Content type (text,pdf,json,html)
       -c  command:
           Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
           Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
@@ -100,6 +101,8 @@ EC2 Commands
      ec2-util                          -a         CloudWatch CPU Utilization
   
 S3 Commands  
+     s3copy-1minute                    -a -b -d   S3 Copy, Expires in 1 Minute
+     s3copy                            -a -b -d   S3 Copy, with wildcard (%) documents
      s3createbucket-eucentral1         -a -b      Create S3 Bucket in eu-central-1
      s3createbucket-euwest1            -a -b      Create S3 Bucket in eu-west-1
      s3createbucket-useast1            -a -b      Create S3 Bucket in us-east-1
@@ -115,7 +118,7 @@ S3 Commands
      s3putpdf                          -a -b -k -d   S3 Put PDF Object
      s3putpdffileset                   -a -b      S3 Put PDF Fileset
      s3puttext                         -a -b -k -d   S3 Put Text Object
-     s3remove                          -a -b -k   S3 Put Object
+     s3remove                          -a -b -k   S3 Remove Object, with wildcard (%) keys
      s3rmfileset                       -a -b      S3 Remove Fileset
      s3url                             -a -b -k   Create a Signed URL
   
@@ -158,8 +161,9 @@ IGWID=                                ; Internet Gateway ID
 KP=                                   ; Key Pair Name
 REGION=                               ; Region
 REGIONLIST=                           ; Region List
+PUBLISHBUCKET=                        ; 
 </pre>
 <pre>
   
-Sat Jun 16 18:04:57 EDT 2018
+Sun Jun 17 11:04:14 EDT 2018
 </pre>

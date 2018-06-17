@@ -47,6 +47,7 @@ usage(){
      print "      -R  flag:     show raw records in output"
      print "      -Z  flag:     output iso time"
      print "      -i  flag:     interactive mode ('q' to quit)"
+     print "      -C  flag:     Content type (text,pdf,json,html)"
      print "      -c  command:"
      print "          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS"
      print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
@@ -258,6 +259,10 @@ awsnull() {
 awsdbg() {
      printf "DBGOUT:   aws %s %s %s %s %s %s %s %s %s %s %s %s\n" $1 $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $12
 }
+crack() {
+    print $1
+    exit 1
+}
 # -----------------------------------------------------------------------------------------------------------------------
 # -- ASSERTS
 # -----------------------------------------------------------------------------------------------------------------------
@@ -364,6 +369,9 @@ MYCIDR=""
 VPCID="" 
 IGWID="" 
 AMI="" 
+# -----------------------------------------------------------------------------------------------------------------------
+# -- SETUPS
+# -----------------------------------------------------------------------------------------------------------------------
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -381,6 +389,7 @@ SUBNET2=`gawk -v  w=SUBNET2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);
 AMI=`gawk -v  w=AMI -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 REGION=`gawk -v  w=REGION -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 
 DETAILFLAG=""
 SHOWRAW="no" 
@@ -390,9 +399,11 @@ BIGEVENTS="no"
 SUMMARY="no" 
 S3BUCKET=""
 S3KEY="";
-while getopts "b:k:jr:Ff:D:dn:c:Ru:a:p:t:ihSZBET:Q:" arg
+CTYPE="";
+while getopts "C:b:k:jr:Ff:D:dn:c:Ru:a:p:t:ihSZBET:Q:" arg
 do
 	case $arg in
+            C) CTYPE=$OPTARG ;;
             b) S3BUCKET=$OPTARG ;;
             k) S3KEY=$OPTARG ;;
             S) SUMMARY="yes" ;;
@@ -463,6 +474,8 @@ if [ "$TIMEFACTOR" == "" ] ; then
      TIMEFACTOR=24
 fi
 ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterhour(T);}'`
+ISOFUTURE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofuturehour(T);}'`
+ISOFUTUREMINUTE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofutureminute(1);}'`
 ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
 AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
@@ -505,13 +518,6 @@ LASTCONFIG() {
     rm -rf  ~/.cuu.local
     print $1"="$2 >> ~/.cuu.last
 }
-
-LASTCONFIG "MO" "1"
-LASTCONFIG "MOO" "11111"
-LASTCONFIG "MOOOO" "41"
-LASTCONFIG "MMMMMMO" "331"
-LASTCONFIG "MOMMNNJJ" "341"
-LASTCONFIG "MO" "2"
 
 rm -rf $CuuCommandFile  >/dev/null 2>&1
 CUUABEND() { print "CUU Internal Error!"; print "     Duplicate Command: "$1; exit 1; }
@@ -569,14 +575,14 @@ COMMANDINFO() {
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "TEST" "Test Command"; if [ $bCmd -gt 0 ] ; then
-     LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
-     THIS=" --filters "
-     for ITEM in $LIST; do
-#          time $AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM  --query 'Reservations[*].Instances[*].Tags[?Key==`Name`].Value'
-           $AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value
-      done
-     exit 1
-     NOTHING=0
+#      LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+#      THIS=" --filters "
+#      for ITEM in $LIST; do
+#           time $AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM  --query 'Reservations[*].Instances[*].Tags[?Key==`Name`].Value'
+#            $AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value
+#       done
+#      exit 1
+      NOTHING=0
 fi
 
 COMMANDPROC "TEST2" "Test Command Two"; if [ $bCmd -gt 0 ] ; then
@@ -1092,9 +1098,9 @@ COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0
      FNAME="cuureport"-$EPOCHTIME".txt"
      print $FNAME
      cat cuureport.txt > $FNAME
-     aws --profile $ACCOUNT s3api put-object --bucket ecd3pub --key $FNAME --body $FNAME --content-encoding ISO-8559-6 --content-type text/plain > $Tmp
-     aws --profile $ACCOUNT s3 ls s3://ecd3pub --recursive
-     java Gpurl us-east-1 ecd3pub $FNAME 15
+     aws --profile $ACCOUNT s3api put-object --bucket $PUBLISHBUCKET --key $FNAME --body $FNAME --content-encoding ISO-8559-6 --content-type text/plain > $Tmp
+     aws --profile $ACCOUNT s3 ls s3://$PUBLISHBUCKET --recursive
+     java Gpurl $REGION $PUBLISHBUCKET $FNAME 15
 fi
 
 COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
@@ -1342,6 +1348,42 @@ COMMANDPROC "S3URL" "Create a Signed URL" "-a -b -k" ; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKETandS3KEY
      java Gpurl $REGION  $S3BUCKET $S3KEY 5
 fi
+
+COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$S3BUCKET" "S3 Bucket not specified"
+     assert "$DOCUMENT" "Document(s) not specified"
+     DOCUMENT=`echo $DOCUMENT | sed -e "s/[%]/*/g"`
+     case $CTYPE in
+          HTML)    CTYPE=" --content-type text/html " ;;
+          html)    CTYPE=" --content-type text/html " ;;
+          TEXT)    CTYPE=" --content-type text/plain " ;;
+          text)    CTYPE=" --content-type text/plain " ;;
+          PDF)     CTYPE=" --content-type application/pdf " ;;
+          pdf)     CTYPE=" --content-type application/pdf " ;;
+          JSON)    CTYPE=" --content-type application/json " ;;
+          json)    CTYPE=" --content-type application/json " ;;
+          *)       CTYPE="" ;;
+     esac
+     $AWS s3 cp ./ s3://$S3BUCKET/ --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+
+COMMANDPROC "S3REMOVE,S3RM" "S3 Remove Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEY
+     confirm
+     S3KEY=`echo $S3KEY | sed -e "s/[%]/*/g"`
+     $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "$S3KEY"
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
+
+
+COMMANDPROC "S3COPY-1MINUTE" "S3 Copy, Expires in 1 Minute" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     aws --profile $ACCOUNT s3 cp $DOCUMENT s3://$S3BUCKET/$DOCUMENT --expires $ISOFUTUREMINUTE
+fi
+
+
 COMMANDPROC "S3PUTTEXT" "S3 Put Text Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT
      aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type text/plain
@@ -1376,12 +1418,6 @@ COMMANDPROC "S3PUT" "S3 Put Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
      aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
      # java Gpurl us-east-1 $S3BUCKET $S3KEY 5
-fi
-COMMANDPROC "S3REMOVE,S3RM" "S3 Put Object" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
-     assertACCOUNTandS3BUCKETandS3KEY
-     confirm
-     aws --profile $ACCOUNT s3 rm s3://$S3BUCKET/$S3KEY
-     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
 COMMANDPROC "S3PRESIGN" "Presign S3 URL" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
