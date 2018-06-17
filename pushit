@@ -18,11 +18,9 @@ cuu -c utilcommands | grep -v alias  > $Tmp
 
 print "# CUU - An AWS CLI Wrapper" > README.md
 
+echo "### User Commands  " >> README.md
 echo "<pre>" >> README.md
-
 gawk -v ANON="$ANON" -f readme.awk cuu  >> README.md
-
-echo "User Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*user" >> README.md
 echo "  " >> README.md
 
@@ -64,17 +62,12 @@ cat $Tmp | egrep "^[ ]*cloudtrail" >> README.md
 echo "  " >> README.md
 echo "Utility Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*util" >> README.md
-echo "  " >> README.md
-
 echo "</pre>" >> README.md
 
 
-echo "### Command Aliases" >> README.md
+echo "## Command Aliases" >> README.md
 echo "<pre>" >> README.md
 cuu -c aliaslist >> README.md
-echo "  " >> README.md
-
-
 echo "</pre>" >> README.md
 
 

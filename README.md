@@ -1,8 +1,9 @@
 # CUU - An AWS CLI Wrapper
+### User Commands  
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 12:02:15 EDT 2018
+       build date: Sun Jun 17 12:04:30 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -26,7 +27,6 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
           Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
           Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
   commands
-User Commands  
      usercreateadmin                   -a -u -p   Create admin user
      usercreate                        -a -u -p   Create a user and assign access keys
      usercreatenokey                   -a -u -p   Create a user with no access keys
@@ -138,9 +138,8 @@ Utility Commands
      utilpublish                       -a         Publish cuureport.txt
      utilswap                          -a         Swap a Policy for a Group
      utiltime                          -a         Print time window
-  
 </pre>
-### Command Aliases
+## Command Aliases
 <pre>
 ACCESSKEYCREATE                  CREATEACCESSKEY                                  
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
@@ -239,7 +238,6 @@ UTILTIME                         TIME
 VPCCREATE                        CREATEVPC-2SUBNETS                               
 VPCDELETE                        DELETEVPC                                        
 WWEC2                                                                             
-  
 </pre>
 <pre>
 ~/.cuu.txt  can contain defaults for these settings
@@ -266,5 +264,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 <pre>
   
-Sun Jun 17 12:02:17 EDT 2018
+Sun Jun 17 12:04:32 EDT 2018
 </pre>
