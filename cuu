@@ -51,7 +51,7 @@ usage(){
      print "      -c  command:"
      print "          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS"
      print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
-     print "  commands"
+     print " "
 # README.md End
 # M </pre>
 }
