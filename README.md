@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 12:04:30 EDT 2018
+       build date: Sun Jun 17 12:06:11 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -139,7 +139,7 @@ Utility Commands
      utilswap                          -a         Swap a Policy for a Group
      utiltime                          -a         Print time window
 </pre>
-## Command Aliases
+### Command Aliases
 <pre>
 ACCESSKEYCREATE                  CREATEACCESSKEY                                  
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
@@ -239,8 +239,8 @@ VPCCREATE                        CREATEVPC-2SUBNETS
 VPCDELETE                        DELETEVPC                                        
 WWEC2                                                                             
 </pre>
+### ~/.cuu.txt can contain defaults for these settings
 <pre>
-~/.cuu.txt  can contain defaults for these settings
 PASSWORD=
 STARTDATE=2018-05-01T00:00:00Z        ; Obsolete
 WATCHPROFILE=
@@ -262,7 +262,7 @@ REGION=                               ; Region
 REGIONLIST=                           ; Region List
 PUBLISHBUCKET=                        ; 
 </pre>
+### Build Date
 <pre>
-  
-Sun Jun 17 12:04:32 EDT 2018
+Sun Jun 17 12:06:13 EDT 2018
 </pre>

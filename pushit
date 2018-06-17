@@ -65,22 +65,22 @@ cat $Tmp | egrep "^[ ]*util" >> README.md
 echo "</pre>" >> README.md
 
 
-echo "## Command Aliases" >> README.md
+echo "### Command Aliases" >> README.md
 echo "<pre>" >> README.md
 cuu -c aliaslist >> README.md
 echo "</pre>" >> README.md
 
 
+echo "### ~/.cuu.txt can contain defaults for these settings" >> README.md
 echo "<pre>" >> README.md
-echo "~/.cuu.txt  can contain defaults for these settings" >> README.md
 cat .cuu.txt >> README.md
 echo "</pre>" >> README.md
 # cuu -c commandlist | sort | gawk '{printf "%s ", $0;if ((NR%4)==0) print "";}' | column -t >> README.md
 # cuu -c commands | sort  >> README.md
 
 
+echo "### Build Date" >> README.md
 echo "<pre>" >> README.md
-echo "  " >> README.md
 date >> README.md
 echo "</pre>" >> README.md
 
