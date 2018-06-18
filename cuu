@@ -23,7 +23,6 @@ else
      export AWKPATH=$AWKPATH:$CUUHOME
 fi
 
-print $AWKPATH
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -1113,7 +1112,7 @@ COMMANDPROC "POLICYUSERCHANGEPASSWORD-REMOVE,IAMUSERCHANGEPASSWORD-REMOVE" "Remo
                assertACCOUNTandUSERNAME
                policyREMOVE $THIS
 fi
-COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILPUBLISHCUUREPORT,PUBLISHCUUREPORT" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0 ] ; then
      assertfile cuureport.txt
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
      DSTAMP=`date '+%F%H%M%S' | sed 's/-//g'`
@@ -1123,6 +1122,18 @@ COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0
      aws --profile $ACCOUNT s3api put-object --bucket $PUBLISHBUCKET --key $FNAME --body $FNAME --content-encoding ISO-8559-6 --content-type text/plain > $Tmp
      aws --profile $ACCOUNT s3 ls s3://$PUBLISHBUCKET --recursive
      java Gpurl $REGION $PUBLISHBUCKET $FNAME 15
+fi
+COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt 0 ] ; then
+     print "Publish Bucket is s3://"$PUBLISHBUCKET
+     confirm
+     cuu -a $ACCOUNT -c S3COPY -b $PUBLISHBUCKET -D $DOCUMENT -C $CTYPE
+     cuu -a $ACCOUNT -c S3HTML -b $PUBLISHBUCKET
+fi
+COMMANDPROC "S3PUBLISHCLEAR,PUBLISHCLEAR" "Clear Publish Bucket" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+     print "Publish Bucket is s3://"$PUBLISHBUCKET
+     aws --profile $ACCOUNT s3 ls s3://$PUBLISHBUCKET --recursive
+     confirm
+     $AWS  s3 rm s3://$PUBLISHBUCKET/ --recursive --exclude "*" --include "*"
 fi
 
 
@@ -1401,8 +1412,7 @@ COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bC
           mp3)     CTYPE=" --content-type audio/mpeg " ;;
           MPEG)    CTYPE=" --content-type audio/mpeg " ;;
           mpeg)    CTYPE=" --content-type audio/mpeg " ;;
-
-
+          GUESS)   CTYPE="" ;;
           *)       CTYPE="" ;;
      esac
      print "Content Type "$CTYPE

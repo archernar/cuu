@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Mon Jun 18 08:34:45 EDT 2018
+       build date: Mon Jun 18 09:12:03 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -119,6 +119,7 @@ S3 Commands
      s3listhtml                        -a         S3 List as HTML Page
      s3listrecursive                   -a         S3 Recursive List
      s3presign                         -a -b -k   Presign S3 URL
+     s3publishclear                    -a -b -k   Clear Publish Bucket
      s3put                             -a -b -k -d   S3 Put Object
      s3puthtml                         -a -b -k -d   S3 Put HTML Object
      s3putpdf                          -a -b -k -d   S3 Put PDF Object
@@ -141,14 +142,14 @@ Utility Commands
      utilcommands                      -a         Command help
      utilconfig                        -a         Edit Configuration File ~/.cuu.txt
      utilnewpolicydoc                  -a         Create new this.json from policydoc.json template
-     utilpublish                       -a         Publish cuureport.txt
+     utilpublish                       -a         Publish Files
+     utilpublishcuureport              -a         Publish cuureport.txt
      utilset                           -a         Set and Show configuration/environment variables
      utilswap                          -a         Swap a Policy for a Group
      utiltime                          -a         Print time window
 </pre>
 ### Command Aliases
 <pre>
-/home/mestes/scm/cuu
 ACCESSKEYCREATE                  CREATEACCESSKEY                                  
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
 ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
@@ -215,6 +216,7 @@ S3LIST                           S3LS                     LB
 S3LISTHTML                       S3LSHTML                 S3HTML                  
 S3LISTRECURSIVE                  S3LSR                    LBR                     
 S3PRESIGN                                                                         
+S3PUBLISHCLEAR                   PUBLISHCLEAR                                     
 S3PUT                                                                             
 S3PUTHTML                                                                         
 S3PUTPDF                                                                          
@@ -241,6 +243,7 @@ UTILALIASLIST                    ALIASLIST
 UTILCONFIG                       CONFIG                                           
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
 UTILPUBLISH                      PUBLISH                                          
+UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                 
 UTILSWAP                                                                          
 UTILTIME                         TIME                                             
 VPCCREATE                        CREATEVPC-2SUBNETS                               
@@ -272,5 +275,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 08:34:48 EDT 2018
+Mon Jun 18 09:12:05 EDT 2018
 </pre>
