@@ -45,7 +45,7 @@ fi
 # M <pre>
 usage(){
 # README.md Start
-     print "Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]"
+     print "Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]"
      print "  info"
      print "       build date: BUILDDATE"
      print "       repo:       https://github.com/archernar/cuu"
@@ -56,6 +56,10 @@ usage(){
      print "      -t  operand:  thing name  (specify a resource or object name)"
      print "      -T  operand:  time window in hours (to specify (now minus T) to now)"
      print "      -D  operand:  specify a document\file to upload (e.g. a policy document)"
+     print "      -e  operand:  expire time in seconds"
+     print "      -C  operand:  content type (pdf, text, html, mp3)"
+     print "      -b  operand:  s3 bucket name"
+     print "      -k  operand:  s3 key name"
      print "  flags"
      print "      -h  flag:     display usage"
      print "      -d  flag:     limits abbreviations"
@@ -306,6 +310,17 @@ assert() {
          exit 1
     fi
 }
+wildcard() {
+    THIS=`echo "$1" | gawk -v re="[*]" '{sz=""; if ($0 ~ re) sz="match";} END {print sz;}'`
+    if [ "$THIS" == "" ] ; then
+        NOTHING=0
+    else
+         print "Failed Regex Check"
+         print "Use the % as a wildcard character, not the * character"
+         exit 1
+    fi
+
+}
 assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT() {
      assert "$ACCOUNT"  "Profile not specified"
      assert "$S3BUCKET"  "S3 Bucket not specified"
@@ -399,7 +414,6 @@ PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1
 POLICYLIST=`gawk -v  w=POLICYLIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 GROUPREMOVE=`gawk -v w=GROUPREMOVE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 POLICYADD=`gawk -v   w=POLICYADD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-TIMEFACTOR=`gawk -v  w=TIMEFACTOR -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 MYCIDR=`gawk -v  w=MYCIDR -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 VPCID=`gawk -v  w=VPCID -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 IGWID=`gawk -v  w=IGWID -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -407,8 +421,12 @@ SUBNET1=`gawk -v  w=SUBNET1 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);
 SUBNET2=`gawk -v  w=SUBNET2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 AMI=`gawk -v  w=AMI -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-REGION=`gawk -v  w=REGION -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+
+# This is the modified get parameter function, with a default option
+EXPIRES=`gawk -v w=EXPIRES -v def=300 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+REGION=`gawk -v w=REGION -v def=us-east-1 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+TIMEFACTOR=`gawk -v w=TIMEFACTOR -v def=24 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 
 DETAILFLAG=""
 SHOWRAW="no" 
@@ -419,9 +437,10 @@ SUMMARY="no"
 S3BUCKET=""
 S3KEY="";
 CTYPE="";
-while getopts "C:b:k:jr:Ff:D:dn:c:Ru:a:p:t:ihSZBET:Q:" arg
+while getopts "e:C:b:k:jr:Ff:D:dn:c:Ru:a:p:t:ihSZBET:Q:" arg
 do
 	case $arg in
+            e) EXPIRES=$OPTARG ;;
             C) CTYPE=$OPTARG ;;
             b) S3BUCKET=$OPTARG ;;
             k) S3KEY=$OPTARG ;;
@@ -488,10 +507,9 @@ commandABBREVIATIONS
 # -----------------------------------------------------------------------------------------------------------------------
 AWS="aws --profile $ACCOUNT --region $REGION --output text "
 AWSJ="aws --profile $ACCOUNT --region $REGION --output json "
-
-if [ "$TIMEFACTOR" == "" ] ; then
-     TIMEFACTOR=24
-fi
+# -----------------------------------------------------------------------------------------------------------------------
+# -- TIME SETUPS
+# -----------------------------------------------------------------------------------------------------------------------
 ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterhour(T);}'`
 ISOFUTURE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofuturehour(T);}'`
 ISOFUTUREMINUTE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofutureminute(1);}'`
@@ -500,8 +518,8 @@ AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 # -----------------------------------------------------------------------------------------------------------------------
 # Notes
-# https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
-# aws --profile ECD3 iam get-account-authorization-details 
+#   https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
+#   aws --profile ECD3 iam get-account-authorization-details 
 #   aws --profile ECD3 iam list-policies
 #   aws --profile ECD3 iam list-policies
 #   aws --profile ECD3 iam list-policies --scope Local
@@ -511,8 +529,8 @@ ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/ReadOnlyAccess         --user-name $USERNAME
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess   --user-name $USERNAME
 #   aws --profile $ACCOUNT iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser --user-name $USERNAME
-# arn:aws:iam::aws:policy/AWSCodeCommitPowerUser
-# aws --profile $ACCOUNT --output json --region $REGION ec2 describe-vpcs
+#   arn:aws:iam::aws:policy/AWSCodeCommitPowerUser
+#   aws --profile $ACCOUNT --output json --region $REGION ec2 describe-vpcs
 # -----------------------------------------------------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -692,7 +710,6 @@ COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if
      NOTHING=0
 fi
 
-
 COMMANDPROC "WWEC2" "Another form of describe instances" "-a"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      LIST=`aws ec2 describe-regions --query "Regions[*].RegionName" --output text`
@@ -731,7 +748,6 @@ COMMANDPROC "POLICYCREATE" "Create policy bu name and upload policy document thi
      aws --profile $ACCOUNT iam create-policy --policy-name $THING --policy-document file://this.json
      THIS=""
 fi
-
 COMMANDPROC "POLICYDELETE" "Delete local policy ARN" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandTHING "Policy-Name"
      confirm
@@ -743,8 +759,6 @@ COMMANDPROC "POLICYLISTUSER,LISTUSERPOLICIES" "List policies atttached to user" 
      assertACCOUNTandUSERNAME
      aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
 fi
-
-
 COMMANDPROC "POLICYUSERDETACHALL,DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      confirm
@@ -766,14 +780,12 @@ COMMANDPROC "POLICYATTACHTOUSER,ATTACHPOLICYTOUSER" "Attach policy to user" "-a 
      assert "$THING" "Thing not specified"
      policyATTACH $THING
 fi
-
 COMMANDPROC "POLICYGET,GETPOLICY" "Get policy" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
      LIST=`$AWS iam list-policies --scope All --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |grep $THING |tee $Tmp`
      cat $Tmp
 fi
-
 COMMANDPROC "POLICYUPDATE,UPDATEPOLICY" "Update policy" "-a -t -D"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$THING"    "Policy not specified"
@@ -860,15 +872,12 @@ COMMANDPROC "POLICYLISTAWS,LISTAWSPOLICIES" "List all AWS policies"; if [ $bCmd 
                aws --profile $ITEM --output text iam list-policies --scope AWS --query "Policies[*].[PolicyName,UpdateDate,DefaultVersionId,Arn]" | column -t
           done
 fi
-
 COMMANDPROC "POLICYSETATTACH,ATTACHPOLICYSET" "Attach all policies specified in policyset.txt to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
-          assert "$ACCOUNT" "Profile not specified"
-          assert "$USER" "Profile not specified"
+          assertACCOUNTandUSERNAME
           policysetATTACH
 fi
 COMMANDPROC "POLICYSETREMOVE,REMOVEPOLICYSET" "Remove all policies specified in policyset.txt from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
-          assert "$ACCOUNT" "Profile not specified"
-          assert "$USER" "Profile not specified"
+          assertACCOUNTandUSERNAME
           policysetREMOVE
 fi
 
@@ -1091,7 +1100,6 @@ fi
 # These commands operate on users
 # ----------------------------------------------------
 
-
 THIS="arn:aws:iam::aws:policy/AWSCodeCommitPowerUser"
 COMMANDPROC "POLICYCODECOMMITPOWERUSER-ADD,IAMUSERCODECOMMITPOWERUSER-ADD" "Add "$THIS" to user"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
@@ -1123,19 +1131,26 @@ COMMANDPROC "UTILPUBLISHCUUREPORT,PUBLISHCUUREPORT" "Publish cuureport.txt" "-a"
      aws --profile $ACCOUNT s3 ls s3://$PUBLISHBUCKET --recursive
      java Gpurl $REGION $PUBLISHBUCKET $FNAME 15
 fi
-COMMANDPROC "UTILPUBLISH,PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt 0 ] ; then
-     print "Publish Bucket is s3://"$PUBLISHBUCKET
+COMMANDPROC "UTILPUBLISH,PUBLISH,S3PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt 0 ] ; then
+     assert   "$ACCOUNT"  "Profile not specified"
+     assert   "$S3BUCKET" "S3 Bucket not specified"
+     assert   "$CTYPE"    "Content Type not specified"
+     assert   "$DOCUMENT" "Document not specified"
+     wildcard "$DOCUMENT"
+     print    "Bucket is s3://"$S3BUCKET
      confirm
-     cuu -a $ACCOUNT -c S3COPY -b $PUBLISHBUCKET -D $DOCUMENT -C $CTYPE
-     cuu -a $ACCOUNT -c S3HTML -b $PUBLISHBUCKET
+     cuu -a $ACCOUNT -c S3COPY -b $S3BUCKET -D $DOCUMENT -C $CTYPE
+     cuu -a $ACCOUNT -c S3HTML -b $S3BUCKET
 fi
 COMMANDPROC "S3PUBLISHCLEAR,PUBLISHCLEAR" "Clear Publish Bucket" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
-     print "Publish Bucket is s3://"$PUBLISHBUCKET
-     aws --profile $ACCOUNT s3 ls s3://$PUBLISHBUCKET --recursive
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$S3BUCKET" "S3 Bucket not specified"
+     assert "$CTYPE"    "Content Type not specified"
+     print "Bucket is s3://"$S3BUCKET
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
      confirm
-     $AWS  s3 rm s3://$PUBLISHBUCKET/ --recursive --exclude "*" --include "*"
+     $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "*"
 fi
-
 
 COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
@@ -1488,6 +1503,14 @@ COMMANDPROC "S3DELETEBUCKET" "Deletes a S3 Bucket" "-a -b"; if [ $bCmd -gt 0 ] ;
      confirm
      aws --profile $ACCOUNT s3api delete-bucket --bucket $S3BUCKET 
 fi
+COMMANDPROC "S3CREATEBUCKET" "Create S3 Bucket" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$REGION"   "Region not specified"
+     print  "Region is: "$REGION
+     confirm
+     aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region $REGION
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
 COMMANDPROC "S3CREATEBUCKET-EUWEST1" "Create S3 Bucket in eu-west-1" "-a -b"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKET
      confirm
@@ -1813,6 +1836,8 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      print "CUUHOME:           "$CUUHOME
      print "REGION:            "$REGION
      print "PUBLISH BUCKET:    "$PUBLISHBUCKET
+     print "EXPIRES:           "$EXPIRES
+     print "TIMEFACTOR:        "$TIMEFACTOR
 fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations

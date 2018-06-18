@@ -1,9 +1,9 @@
 ## CUU - An AWS CLI Wrapper
 ###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
+Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Jun 18 12:50:48 EDT 2018
+       build date: Mon Jun 18 19:21:18 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -12,6 +12,10 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
       -t  operand:  thing name  (specify a resource or object name)
       -T  operand:  time window in hours (to specify (now minus T) to now)
       -D  operand:  specify a document\file to upload (e.g. a policy document)
+      -e  operand:  expire time in seconds
+      -C  operand:  content type (pdf, text, html, mp3)
+      -b  operand:  s3 bucket name
+      -k  operand:  s3 key name
   flags
       -h  flag:     display usage
       -d  flag:     limits abbreviations
@@ -107,6 +111,7 @@ S3 Commands
      s3clearbucket                -a -b -k     S3 Remove Object, with wildcard (%) keys
      s3copy-1minute               -a -b -d     S3 Copy, Expires in 1 Minute
      s3copy                       -a -b -d     S3 Copy, with wildcard (%) documents
+     s3createbucket               -a -b        Create S3 Bucket
      s3createbucket-eucentral1    -a -b        Create S3 Bucket in eu-central-1
      s3createbucket-euwest1       -a -b        Create S3 Bucket in eu-west-1
      s3createbucket-useast1       -a -b        Create S3 Bucket in us-east-1
@@ -119,6 +124,7 @@ S3 Commands
      s3listhtml                   -a           S3 List as HTML Page
      s3listrecursive              -a           S3 Recursive List
      s3presign                    -a -b -k     Presign S3 URL
+     s3publish                    -a           Publish Files
      s3publishclear               -a -b -k     Clear Publish Bucket
      s3put                        -a -b -k -d  S3 Put Object
      s3puthtml                    -a -b -k -d  S3 Put HTML Object
@@ -205,6 +211,7 @@ ROLESLIST                        LISTROLES
 S3CLEARBUCKET                    S3CLEAR                                          
 S3COPY                                                                            
 S3COPY-1MINUTE                                                                    
+S3CREATEBUCKET                                                                    
 S3CREATEBUCKET-EUCENTRAL1                                                         
 S3CREATEBUCKET-EUWEST1                                                            
 S3CREATEBUCKET-USEAST1                                                            
@@ -242,7 +249,7 @@ UTILALIAS                        ALIAS
 UTILALIASLIST                    ALIASLIST                                        
 UTILCONFIG                       CONFIG                                           
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
-UTILPUBLISH                      PUBLISH                                          
+UTILPUBLISH                      PUBLISH                  S3PUBLISH               
 UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                 
 UTILSWAP                                                                          
 UTILTIME                         TIME                                             
@@ -275,5 +282,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 12:50:50 EDT 2018
+Mon Jun 18 19:21:20 EDT 2018
 </pre>
