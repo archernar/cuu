@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Mon Jun 18 08:06:24 EDT 2018
+       build date: Mon Jun 18 08:10:53 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -141,6 +141,7 @@ Utility Commands
      utilconfig                        -a         Edit Configuration File ~/.cuu.txt
      utilnewpolicydoc                  -a         Create new this.json from policydoc.json template
      utilpublish                       -a         Publish cuureport.txt
+     utilset                           -a         Set and Show configuration/environment variables
      utilswap                          -a         Swap a Policy for a Group
      utiltime                          -a         Print time window
 </pre>
@@ -235,8 +236,6 @@ USERMENU
 UTILACCOUNTNUMBER                ACCOUNTNUMBER                                    
 UTILALIAS                        ALIAS                                            
 UTILALIASLIST                    ALIASLIST                                        
-UTILCOMMANDLIST                  COMMANDLIST                                      
-UTILCOMMANDS                     COMMANDS                                         
 UTILCONFIG                       CONFIG                                           
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
 UTILPUBLISH                      PUBLISH                                          
@@ -271,5 +270,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 08:06:26 EDT 2018
+Mon Jun 18 08:10:55 EDT 2018
 </pre>

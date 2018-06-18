@@ -1784,12 +1784,6 @@ COMMANDPROC "UTILACCOUNTNUMBER,ACCOUNTNUMBER" "Print account number"; if [ $bCmd
      assert "$ACCOUNT" "Profile not specified"
      aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
 fi
-COMMANDPROC "UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; then
-     cat $CuuCommandFile
-fi
-COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
-     COMMANDLIST
-fi
 COMMANDPROC "UTILALIAS,ALIAS" "Command Alias" "-a"; if [ $bCmd -gt 0 ] ; then
      print "Aliases for "$THING": "${COMMANDALIASES[$THING]}
 fi
@@ -1809,6 +1803,17 @@ fi
 COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
      aws --output json  --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
      NOTHING=0
+fi
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -- THESE TWO COMMANDPROCs MUST ALWAYS BE THE LAST ONES DEFINED
+# -- THESE TWO COMMANDPROCs MUST ALWAYS BE THE LAST ONES DEFINED
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; then
+     cat $CuuCommandFile
+fi
+COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
+     COMMANDLIST
 fi
 
 # -----------------------------------------------------------------------------------------------------------------------
