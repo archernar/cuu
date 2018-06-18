@@ -13,7 +13,9 @@ function cutpad(s,n,d,             i,l) {
     return s;
 }
 
-
+function dq(sz) {
+     return "\"" sz "\"";
+}
 
 # String. RegEx2Replace, Replacement,LengthtoRealize,Padding Character
 function anvil(s,re,rpl,n,d,             sz) { 

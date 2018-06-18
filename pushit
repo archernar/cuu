@@ -90,6 +90,8 @@ echo "</pre>" >> README.md
 
 git add readme.awk
 git add README.md 
+git add html.awk
+git add tabber.awk
 git add indent.awk
 git add noindent.awk
 git add cuu.awk

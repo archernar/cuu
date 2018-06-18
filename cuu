@@ -6,6 +6,19 @@ CuuCommandFile="/tmp/CuuCommandFile$$"
 trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
+# -----------------------------------------------------------------------------------------------------------------------
+# -- CUU ENVIRONMENT 
+# --      CUUHOME should be set to the cuu home directory
+# --      CUUHOME should be set to the cuu home directory
+# --      CUUHOME should be set to the cuu home directory
+# -----------------------------------------------------------------------------------------------------------------------
+if [ "$CUUHOME" == "" ] ; then
+    print "Error:  CUUHOME not defined"
+    exit 1
+fi
+AWKPATH=$AWKPATH:$CUUHOME
+
+
 # ---------------------------------------------------------------------------------------------------------
 #  / ___| | | | | | |            / \   _ __      / \ \      / / ___|   / ___| |   |_ _| |_   _|__   ___ | |
 # | |   | | | | | | |  _____    / _ \ | '_ \    / _ \ \ /\ / /\___ \  | |   | |    | |    | |/ _ \ / _ \| |
@@ -576,7 +589,7 @@ COMMANDINFO() {
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "TEST" "Test Command"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "TESTX" "Test Command"; if [ $bCmd -gt 0 ] ; then
 #      LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
 #      THIS=" --filters "
 #      for ITEM in $LIST; do
@@ -1336,6 +1349,17 @@ COMMANDPROC "S3LIST,S3LS,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                     fi
                done
 fi
+COMMANDPROC "S3LISTHTML,S3LSHTML" "S3 List as HTML Page" "-a"; if [ $bCmd -gt 0 ] ; then
+               clean
+               aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET | gawk '@include "trim.awk"; {$1="";$2="";$3="";print trim($0)}' > $Tmp
+               cat $Tmp | while read ITEM; do
+                   print $ITEM
+                   aws --output text --profile $ACCOUNT s3 presign "s3://$S3BUCKET/$ITEM" --expires-in 300 | gawk -v A="$ITEM" '{print A "," $0}' >> $Tmp2
+               done
+               cat $Tmp2 | gawk -F, -f html.awk > index.html
+               aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key index.html --body ./index.html --content-type text/html
+               aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.html --expires-in 300 
+fi
 COMMANDPROC "S3LISTRECURSIVE,S3LSR,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
@@ -1366,12 +1390,27 @@ COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bC
           pdf)     CTYPE=" --content-type application/pdf " ;;
           JSON)    CTYPE=" --content-type application/json " ;;
           json)    CTYPE=" --content-type application/json " ;;
+          MP3)     CTYPE=" --content-type audio/mpeg " ;;
+          mp3)     CTYPE=" --content-type audio/mpeg " ;;
+          MPEG)    CTYPE=" --content-type audio/mpeg " ;;
+          mpeg)    CTYPE=" --content-type audio/mpeg " ;;
+
+
           *)       CTYPE="" ;;
      esac
-     $AWS s3 cp ./ s3://$S3BUCKET/ --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
+     print "Content Type "$CTYPE
+     print "Document     "$DOCUMENT
+     $AWS s3 cp ./ s3://$S3BUCKET/ --sse --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
+COMMANDPROC "S3CLEARBUCKET,S3CLEAR" "S3 Remove Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKET
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+     confirm
+     $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "*"
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+fi
 COMMANDPROC "S3REMOVE,S3RM" "S3 Remove Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKETandS3KEY
      confirm
@@ -1380,12 +1419,10 @@ COMMANDPROC "S3REMOVE,S3RM" "S3 Remove Object, with wildcard (%) keys" "-a -b -k
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
-
 COMMANDPROC "S3COPY-1MINUTE" "S3 Copy, Expires in 1 Minute" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKET
      aws --profile $ACCOUNT s3 cp $DOCUMENT s3://$S3BUCKET/$DOCUMENT --expires $ISOFUTUREMINUTE
 fi
-
 
 COMMANDPROC "S3PUTTEXT" "S3 Put Text Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT
@@ -1761,10 +1798,16 @@ COMMANDPROC "UTILALIASLIST,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ]
          echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s\n", trim($1), trim($2), trim($3) }'
      done
 fi
+COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a"; if [ $bCmd -gt 0 ] ; then
+     print "CUUHOME:           "$CUUHOME
+     print "REGION:            "$REGION
+     print "PUBLISH BUCKET:    "$PUBLISHBUCKET
+fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "TESTHELLOWORLD,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
+     aws --output json  --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
      NOTHING=0
 fi
 

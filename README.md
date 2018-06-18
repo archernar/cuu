@@ -2,7 +2,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Sun Jun 17 12:11:42 EDT 2018
+       build date: Mon Jun 18 08:01:17 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -103,6 +103,7 @@ EC2 Commands
      ec2-util                          -a         CloudWatch CPU Utilization
   
 S3 Commands  
+     s3clearbucket                     -a -b -k   S3 Remove Object, with wildcard (%) keys
      s3copy-1minute                    -a -b -d   S3 Copy, Expires in 1 Minute
      s3copy                            -a -b -d   S3 Copy, with wildcard (%) documents
      s3createbucket-eucentral1         -a -b      Create S3 Bucket in eu-central-1
@@ -113,6 +114,7 @@ S3 Commands
      s3createbucket-uswest2            -a -b      Create S3 Bucket in us-west-2
      s3deletebucket                    -a -b      Deletes a S3 Bucket
      s3list                            -a         S3 List
+     s3listhtml                        -a         S3 List as HTML Page
      s3listrecursive                   -a         S3 Recursive List
      s3presign                         -a -b -k   Presign S3 URL
      s3put                             -a -b -k -d   S3 Put Object
@@ -195,6 +197,7 @@ POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD
 POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                         
 POLICYUSERDETACHALL              DETACHUSERPOLICIES                               
 ROLESLIST                        LISTROLES                                        
+S3CLEARBUCKET                    S3CLEAR                                          
 S3COPY                                                                            
 S3COPY-1MINUTE                                                                    
 S3CREATEBUCKET-EUCENTRAL1                                                         
@@ -205,6 +208,7 @@ S3CREATEBUCKET-USWEST1
 S3CREATEBUCKET-USWEST2                                                            
 S3DELETEBUCKET                                                                    
 S3LIST                           S3LS                     LB                      
+S3LISTHTML                       S3LSHTML                                         
 S3LISTRECURSIVE                  S3LSR                    LBR                     
 S3PRESIGN                                                                         
 S3PUT                                                                             
@@ -215,8 +219,8 @@ S3PUTTEXT
 S3REMOVE                         S3RM                                             
 S3RMFILESET                                                                       
 S3URL                                                                             
-TEST                                                                              
 TEST2                                                                             
+TESTX                                                                             
 USERCREATE                       CREATEUSER                                       
 USERCREATEADMIN                  CREATEREADMINUSER                                
 USERCREATENOKEY                  CREATEUSERNOKEY                                  
@@ -266,5 +270,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Sun Jun 17 12:11:44 EDT 2018
+Mon Jun 18 08:01:19 EDT 2018
 </pre>
