@@ -1052,8 +1052,7 @@ COMMANDPROC "GROUPCREATE" "Create group in profile" "-a -t"; if [ $bCmd -gt 0 ] 
                $AWS iam list-groups  --query "Groups[*].[GroupName,CreateDate,Arn]"
 fi
 COMMANDPROC "GROUPDELETE" "Delete group from profile by group name" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
-               assert "$USERNAME" "Username not specified"
-               assert "$ACCOUNT" "Profile not specified"
+               assertACCOUNTandUSERNAME
                assert "$THING" "Group not specified"
                $AWS iam delete-group --group-name $THING
 fi
@@ -1090,8 +1089,7 @@ COMMANDPROC "GROUPREMOVEALLUSERS" "Remove all groups atttach to user"; if [ $bCm
     wipeGROUPS
 fi
 COMMANDPROC "GROUPREMOVEUSER" "Remove user from group by group name"; if [ $bCmd -gt 0 ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               assert "$USERNAME" "Username not specified"
+               assertACCOUNTandUSERNAME
                assert "$THING" "Group name not specified"
                confirm
                aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $THING 
