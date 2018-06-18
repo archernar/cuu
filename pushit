@@ -17,7 +17,7 @@ print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 print "#   CUU - An AWS CLI Wrapper" > README.md
-print "##  Setup:  CUUHOME enviroment variable should be set to the cuu install directory" > README.md
+print "####  Setup:  CUUHOME enviroment variable should be set to the cuu install directory" >> README.md
 echo "<pre>" >> README.md
 gawk -v ANON="$ANON" -f readme.awk cuu  >> README.md
 echo "</pre>" >> README.md
