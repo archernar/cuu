@@ -1,9 +1,9 @@
-#   CUU - An AWS CLI Wrapper
-######  Setup:  CUUHOME enviroment variable should be set to the cuu install directory
+## CUU - An AWS CLI Wrapper
+###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Mon Jun 18 08:05:47 EDT 2018
+       build date: Mon Jun 18 08:06:24 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -271,5 +271,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 08:05:49 EDT 2018
+Mon Jun 18 08:06:26 EDT 2018
 </pre>
