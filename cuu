@@ -1349,7 +1349,7 @@ COMMANDPROC "S3LIST,S3LS,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                     fi
                done
 fi
-COMMANDPROC "S3LISTHTML,S3LSHTML" "S3 List as HTML Page" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LISTHTML,S3LSHTML,S3HTML" "S3 List as HTML Page" "-a"; if [ $bCmd -gt 0 ] ; then
                clean
                aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET | gawk '@include "trim.awk"; {$1="";$2="";$3="";print trim($0)}' > $Tmp
                cat $Tmp | while read ITEM; do

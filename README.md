@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Mon Jun 18 08:10:53 EDT 2018
+       build date: Mon Jun 18 08:21:24 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -114,6 +114,7 @@ S3 Commands
      s3createbucket-uswest1            -a -b      Create S3 Bucket in us-west-1
      s3createbucket-uswest2            -a -b      Create S3 Bucket in us-west-2
      s3deletebucket                    -a -b      Deletes a S3 Bucket
+     s3html                            -a         S3 List as HTML Page
      s3list                            -a         S3 List
      s3listhtml                        -a         S3 List as HTML Page
      s3listrecursive                   -a         S3 Recursive List
@@ -210,7 +211,7 @@ S3CREATEBUCKET-USWEST1
 S3CREATEBUCKET-USWEST2                                                            
 S3DELETEBUCKET                                                                    
 S3LIST                           S3LS                     LB                      
-S3LISTHTML                       S3LSHTML                                         
+S3LISTHTML                       S3LSHTML                 S3HTML                  
 S3LISTRECURSIVE                  S3LSR                    LBR                     
 S3PRESIGN                                                                         
 S3PUT                                                                             
@@ -270,5 +271,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 08:10:55 EDT 2018
+Mon Jun 18 08:21:26 EDT 2018
 </pre>

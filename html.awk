@@ -2,12 +2,19 @@ BEGIN {
     sz ="";
     sz = sz "<html>\n"
     sz = sz "<body>\n"
-    sz = sz "<table>\n"
+    sz = sz "<center>\n"
+    sz = sz "<br>\n"
+    sz = sz "<br>\n"
+    sz = sz "<br>\n"
+    sz = sz "<br>\n"
+    sz = sz "<br>\n"
+    sz = sz "<table cellpadding=4 cellspacing=0 border=1>\n"
 
 
 }
 END {
     sz = sz "</table>\n"
+    sz = sz "</center>\n"
     sz = sz "</body>\n"
     sz = sz "</html>\n"
     print sz
