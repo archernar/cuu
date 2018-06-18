@@ -16,7 +16,14 @@ if [ "$CUUHOME" == "" ] ; then
     print "Error:  CUUHOME not defined"
     exit 1
 fi
-AWKPATH=$AWKPATH:$CUUHOME
+
+if [ "$AWKPATH" == "" ] ; then
+     export AWKPATH=$CUUHOME
+else
+     export AWKPATH=$AWKPATH:$CUUHOME
+fi
+
+print $AWKPATH
 
 
 # ---------------------------------------------------------------------------------------------------------

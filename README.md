@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c]
   info
-       build date: Mon Jun 18 08:21:24 EDT 2018
+       build date: Mon Jun 18 08:34:45 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -148,6 +148,7 @@ Utility Commands
 </pre>
 ### Command Aliases
 <pre>
+/home/mestes/scm/cuu
 ACCESSKEYCREATE                  CREATEACCESSKEY                                  
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
 ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
@@ -271,5 +272,5 @@ PUBLISHBUCKET=                        ;
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 08:21:26 EDT 2018
+Mon Jun 18 08:34:48 EDT 2018
 </pre>
