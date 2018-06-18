@@ -581,7 +581,7 @@ COMMANDLIST() {
                SZOPTO="-a"
           fi
           typeset -l v=$ITEM
-          printf "     %-32s %-8s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
+          printf "     %-30s %-10s   %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
      done
      cp $Tmp fed
      cat $Tmp | sort
