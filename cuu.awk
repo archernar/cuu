@@ -61,7 +61,6 @@ function configrecord(szIn,szProfile,szUser,szProfileName,               sz,a,n,
 
 
 function isotolocal(sz,                      fmt,yr,mo,dy,hr,mn,se,zu) {
-    print sz
      # sz = "2018-05-21T14:42:36Z"
      yr = substr(sz,1,4)
      mo = substr(sz,6,2)

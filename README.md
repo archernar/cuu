@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Jun 18 19:24:34 EDT 2018
+       build date: Tue Jun 19 07:21:37 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -279,8 +279,9 @@ KP=                                   ; Key Pair Name
 REGION=                               ; Region
 REGIONLIST=                           ; Region List
 PUBLISHBUCKET=                        ; 
+TRUNCATELENGTH=
 </pre>
 ### Build Date
 <pre>
-Mon Jun 18 19:24:37 EDT 2018
+Tue Jun 19 07:21:40 EDT 2018
 </pre>

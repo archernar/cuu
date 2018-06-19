@@ -427,7 +427,7 @@ PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]
 EXPIRES=`gawk -v w=EXPIRES -v def=300 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 REGION=`gawk -v w=REGION -v def=us-east-1 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TIMEFACTOR=`gawk -v w=TIMEFACTOR -v def=24 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
-
+TRUNCATELENGTH=`gawk -v w=TRUNCATELENGTH -v def=56 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
@@ -1473,8 +1473,8 @@ COMMANDPROC "S3PUTPDFFILESET" "S3 Put PDF Fileset" "-a -b"; if [ $bCmd -gt 0 ] ;
     cat fileset | while read ITEM; do
           print $ITEM
           aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key "$ITEM" --body "./$ITEM" --content-type application/pdf
-     done
-     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+    done
+    aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 COMMANDPROC "S3RMFILESET" "S3 Remove Fileset" "-a -b"; if [ $bCmd -gt 0 ] ; then
     cat fileset | while read ITEM; do
@@ -1621,7 +1621,7 @@ COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $
                       $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                     fi
                fi
-               cat $Tmp | gawk  -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
+               cat $Tmp | gawk  -v TL=$TRUNCATELENGTH -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
                     if (match(SMY,/^yes/) != 0) {
@@ -1635,6 +1635,7 @@ COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $
                     en=  jget($0, "^.*[\"]eventName[\"]:","NA");
                     req= jget($0, "^.*[\"]requestParameters[\"]:","NA");
                     resp= jget($0, "^.*[\"]responseElements[\"]:","NA");
+                    print "moe"
                     time=isotolocal(timepre, "%m/%d/%Y %I:%M:%S%p");
                     shorttime=isotolocal(timepre, "%m/%d/%Y");
                     if (match(ISOTIME,/^yes/) > 0 ) {
@@ -1786,8 +1787,8 @@ COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $
 
                          ty=cutpad(ty,18);
                     }
-                    if (length(req) > 256) req=substr(req,1,256) "(TRUNCATED)";
-                    if (length(resp) > 256) resp=substr(resp,1,256) "(TRUNCATED)";
+                    if (length(req) > TL) req=substr(req,1,TL) "(TRUNCATED)";
+                    if (length(resp) > TL) resp=substr(resp,1,TL) "(TRUNCATED)";
                     # print "-"
                     # print "acct","time","name","eventtype","eventname","req","resp"
                     if (match(SMY,/^yes/) != 0) {
@@ -1836,12 +1837,18 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      print "PUBLISH BUCKET:    "$PUBLISHBUCKET
      print "EXPIRES:           "$EXPIRES
      print "TIMEFACTOR:        "$TIMEFACTOR
+     print "WINDOW START TIME  "$ISOAGO
+     print "WINDOW END TIME    "$ISOANON
 fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
-     aws --output json  --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
+     assert "$ACCOUNT" "Profile not specified"
+
+     aws --profile $ACCOUNT --region $REGION ec2 describe-instances --output table \
+                            --query 'Reservations[].Instances[].[Tags[?Key==`Name`] | [0].Value,InstanceId,State.Name,InstanceType]'
+
      NOTHING=0
 fi
 
