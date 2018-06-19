@@ -1635,7 +1635,6 @@ COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $
                     en=  jget($0, "^.*[\"]eventName[\"]:","NA");
                     req= jget($0, "^.*[\"]requestParameters[\"]:","NA");
                     resp= jget($0, "^.*[\"]responseElements[\"]:","NA");
-                    print "moe"
                     time=isotolocal(timepre, "%m/%d/%Y %I:%M:%S%p");
                     shorttime=isotolocal(timepre, "%m/%d/%Y");
                     if (match(ISOTIME,/^yes/) > 0 ) {

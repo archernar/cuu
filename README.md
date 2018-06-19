@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 19 07:21:37 EDT 2018
+       build date: Tue Jun 19 07:22:15 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -283,5 +283,5 @@ TRUNCATELENGTH=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 19 07:21:40 EDT 2018
+Tue Jun 19 07:22:17 EDT 2018
 </pre>
