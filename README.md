@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 19 07:22:15 EDT 2018
+       build date: Sat Jun 23 08:23:00 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -96,6 +96,7 @@ Role Commands
 VPC Commands  
      vpccreate                    -a -r        Create a Two Subnet VPC
      vpcdelete                    -a -r -t     Delete VPC
+     vpcls                        -a           List VPCs
   
 EC2 Commands  
      ec2                          -a           Describe Instances
@@ -111,6 +112,7 @@ S3 Commands
      s3clearbucket                -a -b -k     S3 Remove Object, with wildcard (%) keys
      s3copy-1minute               -a -b -d     S3 Copy, Expires in 1 Minute
      s3copy                       -a -b -d     S3 Copy, with wildcard (%) documents
+     s3copywithrenaming           -a -b -d     S3 Copy and Rename, with wildcard (%) documents
      s3createbucket               -a -b        Create S3 Bucket
      s3createbucket-eucentral1    -a -b        Create S3 Bucket in eu-central-1
      s3createbucket-euwest1       -a -b        Create S3 Bucket in eu-west-1
@@ -119,9 +121,9 @@ S3 Commands
      s3createbucket-uswest1       -a -b        Create S3 Bucket in us-west-1
      s3createbucket-uswest2       -a -b        Create S3 Bucket in us-west-2
      s3deletebucket               -a -b        Deletes a S3 Bucket
-     s3html                       -a           S3 List as HTML Page
+     s3html                       -a -b -C     S3 List as HTML Page
      s3list                       -a           S3 List
-     s3listhtml                   -a           S3 List as HTML Page
+     s3listhtml                   -a -b -C     S3 List as HTML Page
      s3listrecursive              -a           S3 Recursive List
      s3presign                    -a -b -k     Presign S3 URL
      s3publish                    -a           Publish Files
@@ -147,6 +149,7 @@ Utility Commands
      utilcommandlist              -a           List Commands
      utilcommands                 -a           Command help
      utilconfig                   -a           Edit Configuration File ~/.cuu.txt
+     utildumpconfig               -a           Dump Configuration File ~/.cuu.txt
      utilnewpolicydoc             -a           Create new this.json from policydoc.json template
      utilpublish                  -a           Publish Files
      utilpublishcuureport         -a           Publish cuureport.txt
@@ -211,6 +214,7 @@ ROLESLIST                        LISTROLES
 S3CLEARBUCKET                    S3CLEAR                                          
 S3COPY                                                                            
 S3COPY-1MINUTE                                                                    
+S3COPYWITHRENAMING                                                                
 S3CREATEBUCKET                                                                    
 S3CREATEBUCKET-EUCENTRAL1                                                         
 S3CREATEBUCKET-EUWEST1                                                            
@@ -248,6 +252,7 @@ UTILACCOUNTNUMBER                ACCOUNTNUMBER
 UTILALIAS                        ALIAS                                            
 UTILALIASLIST                    ALIASLIST                                        
 UTILCONFIG                       CONFIG                                           
+UTILDUMPCONFIG                   DUMPCONFIG               DUMP                    
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
 UTILPUBLISH                      PUBLISH                  S3PUBLISH               
 UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                 
@@ -255,6 +260,7 @@ UTILSWAP
 UTILTIME                         TIME                                             
 VPCCREATE                        CREATEVPC-2SUBNETS                               
 VPCDELETE                        DELETEVPC                                        
+VPCLS                                                                             
 WWEC2                                                                             
 </pre>
 ### ~/.cuu.txt can contain defaults for these settings
@@ -280,8 +286,11 @@ REGION=                               ; Region
 REGIONLIST=                           ; Region List
 PUBLISHBUCKET=                        ; 
 TRUNCATELENGTH=
+NOTIFICATION=
+NOTIFYFROM=
+NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 19 07:22:17 EDT 2018
+Sat Jun 23 08:23:02 EDT 2018
 </pre>

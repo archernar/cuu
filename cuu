@@ -113,6 +113,17 @@ commandABBREVIATIONS() {
 # ---------------------------------------------------------------------------------------------------------
 # MACROS
 # ---------------------------------------------------------------------------------------------------------
+putconfig() {
+     $CUUHOME/putconfig.awkx "$1"  "$2"
+     #LASTBUCKET=`gawk  -v w=S3BUCKET     -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+}
+getconfig() {
+     CONFIGITEM=`gawk  -v w=$1 -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+}
+getconfigecho() {
+     CONFIGITEM=`gawk  -v w=$1 -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+     printf "%-18s %s\n" $1 $CONFIGITEM
+}
 window() {
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
@@ -270,6 +281,21 @@ policyATTACH() {
      done
      LIST=""
 }
+notify() {
+                     #    cat $Tmp | mailx -r $NOTIFYFROM -s 'CUU Notification' $NOTIFYTO
+                     NOTHING=0
+}
+xnotify() {
+     if [ "$NOTIFICATION" == "ON" ] ; then
+          if [ "$NOTIFYFROM" != "NONE" ] ; then
+               if [ "$NOTIFYTO" != "NONE" ] ; then
+                    if [ "`which mailx`" != "" ] ; then
+                         cat $Tmp | mailx -r $NOTIFYFROM -s 'CUU Notification' $NOTIFYTO
+                    fi
+               fi
+          fi
+     fi
+}
 
 clean() {
     rm -rf $Tmp
@@ -386,6 +412,8 @@ confirm() {
 typeset -A INFO 
 typeset -A OPTO 
 typeset -u COMMAND
+typeset -u CTYPE
+typeset -u EXTRA
 COMMAND=""
 USERNAME=""
 ACCOUNT=""
@@ -424,10 +452,13 @@ KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w)
 PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 
 # This is the modified get parameter function, with a default option
-EXPIRES=`gawk -v w=EXPIRES -v def=300 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+EXPIRES=`gawk -v w=EXPIRES -v def=900 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 REGION=`gawk -v w=REGION -v def=us-east-1 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TIMEFACTOR=`gawk -v w=TIMEFACTOR -v def=24 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TRUNCATELENGTH=`gawk -v w=TRUNCATELENGTH -v def=56 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+NOTIFICATION=`gawk -v w=NOTIFICATION -v def="ON" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+NOTIFYTO=`gawk -v w=NOTIFYTO -v def="NONE" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+NOTIFYFROM=`gawk -v w=NOTIFYFROM -v def="NONE" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 DETAILFLAG=""
 SHOWRAW="no" 
 ISOTIME="no" 
@@ -437,9 +468,12 @@ SUMMARY="no"
 S3BUCKET=""
 S3KEY="";
 CTYPE="";
-while getopts "e:C:b:k:jr:Ff:D:dn:c:Ru:a:p:t:ihSZBET:Q:" arg
+EXTRA="";
+while getopts "X:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihSZBET:Q:" arg
 do
 	case $arg in
+            X) EXTRA=$OPTARG ;;
+            N) NOTIFYTO=$OPTARG ;;
             e) EXPIRES=$OPTARG ;;
             C) CTYPE=$OPTARG ;;
             b) S3BUCKET=$OPTARG ;;
@@ -500,8 +534,8 @@ if [ $# -eq 1 ] ; then
      fi
 fi
 
-while [[ 0 -eq 0 ]]; do
 commandABBREVIATIONS
+putconfig "LASTBUCKET"  "$S3BUCKET"
 # -----------------------------------------------------------------------------------------------------------------------
 # -- AWS CLI command line prefix setup
 # -----------------------------------------------------------------------------------------------------------------------
@@ -644,6 +678,9 @@ COMMANDPROC "VPCDELETE,DELETEVPC" "Delete VPC" "-a -r -t"; if [ $bCmd -gt 0 ] ; 
      assert "$REGION"   "Region not specified"
      assert "$THING"    "VPC ID not specified"
      VPCID=$THING
+     if [ "$THING" == "LASTVPC" ] ; then getconfigecho "LASTVPCID";   VPCID=$CONFIGITEM; fi
+     if [ "$THING" == "LAST" ] ;    then getconfigecho "LASTVPCID";   VPCID=$CONFIGITEM; fi
+     print "VPC ID to be deleted is: "$VPCID
      confirm
 
      IGWID=`$AWS ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPCID" --query "InternetGateways[].InternetGatewayId"`
@@ -679,6 +716,10 @@ COMMANDPROC "VPCDELETE,DELETEVPC" "Delete VPC" "-a -r -t"; if [ $bCmd -gt 0 ] ; 
      NOTHING=0
 fi
 
+COMMANDPROC "VPCLS" "List VPCs" "-a"; if [ $bCmd -gt 0 ] ; then
+      $AWS ec2 describe-vpcs           --query "Vpcs[*].[VpcId,CidrBlock]"
+fi
+
 COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
@@ -703,9 +744,13 @@ COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if
      $AWSJ         ec2 authorize-security-group-ingress --group-id $SGID --protocol tcp --port 22 --cidr $MYCIDR > $Tmp
      print "My CIDR     "$MYCIDR
      print "VPC ID      "$VPCID
-     print "SUBNET1="$SUBNET1
-     print "SUBNET2="$SUBNET2
-     print "SGID="$SGID
+     print "SUBNET1     "$SUBNET1
+     print "SUBNET2     "$SUBNET2
+     print "SGID        "$SGID
+     putconfig "LASTVPCID"   "$VPCID"
+     putconfig "LASTSUBNET1" "$SUBNET1"
+     putconfig "LASTSUBNET2" "$SUBNET2"
+     putconfig "LASTSGID"    "$SGID"
      THIS=""
      NOTHING=0
 fi
@@ -1137,7 +1182,14 @@ COMMANDPROC "UTILPUBLISH,PUBLISH,S3PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt
      wildcard "$DOCUMENT"
      print    "Bucket is s3://"$S3BUCKET
      confirm
+     if [ "$EXTRA" == "CLEAR" ] ; then
+          print "Clearing existing bucket contents"
+          confirm
+          $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "*"      >/dev/null 2>&1
+     fi
+     print "Bucket Cleared"
      cuu -a $ACCOUNT -c S3COPY -b $S3BUCKET -D $DOCUMENT -C $CTYPE
+     print "Bucket Copied"
      cuu -a $ACCOUNT -c S3HTML -b $S3BUCKET
 fi
 COMMANDPROC "S3PUBLISHCLEAR,PUBLISHCLEAR" "Clear Publish Bucket" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
@@ -1157,6 +1209,9 @@ COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then
 fi
 COMMANDPROC "UTILCONFIG,CONFIG" "Edit Configuration File ~/.cuu.txt"; if [ $bCmd -gt 0 ] ; then
                vi ~/.cuu.txt
+fi
+COMMANDPROC "UTILDUMPCONFIG,DUMPCONFIG,DUMP" "Dump Configuration File ~/.cuu.txt"; if [ $bCmd -gt 0 ] ; then
+               cat ~/.cuu.txt
 fi
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -1286,7 +1341,6 @@ COMMANDPROC "EC2SPARKMENU" "Instance Menu"; if [ $bCmd -gt 0 ] ; then
                chmod 777 $Tmp
                $Tmp
 fi
-
 COMMANDPROC "EC2SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t"; if [ $bCmd -gt 0 ] ; then
 #              aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19)
 #              print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR '
@@ -1380,16 +1434,24 @@ COMMANDPROC "S3LIST,S3LS,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                     fi
                done
 fi
-COMMANDPROC "S3LISTHTML,S3LSHTML,S3HTML" "S3 List as HTML Page" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LISTHTML,S3LSHTML,S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; then
                clean
+               aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
+               $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.html"
+               $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.m3u"
                aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET | gawk '@include "trim.awk"; {$1="";$2="";$3="";print trim($0)}' > $Tmp
                cat $Tmp | while read ITEM; do
-                   print $ITEM
-                   aws --output text --profile $ACCOUNT s3 presign "s3://$S3BUCKET/$ITEM" --expires-in 300 | gawk -v A="$ITEM" '{print A "," $0}' >> $Tmp2
+                   aws --output text --profile $ACCOUNT s3 presign "s3://$S3BUCKET/$ITEM" --expires-in $EXPIRES | gawk -v A="$ITEM" '{print A "," $0}' >> $Tmp2
                done
                cat $Tmp2 | gawk -F, -f html.awk > index.html
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key index.html --body ./index.html --content-type text/html
-               aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.html --expires-in 300 
+               aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.html --expires-in $EXPIRES  | tee $Tmp
+
+               if [ "$CTYPE" == "MP3" ] ; then
+                    cat $Tmp2 | gawk -F, '{print $2}' > index.m3u
+                    aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key index.m3u --body ./index.m3u --content-type audio/x-mpegurl
+                    aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.m3u --expires-in $EXPIRES  | tee $Tmp
+               fi
 fi
 COMMANDPROC "S3LISTRECURSIVE,S3LSR,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
@@ -1412,6 +1474,31 @@ COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bC
      assert "$S3BUCKET" "S3 Bucket not specified"
      assert "$DOCUMENT" "Document(s) not specified"
      DOCUMENT=`echo $DOCUMENT | sed -e "s/[%]/*/g"`
+     ls $DOCUMENT > $Tmp
+     case $CTYPE in
+          HTML)    CTYPE=" --content-type text/html " ;;
+          TEXT)    CTYPE=" --content-type text/plain " ;;
+          PDF)     CTYPE=" --content-type application/pdf " ;;
+          JSON)    CTYPE=" --content-type application/json " ;;
+          MP3)     CTYPE=" --content-type audio/mpeg " ;;
+          MPEG)    CTYPE=" --content-type audio/mpeg " ;;
+          JPG)     CTYPE="  --content-type image/jpeg " ;;
+          JPEG)    CTYPE="  --content-type image/jpeg " ;;
+          CBR)     CTYPE="  --content-type application/x-cbr " ;;
+          M3U)     CTYPE="  --content-type audio/x-mpegurl " ;;
+          GUESS)   CTYPE="" ;;
+          *)       CTYPE="" ;;
+     esac
+     print "Content Type "$CTYPE
+     print "Document     "$DOCUMENT
+     $AWS s3 cp ./ s3://$S3BUCKET/ --sse --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
+fi
+COMMANDPROC "S3COPYWITHRENAMING" "S3 Copy and Rename, with wildcard (%) documents" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$S3BUCKET" "S3 Bucket not specified"
+     assert "$DOCUMENT" "Document(s) not specified"
+     DOCUMENT=`echo $DOCUMENT | sed -e "s/[%]/*/g"`
+     ls $DOCUMENT > $Tmp
      case $CTYPE in
           HTML)    CTYPE=" --content-type text/html " ;;
           html)    CTYPE=" --content-type text/html " ;;
@@ -1425,13 +1512,31 @@ COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bC
           mp3)     CTYPE=" --content-type audio/mpeg " ;;
           MPEG)    CTYPE=" --content-type audio/mpeg " ;;
           mpeg)    CTYPE=" --content-type audio/mpeg " ;;
+          JPG)     CTYPE="  --content-type image/jpeg " ;;
+          jpg)     CTYPE="  --content-type image/jpeg " ;;
+          JPEG)    CTYPE="  --content-type image/jpeg " ;;
+          jpeg)    CTYPE="  --content-type image/jpeg " ;;
+          CBR)     CTYPE="  --content-type application/x-cbr " ;;
+          cbr)     CTYPE="  --content-type application/x-cbr " ;;
+          M3U)     CTYPE="  --content-type audio/x-mpegurl " ;;
+          m3u)     CTYPE="  --content-type audio/x-mpegurl " ;;
           GUESS)   CTYPE="" ;;
           *)       CTYPE="" ;;
      esac
      print "Content Type "$CTYPE
      print "Document     "$DOCUMENT
-     $AWS s3 cp ./ s3://$S3BUCKET/ --sse --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
+     ls $DOCUMENT > $Tmp
+     mkdir $TmpDir
+     ls $TmpDir
+     cat $Tmp | while read ITEM; do
+          S3KEY=`echo $ITEM | sed -e "s/[ ]/-/g"`
+          cp "$ITEM"  "$TmpDir/$S3KEY"
+          print  "$TmpDir/$S3KEY"
+          #$AWS s3 cp "./$ITEM"  s3://$S3BUCKET/$S3KEY  --sse  $CTYPE
+     done
+     $AWS s3 cp $TmpDir s3://$S3BUCKET/ --sse --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+     rm -rf $TmpDir
 fi
 
 COMMANDPROC "S3CLEARBUCKET,S3CLEAR" "S3 Remove Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
@@ -1838,15 +1943,24 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      print "TIMEFACTOR:        "$TIMEFACTOR
      print "WINDOW START TIME  "$ISOAGO
      print "WINDOW END TIME    "$ISOANON
+     getconfigecho "LASTVPCID";   LASTVPCID=$CONFIGITEM
+     getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM
+     getconfigecho "LASTSUBNET2"; LASTSUBNET2=$CONFIGITEM
+     getconfigecho "LASTSGID";    LASTSGID=$CONFIGITEM
+     getconfigecho "LASTBUCKET";  LASTBUCKET=$CONFIGITEM
+     print ""
+     print "LAST COMMAND       $LASTCOMMAND"
+
 fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT" "Profile not specified"
-
-     aws --profile $ACCOUNT --region $REGION ec2 describe-instances --output table \
-                            --query 'Reservations[].Instances[].[Tags[?Key==`Name`] | [0].Value,InstanceId,State.Name,InstanceType]'
+     LRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+#      assert "$ACCOUNT" "Profile not specified"
+# 
+#      aws --profile $ACCOUNT --region $REGION ec2 describe-instances --output table \
+#                             --query 'Reservations[].Instances[].[Tags[?Key==`Name`] | [0].Value,InstanceId,State.Name,InstanceType]'
 
      NOTHING=0
 fi
@@ -1869,41 +1983,8 @@ fi
 if [ $gCmd -eq 0 ] ; then
     print "CUU Error!"
     print "     \""$COMMAND"\" is not a cuu command"
-fi
-
-
-if [ "$LOOP" == "yes" ] ; then
-COMMANDPROC "EXIT"; if [ $bCmd -gt 0 ] ; then
-                    exit 0
-     fi
-COMMANDPROC "QUIT"; if [ $bCmd -gt 0 ] ; then
-                    exit 0
-     fi
-COMMANDPROC "Q"; if [ $bCmd -gt 0 ] ; then
-                    exit 0
-     fi
-COMMANDPROC "h"; if [ $bCmd -gt 0 ] ; then
-                    usage
-     fi
-COMMANDPROC "H"; if [ $bCmd -gt 0 ] ; then
-                    usage
-     fi
 else
-     exit 0
+    LASTCOMMAND=`history -0`
 fi
 
-print -n "cuu "$ACCOUNT" "$USERNAME" "$THING">> "
-read COMMAND
-     set -A array $COMMAND
-     if [ "${array[0]}" == "ACCOUNT" ] ; then
-          ACCOUNT="${array[1]}"
-     fi
-     if [ "${array[0]}" == "USERNAME" ] ; then
-         USERNAME="${array[1]}"
-     fi
-     if [ "${array[0]}" == "THING" ] ; then
-         THING="${array[1]}"
-     fi
-
-done
-exit 1
+exit 0

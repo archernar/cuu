@@ -1,0 +1,32 @@
+#!/usr/bin/ksh
+Tmp="/tmp/$$"
+trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
+trap "exit 2" 1 2 3 13 15
+
+if [ "$2" != "" ] ; then
+cp ~/.cuu.txt $Tmp
+cat $Tmp | gawk -v l=$1 -v r=$2 -F= '
+BEGIN {
+    out=l "=" r;
+    q=0;
+} 
+
+{
+    sz=$0
+    gsub(/[;].*$/,"",$0);
+    gsub(/[ ]*$/,"",$0);
+    if ($1==l) {
+        q=1;
+        print out;
+    }
+    else {
+        print sz;
+    }
+}
+
+
+END {
+    if(q==0) print out;
+}' > ~/.cuu.txt
+
+fi
