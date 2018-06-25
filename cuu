@@ -1026,7 +1026,7 @@ COMMANDPROC "ACCESSKEYCREATE,CREATEACCESSKEY" "Create access keys for user"; if 
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
           cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
 fi
-COMMANDPROC "ACCESSKEYSLIST,LISTACCESSKEYS" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCESSKEYSLS,ACCESSKEYLIST,LISTACCESSKEY" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
 fi
@@ -1077,7 +1077,7 @@ COMMANDPROC "USERDELETE,DELETEUSER" "Delete user" "-a -u"; if [ $bCmd -gt 0 ] ; 
           wipeUSER
           deleteUSER
 fi
-COMMANDPROC "USERLIST,LISTUSERS" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLS,USERLIST,LISTUSERS" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -1085,7 +1085,7 @@ COMMANDPROC "USERLIST,LISTUSERS" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
           done
           cat $Tmp | column -t
 fi
-COMMANDPROC "USERLIST-2,LISTUSERS2" "User listing (simple format)" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLS-2,USERLIST-2,LISTUSERS2" "User listing (simple format)" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -1093,7 +1093,7 @@ COMMANDPROC "USERLIST-2,LISTUSERS2" "User listing (simple format)" "-a"; if [ $b
           done
           cat $Tmp
 fi
-COMMANDPROC "USERLIST-JSON,LISTUSERS-JSON" "User list in json format" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLS-JSON,USERLIST-JSON,LISTUSERS-JSON" "User list in json format" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -1150,7 +1150,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: ROLE Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "ROLESLIST,LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ROLELS,ROLESLIST,LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -1174,7 +1174,7 @@ COMMANDPROC "GROUPDELETE" "Delete group from profile by group name" "-a -u -t"; 
                assert "$THING" "Group not specified"
                $AWS iam delete-group --group-name $THING
 fi
-COMMANDPROC "GROUPLIST,LISTGROUPS" "List groups in profile" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPLS,GROUPLIST,LISTGROUPS" "List groups in profile" "-a"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                clean
                for ITEM in $ACCOUNT; do
@@ -1295,7 +1295,7 @@ COMMANDPROC "EC2" "Describe Instances"; if [ $bCmd -gt 0 ] ; then
      $AWS ec2 describe-instances | gawk 'BEGIN {print "\n\n\n"}/INSTANCES/{print $0}/SECURITYGROUPS/{print $0 "\n\n\n"}'
 fi
 
-COMMANDPROC "EC2-LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2LS,EC2-LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      for ACCT in $ACCOUNT; do
           LIST="us-east-1 us-east-2 us-west-1 us-west-2"
@@ -1360,7 +1360,7 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
 fi
-COMMANDPROC "EC2LIST,LISTEC2,LI" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2LS-2,EC2LIST,LISTEC2,LI" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; then
      buildPROFILELIST
      buildREGIONLIST
      clean
@@ -1496,7 +1496,7 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: S3 Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "S3LIST,S3LS,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -1507,7 +1507,7 @@ COMMANDPROC "S3LIST,S3LS,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                     fi
                done
 fi
-COMMANDPROC "S3LISTHTML,S3LSHTML,S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; then
                clean
                aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
                $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.html"
@@ -1526,7 +1526,7 @@ COMMANDPROC "S3LISTHTML,S3LSHTML,S3HTML" "S3 List as HTML Page" "-a -b -C"; if [
                     aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.m3u --expires-in $EXPIRES  | tee $Tmp
                fi
 fi
-COMMANDPROC "S3LISTRECURSIVE,S3LSR,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LSR,S3LISTRECURSIVE,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -2003,7 +2003,7 @@ fi
 COMMANDPROC "UTILALIAS,ALIAS" "Command Alias" "-a"; if [ $bCmd -gt 0 ] ; then
      print "Aliases for "$THING": "${COMMANDALIASES[$THING]}
 fi
-COMMANDPROC "UTILALIASLIST,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILALIASLS,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ; then
      for ITEM in ${COMMANDALIASES[@]}; do
          echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s\n", trim($1), trim($2), trim($3) }'
      done
@@ -2054,7 +2054,7 @@ fi
 # -- THESE TWO COMMANDPROCs MUST ALWAYS BE THE LAST ONES DEFINED
 # -- THESE TWO COMMANDPROCs MUST ALWAYS BE THE LAST ONES DEFINED
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "UTILCOMMANDLS,UTILCOMMANDLIST,COMMANDLIST" "List Commands"; if [ $bCmd -gt 0 ] ; then
      cat $CuuCommandFile
 fi
 COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then

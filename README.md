@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Jun 25 08:25:14 EDT 2018
+       build date: Mon Jun 25 08:33:43 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -42,9 +42,9 @@ User Commands
      usercreatereadonly           -a -u -p     Create readonly user
      userdelete                   -a -u        Delete user
      userdescribe                 -a -u        Lists groups and policies associated with user/userlist
-     userlist-2                   -a           User listing (simple format)
-     userlist                     -a           User listing
-     userlist-json                -a           User list in json format
+     userls-2                     -a           User listing (simple format)
+     userls                       -a           User listing
+     userls-json                  -a           User list in json format
      usermenu                     -a           Menu driven user information
 Password Commands  
      passwordchange               -a -u -p     Change a users password
@@ -54,7 +54,7 @@ AccessKey Commands
      accesskeycreate              -a           Create access keys for user
      accesskeyreplace             -a           Delete and replace access keys
      accesskeysdelete             -a           Delete all access keys attached to user
-     accesskeyslist               -a           List a users access keys
+     accesskeysls                 -a           List a users access keys
   
 Policy Commands  
      policyattachtoallusers       -a -t        Attach policy to all users
@@ -85,14 +85,14 @@ Group Commands
      groupadduser                 -a -t        Add user/userlist to group
      groupcreate                  -a -t        Create group in profile
      groupdelete                  -a -u -t     Delete group from profile by group name
-     grouplist                    -a           List groups in profile
      grouplistusers               -a           List users in group
+     groupls                      -a           List groups in profile
      groupremoveallusers          -a           Remove all groups atttach to user
      groupremoveuser              -a           Remove user from group by group name
      groupsforuser                -a           List groups attached to user
   
 Role Commands  
-     roleslist                    -a           List Roles
+     rolels                       -a           List Roles
   
 VPC Commands  
      vpccreate                    -a -r        Create a Two Subnet VPC
@@ -102,8 +102,8 @@ VPC Commands
   
 EC2 Commands  
      ec2                          -a           Describe Instances
-     ec2-list                     -a           EC2 List
-     ec2list                      -a           List Instances
+     ec2ls-2                      -a           List Instances
+     ec2ls                        -a           EC2 List
      ec2-sg                       -a           Security Group Detail Report
      ec2-sgsum                    -a           Security Group Summary Report
      ec2spark                     -a -t        CloudWatch CPU Utilization with Spark Graphing
@@ -129,9 +129,8 @@ S3 Commands
      s3createbucket-uswest2       -a -b        Create S3 Bucket in us-west-2
      s3deletebucket               -a -b        Deletes a S3 Bucket
      s3html                       -a -b -C     S3 List as HTML Page
-     s3list                       -a           S3 List
-     s3listhtml                   -a -b -C     S3 List as HTML Page
-     s3listrecursive              -a           S3 Recursive List
+     s3ls                         -a           S3 List
+     s3lsr                        -a           S3 Recursive List
      s3presign                    -a -b -k     Presign S3 URL
      s3publish                    -a           Publish Files
      s3publishclear               -a -b -k     Clear Publish Bucket
@@ -153,7 +152,7 @@ CloudTrail Commands
   
 Utility Commands  
      utilaccountnumber            -a           Print account number
-     utilcommandlist              -a           List Commands
+     utilcommandls                -a           List Commands
      utilcommands                 -a           Command help
      utilconfig                   -a           Edit Configuration File ~/.cuu.txt
      utildumpconfig               -a           Dump Configuration File ~/.cuu.txt
@@ -169,7 +168,7 @@ Utility Commands
 ACCESSKEYCREATE                  CREATEACCESSKEY                                  
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
 ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
-ACCESSKEYSLIST                   LISTACCESSKEYS                                   
+ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY           
 AMILS                                                                             
 CLOUDTRAIL-ACTIVE                                                                 
 CLOUDTRAIL-USER                                                                   
@@ -177,11 +176,11 @@ CLOUDTRAIL-WATCH
 CLOUDTRAILMENU                                                                    
 CLOUDTRAILWORLD                  WORLD                                            
 EC2                                                                               
-EC2-LIST                                                                          
 EC2-SG                                                                            
 EC2-SGSUM                                                                         
 EC2-UTIL                                                                          
-EC2LIST                          LISTEC2                  LI                      
+EC2LS                            EC2-LIST                                         
+EC2LS-2                          EC2LIST                  LISTEC2                 
 EC2SPARK                                                                          
 EC2SPARKMENU                                                                      
 EC2TERMINATE                                                                      
@@ -189,8 +188,8 @@ EC2TERMINATELAST
 GROUPADDUSER                                                                      
 GROUPCREATE                                                                       
 GROUPDELETE                                                                       
-GROUPLIST                        LISTGROUPS                                       
 GROUPLISTUSERS                   LISTUSERSINGROUP                                 
+GROUPLS                          GROUPLIST                LISTGROUPS              
 GROUPREMOVEALLUSERS                                                               
 GROUPREMOVEUSER                                                                   
 GROUPSFORUSER                    LISTUSERGROUPS                                   
@@ -220,7 +219,7 @@ POLICYUPDATE                     UPDATEPOLICY
 POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                         
 POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                         
 POLICYUSERDETACHALL              DETACHUSERPOLICIES                               
-ROLESLIST                        LISTROLES                                        
+ROLELS                           ROLESLIST                LISTROLES               
 S3CLEARBUCKET                    S3CLEAR                                          
 S3COPY                                                                            
 S3COPY-1MINUTE                                                                    
@@ -233,9 +232,9 @@ S3CREATEBUCKET-USEAST2
 S3CREATEBUCKET-USWEST1                                                            
 S3CREATEBUCKET-USWEST2                                                            
 S3DELETEBUCKET                                                                    
-S3LIST                           S3LS                     LB                      
-S3LISTHTML                       S3LSHTML                 S3HTML                  
-S3LISTRECURSIVE                  S3LSR                    LBR                     
+S3HTML                                                                            
+S3LS                             S3LIST                   LB                      
+S3LSR                            S3LISTRECURSIVE          LBR                     
 S3PRESIGN                                                                         
 S3PUBLISHCLEAR                   PUBLISHCLEAR                                     
 S3PUT                                                                             
@@ -254,13 +253,13 @@ USERCREATENOKEY                  CREATEUSERNOKEY
 USERCREATEREADONLY               CREATEREADONLYUSER                               
 USERDELETE                       DELETEUSER                                       
 USERDESCRIBE                     DESCRIBEUSERS            DU                      
-USERLIST                         LISTUSERS                                        
-USERLIST-2                       LISTUSERS2                                       
-USERLIST-JSON                    LISTUSERS-JSON                                   
+USERLS                           USERLIST                 LISTUSERS               
+USERLS-2                         USERLIST-2               LISTUSERS2              
+USERLS-JSON                      USERLIST-JSON            LISTUSERS-JSON          
 USERMENU                                                                          
 UTILACCOUNTNUMBER                ACCOUNTNUMBER                                    
 UTILALIAS                        ALIAS                                            
-UTILALIASLIST                    ALIASLIST                                        
+UTILALIASLS                      ALIASLIST                                        
 UTILCONFIG                       CONFIG                                           
 UTILDUMPCONFIG                   DUMPCONFIG               DUMP                    
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
@@ -303,5 +302,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Mon Jun 25 08:25:16 EDT 2018
+Mon Jun 25 08:33:45 EDT 2018
 </pre>
