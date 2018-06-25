@@ -60,6 +60,7 @@ usage(){
      print "      -C  operand:  content type (pdf, text, html, mp3)"
      print "      -b  operand:  s3 bucket name"
      print "      -k  operand:  s3 key name"
+     print "      -n  operand:  name string"
      print "  flags"
      print "      -h  flag:     display usage"
      print "      -d  flag:     limits abbreviations"
@@ -113,9 +114,30 @@ commandABBREVIATIONS() {
 # ---------------------------------------------------------------------------------------------------------
 # MACROS
 # ---------------------------------------------------------------------------------------------------------
+cryp() {
+                    print "encrypt"
+                    EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+                    UNIQUEKEY=`openssl rand -base64 40`
+                    NAME=$1
+                    openssl aes-256-cbc -nosalt -k $UNIQUEKEY -in $NAME  -out /tmp/$NAME.$EPOCHTIME.re
+                    print $UNIQUEKEY > /tmp/$NAME.$EPOCHTIME.key
+                    openssl aes-256-cbc -nosalt -k FRI33iop -in /tmp/$NAME.$EPOCHTIME.key -out /tmp/$NAME.$EPOCHTIME.rek
+                    KEY=`base64 < /tmp/$NAME.$EPOCHTIME.rek`
+                    mv /tmp/$NAME.$EPOCHTIME.re /tmp/$NAME.$EPOCHTIME.$KEY.re
+                    rm -f /tmp/$NAME.$EPOCHTIME.key 2>&1 > /dev/null
+                    rm -f /tmp/$NAME.$EPOCHTIME.rek 2>&1 > /dev/null
+}
 putconfig() {
+     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+     cp   ~/.cuu.txt  ~/.cuu.$EPOCHTIME.txt
      $CUUHOME/putconfig.awkx "$1"  "$2"
      #LASTBUCKET=`gawk  -v w=S3BUCKET     -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+}
+putconfigecho() {
+     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+     cp   ~/.cuu.txt  ~/.cuu.$EPOCHTIME.txt
+     $CUUHOME/putconfig.awkx "$1"  "$2"
+     printf "%-18s %s\n" "$1" "$2"
 }
 getconfig() {
      CONFIGITEM=`gawk  -v w=$1 -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
@@ -488,7 +510,7 @@ do
             i) LOOP="yes" ;;
             d) DETAIL="yes"; DETAILFLAG=" -d " ;;
             D) DOCUMENT=$OPTARG ;;
-            n) COUNT=$OPTARG ;;
+            n) NAMESTRING=$OPTARG ;;
             T) TIMEFACTOR=$OPTARG ;;
             Q) QUANTAFACTOR=$OPTARG ;;
             c) COMMAND=$OPTARG ;;
@@ -535,7 +557,7 @@ if [ $# -eq 1 ] ; then
 fi
 
 commandABBREVIATIONS
-putconfig "LASTBUCKET"  "$S3BUCKET"
+# putconfig "LASTBUCKET"  "$S3BUCKET"
 # -----------------------------------------------------------------------------------------------------------------------
 # -- AWS CLI command line prefix setup
 # -----------------------------------------------------------------------------------------------------------------------
@@ -720,6 +742,62 @@ COMMANDPROC "VPCLS" "List VPCs" "-a"; if [ $bCmd -gt 0 ] ; then
       $AWS ec2 describe-vpcs           --query "Vpcs[*].[VpcId,CidrBlock]"
 fi
 
+
+COMMANDPROC "EC2TERMINATE" "Terminate Instance" "-a"; if [ $bCmd -gt 0 ] ; then
+     print "Instance ID "$THING
+     $AWS ec2 terminate-instances --instance-id $THING
+fi
+COMMANDPROC "EC2TERMINATELAST" "Terminate Last Instance" "-a"; if [ $bCmd -gt 0 ] ; then
+     getconfigecho "LASTINSTANCEID";    LASTINSTANCEID=$CONFIGITEM
+     print "Instance ID "$LASTINSTANCEID
+     $AWS ec2 terminate-instances --instance-id $LASTINSTANCEID
+fi
+
+
+COMMANDPROC "AMILS" "List AMIs" "-a"; if [ $bCmd -gt 0 ] ; then
+    $AWS ec2 --output text describe-images --owners self --query "Images[].[ImageId,Name,RootDeviceName,CreationDate,BlockDeviceMappings[].[DeviceName,Ebs.SnapshotId]]" | \
+          egrep "(ami)|(snap)" | gawk '/^ami-/ { sz = $0; getline; print sz " "$0; }' | sort -k2.2 |column -t
+
+fi
+COMMANDPROC "AMILSJ" "List AMIs" "-a"; if [ $bCmd -gt 0 ] ; then
+    $AWS ec2 --output json describe-images --owners self
+
+fi
+COMMANDPROC "VPCINSTANCE" "Create an instance in the VPC" "-a"; if [ $bCmd -gt 0 ] ; then
+     assert $NAMESTRING
+     AMI=ami-a4dc46db
+     AMI=ami-4ab0e335
+     getconfigecho "LASTVPCID";   LASTVPCID=$CONFIGITEM
+     getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM
+     getconfigecho "LASTSUBNET2"; LASTSUBNET2=$CONFIGITEM
+     getconfigecho "LASTSGID";    LASTSGID=$CONFIGITEM
+     INSTANCEID=`aws --profile $ACCOUNT --region $REGION --output text ec2 run-instances  \
+                                        --image-id $AMI --count 1 --instance-type m5.large \
+                                        --key-name MyStarKeyPairEastOne --security-group-ids $LASTSGID \
+                                        --subnet-id $LASTSUBNET1 --query "Instances[0].InstanceId"`
+     $AWS ec2 create-tags --resources $INSTANCEID --tags Key=Name,Value=$NAMESTRING
+     $AWS ec2 create-tags --resources $INSTANCEID --tags Key=CuuData,Value=CreatedByCUU
+
+     IP=`aws --profile $ACCOUNT --region $REGION --output text ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].PublicIpAddress"`
+     putconfigecho "LASTINSTANCEID"   "$INSTANCEID"
+     putconfigecho "LASTIP"   "$IP"
+     NAMESTRINGNAME="NAMESTRING-"$NAMESTRING
+     putconfigecho "$NAMESTRINGNAME"  "$IP"
+     print "ssh -i MyStarKeyPairEastOne.pem ubuntu@"$IP
+     print "scp -i MyStarKeyPairEastOne.pem ./file ec2-user@"$IP":~/file"
+     print $NAMESTRING
+     print $INSTANCEID
+     print $IP
+
+
+#      --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=$NAMESTRING}]' 'ResourceType=volume,Tags=[{Key=IName,Value=$NAMESTRING}]'`
+#      putconfigecho "LASTSSH"   "ssh -i MyStarKeyPairEastOne.pem ubuntu@"$IP
+#      putconfigecho "LASTSCP"   "scp -i MyStarKeyPairEastOne.pem ./file ec2-user@"$IP":~/file"
+     # putconfigecho "LASTSSH"   "ssh -i MyStarKeyPairEastOne.pem ec2-user@"$IP
+     # aws --profile $ACCOUNT --region $REGION --output text ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].State.Name"
+ fi
+
+
 COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
@@ -732,8 +810,8 @@ COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r"; if
 
      # $AWS        ec2 describe-vpcs           --query "Vpcs[*].[VpcId,CidrBlock]"
      VPCID=`$AWS   ec2 create-vpc              --cidr-block 10.0.0.0/16 --query "Vpc.VpcId"`
-     SUBNET1=`$AWS ec2 create-subnet           --vpc-id $VPCID --cidr-block 10.0.0.0/24 --query "Subnet.SubnetId"`
-     SUBNET2=`$AWS ec2 create-subnet           --vpc-id $VPCID --cidr-block 10.0.1.0/24 --query "Subnet.SubnetId"`
+     SUBNET1=`$AWS ec2 create-subnet           --vpc-id $VPCID --cidr-block 10.0.0.0/24 --availability-zone us-east-1a --query "Subnet.SubnetId"`
+     SUBNET2=`$AWS ec2 create-subnet           --vpc-id $VPCID --cidr-block 10.0.1.0/24 --availability-zone us-east-1a --query "Subnet.SubnetId"`
      IGWID=`$AWS   ec2 create-internet-gateway --query "InternetGateway.InternetGatewayId"`
      $AWS          ec2 attach-internet-gateway --vpc-id $VPCID --internet-gateway-id $IGWID > $Tmp
      THIS=`$AWS    ec2 create-route-table      --vpc-id $VPCID --query "RouteTable.RouteTableId"`
@@ -1943,10 +2021,22 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      print "TIMEFACTOR:        "$TIMEFACTOR
      print "WINDOW START TIME  "$ISOAGO
      print "WINDOW END TIME    "$ISOANON
+     print ""
+     print "MYCIDR             "$MYCIDR
+     print ""
      getconfigecho "LASTVPCID";   LASTVPCID=$CONFIGITEM
      getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM
      getconfigecho "LASTSUBNET2"; LASTSUBNET2=$CONFIGITEM
      getconfigecho "LASTSGID";    LASTSGID=$CONFIGITEM
+
+     print ""
+     getconfigecho "LASTINSTANCEID";    LASTINSTANCEID=$CONFIGITEM
+     getconfigecho "LASTIP";            LASTIP=$CONFIGITEM
+     getconfigecho "LASTSSH";           LASTSSH=$CONFIGITEM
+     getconfigecho "LASTSCP";           LASTSCP=$CONFIGITEM
+     print ""
+     egrep "^NAMESTRING" ~/.cuu.txt | gawk -F= '{printf("%-18s %s\n",$1,$2);}'
+     print ""
      getconfigecho "LASTBUCKET";  LASTBUCKET=$CONFIGITEM
      print ""
      print "LAST COMMAND       $LASTCOMMAND"

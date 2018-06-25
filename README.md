@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sat Jun 23 08:23:00 EDT 2018
+       build date: Mon Jun 25 08:22:09 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -16,6 +16,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
       -C  operand:  content type (pdf, text, html, mp3)
       -b  operand:  s3 bucket name
       -k  operand:  s3 key name
+      -n  operand:  name string
   flags
       -h  flag:     display usage
       -d  flag:     limits abbreviations
@@ -96,6 +97,7 @@ Role Commands
 VPC Commands  
      vpccreate                    -a -r        Create a Two Subnet VPC
      vpcdelete                    -a -r -t     Delete VPC
+     vpcinstance                  -a           Create an instance in the VPC
      vpcls                        -a           List VPCs
   
 EC2 Commands  
@@ -106,7 +108,13 @@ EC2 Commands
      ec2-sgsum                    -a           Security Group Summary Report
      ec2spark                     -a -t        CloudWatch CPU Utilization with Spark Graphing
      ec2sparkmenu                 -a           Instance Menu
+     ec2terminate                 -a           Terminate Instance
+     ec2terminatelast             -a           Terminate Last Instance
      ec2-util                     -a           CloudWatch CPU Utilization
+  
+AMI Commands  
+     amils                        -a           List AMIs
+     amilsj                       -a           List AMIs
   
 S3 Commands  
      s3clearbucket                -a -b -k     S3 Remove Object, with wildcard (%) keys
@@ -163,6 +171,8 @@ ACCESSKEYCREATE                  CREATEACCESSKEY
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
 ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
 ACCESSKEYSLIST                   LISTACCESSKEYS                                   
+AMILS                                                                             
+AMILSJ                                                                            
 CLOUDTRAIL-ACTIVE                                                                 
 CLOUDTRAIL-USER                                                                   
 CLOUDTRAIL-WATCH                                                                  
@@ -176,6 +186,8 @@ EC2-UTIL
 EC2LIST                          LISTEC2                  LI                      
 EC2SPARK                                                                          
 EC2SPARKMENU                                                                      
+EC2TERMINATE                                                                      
+EC2TERMINATELAST                                                                  
 GROUPADDUSER                                                                      
 GROUPCREATE                                                                       
 GROUPDELETE                                                                       
@@ -260,6 +272,7 @@ UTILSWAP
 UTILTIME                         TIME                                             
 VPCCREATE                        CREATEVPC-2SUBNETS                               
 VPCDELETE                        DELETEVPC                                        
+VPCINSTANCE                                                                       
 VPCLS                                                                             
 WWEC2                                                                             
 </pre>
@@ -292,5 +305,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Jun 23 08:23:02 EDT 2018
+Mon Jun 25 08:22:12 EDT 2018
 </pre>
