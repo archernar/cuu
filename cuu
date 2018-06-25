@@ -753,14 +753,9 @@ COMMANDPROC "EC2TERMINATELAST" "Terminate Last Instance" "-a"; if [ $bCmd -gt 0 
      $AWS ec2 terminate-instances --instance-id $LASTINSTANCEID
 fi
 
-
-COMMANDPROC "AMILS" "List AMIs" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "AMILS" "List Local AMIs" "-a"; if [ $bCmd -gt 0 ] ; then
     $AWS ec2 --output text describe-images --owners self --query "Images[].[ImageId,Name,RootDeviceName,CreationDate,BlockDeviceMappings[].[DeviceName,Ebs.SnapshotId]]" | \
           egrep "(ami)|(snap)" | gawk '/^ami-/ { sz = $0; getline; print sz " "$0; }' | sort -k2.2 |column -t
-
-fi
-COMMANDPROC "AMILSJ" "List AMIs" "-a"; if [ $bCmd -gt 0 ] ; then
-    $AWS ec2 --output json describe-images --owners self
 
 fi
 COMMANDPROC "VPCINSTANCE" "Create an instance in the VPC" "-a"; if [ $bCmd -gt 0 ] ; then

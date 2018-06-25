@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Jun 25 08:22:09 EDT 2018
+       build date: Mon Jun 25 08:25:14 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -113,8 +113,7 @@ EC2 Commands
      ec2-util                     -a           CloudWatch CPU Utilization
   
 AMI Commands  
-     amils                        -a           List AMIs
-     amilsj                       -a           List AMIs
+     amils                        -a           List Local AMIs
   
 S3 Commands  
      s3clearbucket                -a -b -k     S3 Remove Object, with wildcard (%) keys
@@ -172,7 +171,6 @@ ACCESSKEYREPLACE                 REPLACEACCESSKEYS
 ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
 ACCESSKEYSLIST                   LISTACCESSKEYS                                   
 AMILS                                                                             
-AMILSJ                                                                            
 CLOUDTRAIL-ACTIVE                                                                 
 CLOUDTRAIL-USER                                                                   
 CLOUDTRAIL-WATCH                                                                  
@@ -305,5 +303,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Mon Jun 25 08:22:12 EDT 2018
+Mon Jun 25 08:25:16 EDT 2018
 </pre>
