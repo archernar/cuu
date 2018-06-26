@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Jun 25 08:33:43 EDT 2018
+       build date: Mon Jun 25 22:31:14 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -101,9 +101,9 @@ VPC Commands
      vpcls                        -a           List VPCs
   
 EC2 Commands  
-     ec2                          -a           Describe Instances
      ec2ls-2                      -a           List Instances
      ec2ls                        -a           EC2 List
+     ec2myls                      -a           My EC2 List
      ec2-sg                       -a           Security Group Detail Report
      ec2-sgsum                    -a           Security Group Summary Report
      ec2spark                     -a -t        CloudWatch CPU Utilization with Spark Graphing
@@ -175,12 +175,12 @@ CLOUDTRAIL-USER
 CLOUDTRAIL-WATCH                                                                  
 CLOUDTRAILMENU                                                                    
 CLOUDTRAILWORLD                  WORLD                                            
-EC2                                                                               
 EC2-SG                                                                            
 EC2-SGSUM                                                                         
 EC2-UTIL                                                                          
 EC2LS                            EC2-LIST                                         
 EC2LS-2                          EC2LIST                  LISTEC2                 
+EC2MYLS                          EC2LSMY                                          
 EC2SPARK                                                                          
 EC2SPARKMENU                                                                      
 EC2TERMINATE                                                                      
@@ -275,6 +275,7 @@ WWEC2
 </pre>
 ### ~/.cuu.txt can contain defaults for these settings
 <pre>
+MYCUUTAG=
 PASSWORD=
 STARTDATE=2018-05-01T00:00:00Z        ; Obsolete
 WATCHPROFILE=
@@ -302,5 +303,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Mon Jun 25 08:33:45 EDT 2018
+Mon Jun 25 22:31:17 EDT 2018
 </pre>

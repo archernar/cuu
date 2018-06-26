@@ -129,9 +129,8 @@ cryp() {
 }
 putconfig() {
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
-     cp   ~/.cuu.txt  ~/.cuu.$EPOCHTIME.txt
+     cp  ~/.cuu.txt  ~/.cuu.$EPOCHTIME.txt
      $CUUHOME/putconfig.awkx "$1"  "$2"
-     #LASTBUCKET=`gawk  -v w=S3BUCKET     -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 }
 putconfigecho() {
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
@@ -474,6 +473,7 @@ KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w)
 PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 
 # This is the modified get parameter function, with a default option
+MYCUUTAG=`gawk -v w=MYCUUTAG -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 EXPIRES=`gawk -v w=EXPIRES -v def=900 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 REGION=`gawk -v w=REGION -v def=us-east-1 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TIMEFACTOR=`gawk -v w=TIMEFACTOR -v def=24 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
@@ -771,6 +771,7 @@ COMMANDPROC "VPCINSTANCE" "Create an instance in the VPC" "-a"; if [ $bCmd -gt 0
                                         --key-name MyStarKeyPairEastOne --security-group-ids $LASTSGID \
                                         --subnet-id $LASTSUBNET1 --query "Instances[0].InstanceId"`
      $AWS ec2 create-tags --resources $INSTANCEID --tags Key=Name,Value=$NAMESTRING
+     $AWS ec2 create-tags --resources $INSTANCEID --tags Key=CuuTag,Value=$MYCUUTAG
      $AWS ec2 create-tags --resources $INSTANCEID --tags Key=CuuData,Value=CreatedByCUU
 
      IP=`aws --profile $ACCOUNT --region $REGION --output text ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].PublicIpAddress"`
@@ -1290,21 +1291,20 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: EC2 Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "EC2" "Describe Instances"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2LS,EC2-LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
+     # https://serverfault.com/questions/578921/how-would-you-go-about-listing-instances-using-aws-cli-in-certain-vpc-with-the-t
      assert "$ACCOUNT" "Profile not specified"
-     $AWS ec2 describe-instances | gawk 'BEGIN {print "\n\n\n"}/INSTANCES/{print $0}/SECURITYGROUPS/{print $0 "\n\n\n"}'
+     $AWS ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,Tags[?Key==`Name`].Value[]]' \
+                            --output json | tr -d '\n[] "' | perl -pe 's/i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 2,2 -k 6,6 | column -t
+fi
+COMMANDPROC "EC2MYLS,EC2LSMY" "My EC2 List"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     $AWS ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,Tags[?Key==`Name`].Value[]]' \
+                            --filter Name=tag:CuuTag,Values=$MYCUUTAG \
+                            --output json | tr -d '\n[] "' | perl -pe 's/i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 2,2 -k 6,6 | column -t
 fi
 
-COMMANDPROC "EC2LS,EC2-LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT" "Profile not specified"
-     for ACCT in $ACCOUNT; do
-          LIST="us-east-1 us-east-2 us-west-1 us-west-2"
-          for ITEM in $LIST; do
-               aws --profile $ACCT ec2 describe-instances --output text --region $ITEM \
-                   --query "Reservations[*].Instances[*].[InstanceId,InstanceType,State.Name,Tags[?Key==Name].Value]" | gawk -v A=$ACCT -v B=$ITEM -f noindent.awk
-          done
-      done
-fi
+
 
 #          XLIST=`aws --profile $ACCOUNT ec2 describe-regions --query "Regions[*].RegionName" --output text`
 
@@ -2009,6 +2009,7 @@ COMMANDPROC "UTILALIASLS,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ;
      done
 fi
 COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a"; if [ $bCmd -gt 0 ] ; then
+     print "MYCUUTAG:          "$MYCUUTAG
      print "CUUHOME:           "$CUUHOME
      print "REGION:            "$REGION
      print "PUBLISH BUCKET:    "$PUBLISHBUCKET
