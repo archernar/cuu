@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Jun 25 22:31:14 EDT 2018
+       build date: Mon Jun 25 22:36:39 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -303,5 +303,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Mon Jun 25 22:31:17 EDT 2018
+Mon Jun 25 22:36:41 EDT 2018
 </pre>

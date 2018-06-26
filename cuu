@@ -1295,13 +1295,13 @@ COMMANDPROC "EC2LS,EC2-LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      # https://serverfault.com/questions/578921/how-would-you-go-about-listing-instances-using-aws-cli-in-certain-vpc-with-the-t
      assert "$ACCOUNT" "Profile not specified"
      $AWS ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,Tags[?Key==`Name`].Value[]]' \
-                            --output json | tr -d '\n[] "' | perl -pe 's/i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 2,2 -k 6,6 | column -t
+     --output json | tr -d '\n[] "' | perl -pe 's/i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 2,2 -k 6,6 | column -t | gawk -v A=$ACCOUNT -f noindent.awk
 fi
 COMMANDPROC "EC2MYLS,EC2LSMY" "My EC2 List"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      $AWS ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,Tags[?Key==`Name`].Value[]]' \
-                            --filter Name=tag:CuuTag,Values=$MYCUUTAG \
-                            --output json | tr -d '\n[] "' | perl -pe 's/i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 2,2 -k 6,6 | column -t
+     --filter Name=tag:CuuTag,Values=$MYCUUTAG \
+     --output json | tr -d '\n[] "' | perl -pe 's/i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 2,2 -k 6,6 | column -t | gawk -v A=$ACCOUNT -f noindent.awk
 fi
 
 
