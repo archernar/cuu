@@ -434,7 +434,7 @@ confirm() {
 typeset -A INFO 
 typeset -A OPTO 
 typeset -u COMMAND
-typeset -u CTYPE
+typeset -l CTYPE
 typeset -u EXTRA
 COMMAND=""
 USERNAME=""
@@ -1263,6 +1263,7 @@ COMMANDPROC "UTILPUBLISH,PUBLISH,S3PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt
           $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "*"      >/dev/null 2>&1
      fi
      print "Bucket Cleared"
+     print "Copying"
      cuu -a $ACCOUNT -c S3COPY -b $S3BUCKET -D $DOCUMENT -C $CTYPE
      print "Bucket Copied"
      cuu -a $ACCOUNT -c S3HTML -b $S3BUCKET
@@ -1560,17 +1561,17 @@ COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bC
      DOCUMENT=`echo $DOCUMENT | sed -e "s/[%]/*/g"`
      ls $DOCUMENT > $Tmp
      case $CTYPE in
-          HTML)    CTYPE=" --content-type text/html " ;;
-          TEXT)    CTYPE=" --content-type text/plain " ;;
-          PDF)     CTYPE=" --content-type application/pdf " ;;
-          JSON)    CTYPE=" --content-type application/json " ;;
-          MP3)     CTYPE=" --content-type audio/mpeg " ;;
-          MPEG)    CTYPE=" --content-type audio/mpeg " ;;
-          JPG)     CTYPE="  --content-type image/jpeg " ;;
-          JPEG)    CTYPE="  --content-type image/jpeg " ;;
-          CBR)     CTYPE="  --content-type application/x-cbr " ;;
-          M3U)     CTYPE="  --content-type audio/x-mpegurl " ;;
-          GUESS)   CTYPE="" ;;
+          html)    CTYPE=" --content-type text/html " ;;
+          text)    CTYPE=" --content-type text/plain " ;;
+          pdf)     CTYPE=" --content-type application/pdf " ;;
+          json)    CTYPE=" --content-type application/json " ;;
+          mp3)     CTYPE=" --content-type audio/mpeg " ;;
+          mpeg)    CTYPE=" --content-type audio/mpeg " ;;
+          jpg)     CTYPE="  --content-type image/jpeg " ;;
+          jpeg)    CTYPE="  --content-type image/jpeg " ;;
+          cbr)     CTYPE="  --content-type application/x-cbr " ;;
+          m3u)     CTYPE="  --content-type audio/x-mpegurl " ;;
+          guess)   CTYPE="" ;;
           *)       CTYPE="" ;;
      esac
      print "Content Type "$CTYPE
