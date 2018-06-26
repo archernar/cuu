@@ -3,7 +3,7 @@ Tmp="/tmp/$$"
 Tmp2="/tmp/$$_$$"
 TmpDir="/tmp/dir$$"
 CuuCommandFile="/tmp/CuuCommandFile$$"
-trap 'rm -f "$Tmp" >/dev/null 2>&1' 0
+trap 'rm -f "$Tmp" >/dev/null 2>&1;rm -f "$Tmp2" >/dev/null 2>&1;rm -f "$CuuCommandFile" >/dev/null 2>&1;' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 # -----------------------------------------------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ buildUSERLIST() {
      if [ "$USERNAME" == "USERLIST" ] ; then
           USERLIST=`cat userlist`
      else
-          if [ "$USERNAME" == "" ] ; then
+          if [ "$USERNAME" == "ALL" ] ; then
               confirmprompt "You have selected all the users in "$1
               USERLIST=`aws --profile $1 iam list-users --query "Users[*].[UserName]" --output text`
           else
@@ -223,6 +223,7 @@ buildPROFILELIST() {
               PROFILELIST=$ACCOUNT
           fi
      fi
+     print $PROFILELIST
 }
 buildREGIONLIST() {
      REGIONLIST=$REGION;
@@ -1297,22 +1298,41 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: EC2 Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "EC2LS,EC2-LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
+# --query 'Reservations[*].Instances[*].[InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==`Name`].Value[]]' \
 #      https://serverfault.com/questions/578921/how-would-you-go-about-listing-instances-using-aws-cli-in-certain-vpc-with-the-t
 #      tr -d '\n[] "'     Deletes all characters in the set
 # 
+
+FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
+COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      $AWS ec2 describe-instances \
-     --query 'Reservations[*].Instances[*].[InstanceId,ImageId,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==`Name`].Value[]]' \
-     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 3,3 -k 7,7 | gawk -f isotolocal.awk | column -t \
+     --query 'Reservations[*].Instances[*].['$FLDS']' \
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
                                                                                                                                           | gawk -v A=$ACCOUNT -f noindent.awk
+fi
+COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; then
+     buildPROFILELIST
+     buildREGIONLIST
+     clean
+     for ACC in $PROFILELIST; do
+      for REG in $REGIONLIST; do
+        aws --profile $ACC --region $REG  ec2 describe-instances \
+        --query 'Reservations[*].Instances[*].['$FLDS']' \
+        --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | gawk -v A=$ACC -f noindent.awk >> $Tmp
+      done
+     done
+     cat $Tmp | sort -k 1,1 -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t | tee $Tmp2
+     # cat $Tmp2 | mailx -r $NOTIFYFROM -s 'EC2 Listing' $NOTIFYTO
+
+
 fi
 COMMANDPROC "EC2MYLS,EC2LSMY" "My EC2 List"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      $AWS ec2 describe-instances \
-     --query 'Reservations[*].Instances[*].[InstanceId,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==`Name`].Value[]]' \
+     --query 'Reservations[*].Instances[*].['$FLDS']' \
      --filter Name=tag:CuuTag,Values=$MYCUUTAG \
-     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 3,3 -k 7,7 | gawk -f isotolocal.awk | column -t \
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
                                                                                                                                           | gawk -v A=$ACCOUNT -f noindent.awk
 fi
 
@@ -1371,29 +1391,6 @@ COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                      }
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
-fi
-COMMANDPROC "EC2LS-2,EC2LIST,LISTEC2,LI" "List Instances" "-a"; if [ $bCmd -gt 0 ] ; then
-     buildPROFILELIST
-     buildREGIONLIST
-     clean
-     for ACC in $PROFILELIST; do
-              for REG in $REGIONLIST; do
-                    aws --profile $ACC --region $REG --output text ec2 describe-instances | egrep "TAGS|STATE|INST" | gawk '
-                        /^INSTANCES/ { 
-                        match($0, /[ \t]i-[0123456789abcdef]*/, arr);
-                        print "INSTANCEID " arr[0]; next; }
-                        /^STATE[^R]/ { print "STATE " $3; next; }
-                        /^TAGS[ \t]*Name[ \t]/ { sz = $0;gsub(/^TAG.*Name/,"",sz); print "NAME " sz; next; }
-                        ' | gawk '
-                            BEGIN {A="";B="";C="";}
-                            /^INSTANCEID/ {print A,B,C;A=$2;B="";C=""; }
-                            /^STATE/ {B=$2;}
-                            /^NAME/ {C=$2;}
-                        ' | sort -k 2,2 | gawk -v A=$ACC -v B=$REG -f tabber.awk
-               done
-     done
-
-
 fi
 
 COMMANDPROC "EC2SPARKMENU" "Instance Menu"; if [ $bCmd -gt 0 ] ; then
@@ -1531,6 +1528,10 @@ COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; the
                cat $Tmp2 | gawk -F, -f html.awk > index.html
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key index.html --body ./index.html --content-type text/html
                aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.html --expires-in $EXPIRES  | tee $Tmp
+               cat $Tmp | gawk '{ print "xdg-open \"" $0 "\" >/dev/null 2>&1";}' > $Tmp2
+               chmod 777 $Tmp2
+               $Tmp2
+
 
                if [ "$CTYPE" == "MP3" ] ; then
                     cat $Tmp2 | gawk -F, '{print $2}' > index.m3u

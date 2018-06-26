@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 26 12:18:32 EDT 2018
+       build date: Tue Jun 26 18:21:20 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -101,7 +101,7 @@ VPC Commands
      vpcls                        -a           List VPCs
   
 EC2 Commands  
-     ec2ls-2                      -a           List Instances
+     ec2ls2                       -a           List Instances 2
      ec2ls                        -a           EC2 List
      ec2myls                      -a           My EC2 List
      ec2-sg                       -a           Security Group Detail Report
@@ -179,8 +179,8 @@ CLOUDTRAILWORLD                  WORLD
 EC2-SG                                                                            
 EC2-SGSUM                                                                         
 EC2-UTIL                                                                          
-EC2LS                            EC2-LIST                                         
-EC2LS-2                          EC2LIST                  LISTEC2                 
+EC2LS                            EC2LIST                                          
+EC2LS2                           EC2LIST2                                         
 EC2MYLS                          EC2LSMY                                          
 EC2SPARK                                                                          
 EC2SPARKMENU                                                                      
@@ -305,5 +305,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 26 12:18:35 EDT 2018
+Tue Jun 26 18:21:22 EDT 2018
 </pre>
