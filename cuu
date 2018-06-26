@@ -30,6 +30,7 @@ fi
 # | |   | | | | | | |  _____    / _ \ | '_ \    / _ \ \ /\ / /\___ \  | |   | |    | |    | |/ _ \ / _ \| |
 # | |___| |_| | |_| | |_____|  / ___ \| | | |  / ___ \ V  V /  ___) | | |___| |___ | |    | | (_) | (_) | |
 #  \____|\___/ \___/          /_/   \_\_| |_| /_/   \_\_/\_/  |____/   \____|_____|___|   |_|\___/ \___/|_|
+#                                     https://github.com/archernar/cuu.git
 # ---------------------------------------------------------------------------------------------------------
 #                               | |/ / ___|| | | | |  _ \ _   _| | ___  ___| | | |
 #                               | ' /\___ \| |_| | | |_) | | | | |/ _ \/ __| | | |
@@ -1274,6 +1275,10 @@ COMMANDPROC "S3PUBLISHCLEAR,PUBLISHCLEAR" "Clear Publish Bucket" "-a -b -k"; if 
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
      confirm
      $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "*"
+fi
+
+COMMANDPROC "UTILREPO,REPO" "List the cuu repo url"; if [ $bCmd -gt 0 ] ; then
+     print "https://github.com/archernar/cuu.git"
 fi
 
 COMMANDPROC "UTILSWAP" "Swap a Policy for a Group"; if [ $bCmd -gt 0 ] ; then

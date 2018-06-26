@@ -3,7 +3,7 @@
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 26 11:47:04 EDT 2018
+       build date: Tue Jun 26 11:52:42 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -159,6 +159,7 @@ Utility Commands
      utilnewpolicydoc             -a           Create new this.json from policydoc.json template
      utilpublish                  -a           Publish Files
      utilpublishcuureport         -a           Publish cuureport.txt
+     utilrepo                     -a           List the cuu repo url
      utilset                      -a           Set and Show configuration/environment variables
      utilswap                     -a           Swap a Policy for a Group
      utiltime                     -a           Print time window
@@ -265,6 +266,7 @@ UTILDUMPCONFIG                   DUMPCONFIG               DUMP
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
 UTILPUBLISH                      PUBLISH                  S3PUBLISH               
 UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                 
+UTILREPO                         REPO                                             
 UTILSWAP                                                                          
 UTILTIME                         TIME                                             
 VPCCREATE                        CREATEVPC-2SUBNETS                               
@@ -303,5 +305,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 26 11:47:06 EDT 2018
+Tue Jun 26 11:52:45 EDT 2018
 </pre>
