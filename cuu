@@ -1305,6 +1305,15 @@ fi
 #      tr -d '\n[] "'     Deletes all characters in the set
 # 
 
+TAGS="InstanceId,Tags[?Key==\`Name\`].Value[],Tags[?Key==\`CuuTag\`].Value[]"
+TAGS="InstanceId,Tags[].Value"
+COMMANDPROC "TAGSLS,TAGSLIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     $AWS ec2 describe-instances \
+     --query 'Reservations[*].Instances[*].['$TAGS']' \
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' |tee ffed | sed -e 's/null/None/g' | grep '^i-' \
+                                                                               | gawk -v A=$ACCOUNT -f noindent.awk | column -t
+fi
 FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
 COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"

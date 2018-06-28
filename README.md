@@ -1,9 +1,14 @@
+# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
+Script | Description
+------ | -----------
+cuu | A multi function AWS CLI Wrapper Utility
+ec2ls | A ec2 listing utility
 ## CUU - An AWS CLI Wrapper
 ###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 26 21:39:44 EDT 2018
+       build date: Thu Jun 28 19:27:34 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -246,6 +251,7 @@ S3PUTTEXT
 S3REMOVE                         S3RM                                             
 S3RMFILESET                                                                       
 S3URL                                                                             
+TAGSLS                           TAGSLIST                                         
 TEST2                                                                             
 TESTX                                                                             
 USERCREATE                       CREATEUSER                                       
@@ -305,5 +311,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 26 21:39:46 EDT 2018
+Thu Jun 28 19:27:36 EDT 2018
 </pre>
