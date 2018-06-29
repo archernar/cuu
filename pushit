@@ -17,10 +17,10 @@ print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" > README.md
-print "Script | Description" >> README.md
-print "------ | -----------" >> README.md
-print "cuu | A multi function AWS CLI Wrapper Utility" >> README.md
-print "ec2ls | A ec2 listing utility" >> README.md
+print "Script | Description | Usage" >> README.md
+print "------ | ----------- | -----" >> README.md
+print "cuu | A multi function AWS CLI Wrapper Utility | See below" >> README.md
+print "ec2ls | A ec2 listing utility | ec2ls -a <profile from ~/.aws/config" >> README.md
 
 print "## CUU - An AWS CLI Wrapper" >> README.md
 print "###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory" >> README.md
