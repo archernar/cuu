@@ -17,10 +17,10 @@ print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" > README.md
-print "Script | Description | Usage | Notes" >> README.md
-print "------ | ----------- | ----- | -----" >> README.md
+print "Script | Description | Usage | Defaults" >> README.md
+print "------ | ----------- | ----- | --------" >> README.md
 print "cuu | A multi function AWS CLI Wrapper Utility | See below" >> README.md
-print "ec2ls | A ec2 listing utility | ec2ls -a \"\<profile list\>\" -r \"\<region list\>\" | All US regions is default" >> README.md
+print "ec2ls | A ec2 listing utility | ec2ls -a \"\<profile list\>\" -r \"\<region list\>\" | All US regions" >> README.md
 print "### Examples" >> README.md
 echo "<pre>" >> README.md
 print " cuu -a ENV1 -c USERLIST" >> README.md
