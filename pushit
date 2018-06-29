@@ -20,7 +20,11 @@ print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" > README.md
 print "Script | Description | Usage" >> README.md
 print "------ | ----------- | -----" >> README.md
 print "cuu | A multi function AWS CLI Wrapper Utility | See below" >> README.md
+print "ec2ls | A ec2 listing utility | ec2ls -a \"<PROFILE LIST>\"" >> README.md
 print "ec2ls | A ec2 listing utility | ec2ls -a <profile from ~/.aws/config" >> README.md
+print "Examples" >> README.md
+print "cuu -a ENV1 -c USERLIST" >> README.md
+print "ec2ls -a \"ENV1 EVN2\""  >> README.md
 
 print "## CUU - An AWS CLI Wrapper" >> README.md
 print "###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory" >> README.md
