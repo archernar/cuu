@@ -4,8 +4,12 @@ trap 'rm -f "$Tmp" >/dev/null 2>&1;' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 
- assert() { if [ "$1" == "" ] ; then echo "$2"; exit 1; fi }
-REGION="us-east-1"
+assert() { if [ "$1" == "" ] ; then echo "$2"; exit 1; fi }
+FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
+GLREGS="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
+USREGS="us-east-1 us-east-2 us-west-1 us-west-2"
+
+REGION="$USREGS"
 
 while getopts "a:r:" arg
 do
@@ -17,8 +21,6 @@ do
 done
 shift $(($OPTIND - 1))
 
-
-FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
 
 assert "$ACCOUNT" "Profile/Account not specified"
 rm -rf $Tmp
