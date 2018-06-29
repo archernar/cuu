@@ -1,8 +1,8 @@
 # CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
-Script | Description | Usage
------- | ----------- | -----
+Script | Description | Usage | Notes
+------ | ----------- | ----- | -----
 cuu | A multi function AWS CLI Wrapper Utility | See below
-ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
+ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>" | All US regions is default
 ### Examples
 <pre>
  cuu -a ENV1 -c USERLIST
@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 29 08:51:22 EDT 2018
+       build date: Fri Jun 29 08:52:49 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -317,5 +317,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 29 08:51:25 EDT 2018
+Fri Jun 29 08:52:51 EDT 2018
 </pre>
