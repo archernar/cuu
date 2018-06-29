@@ -1,0 +1,42 @@
+#!/bin/bash
+Tmp="/tmp/$$"
+trap 'rm -f "$Tmp" >/dev/null 2>&1;' 0
+trap "exit 2" 1 2 3 13 15
+rm $Tmp  >/dev/null 2>&1
+
+ assert() { if [ "$1" == "" ] ; then echo "$2"; exit 1; fi }
+REGION="us-east-1"
+
+while getopts "a:r:" arg
+do
+	case $arg in
+            a) ACCOUNT=$OPTARG ;;
+            r) REGION=$OPTARG ;;
+	    *) exit 0 ;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+
+FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
+
+assert "$ACCOUNT" "Profile/Account not specified"
+rm -rf $Tmp
+
+for ACC in $ACCOUNT; do
+ for REG in $REGION; do
+     aws --profile $ACC --region $REG  ec2 describe-instances \
+         --query 'Reservations[*].Instances[*].['$FLDS']' \
+         --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | gawk '
+              { for ( i=1;i<=NF;i++i ) if ( $i ~ /20[0-9][0-9]-[0-9][0-9]-/) printf( "%s ", isotolocalwithlapse($i) ); else printf("%s ", $i); printf("\n "); }
+              function isotolocalwithlapse(sz,    t,yr,mo,dy,hr,mn,se,zu) {
+                   yr=substr(sz,1,4); mo=substr(sz,6,2); dy=substr(sz,9,2); hr=substr(sz,12,2); mn=substr(sz,15,2); se=substr(sz,18,2); zu=substr(sz,20,1);
+                   t=mktime(yr " " mo " " dy " " hr " " mn " " se) - (4 * 3600);
+                   return strftime("%m/%d-%I:%M:%S%p",t) ":" sprintf("%d", (systime()-t)/(24*3600));
+              }
+         ' | egrep -v "^$" | gawk -v A=$ACC '{print A " " $0}' >> $Tmp
+  done
+done
+cat $Tmp > ffed
+cat $Tmp | column -t | sort -k 1,1 -k 5,5 -k 10,10 
+

@@ -8,7 +8,7 @@ ec2ls | A ec2 listing utility | ec2ls -a <profile from ~/.aws/config
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Thu Jun 28 20:12:14 EDT 2018
+       build date: Thu Jun 28 20:12:40 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -311,5 +311,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Thu Jun 28 20:12:16 EDT 2018
+Thu Jun 28 20:12:42 EDT 2018
 </pre>
