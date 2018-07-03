@@ -68,10 +68,17 @@ echo "  " >> README.md
 echo "EC2 Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*ec2" >> README.md
 echo "  " >> README.md
+
+
+
 echo "AMI Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*ami" >> README.md
 echo "  " >> README.md
 
+
+echo "LAMBDA Commands  " >> README.md
+cat $Tmp | egrep "^[ ]*lambda" >> README.md
+echo "  " >> README.md
 
 echo "S3 Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*s3" >> README.md

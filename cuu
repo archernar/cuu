@@ -57,7 +57,7 @@ usage(){
      print "      -t  operand:  thing name  (specify a resource or object name)"
      print "      -T  operand:  time window in hours (to specify (now minus T) to now)"
      print "      -D  operand:  specify a document\file to upload (e.g. a policy document)"
-     print "      -e  operand:  expire time in seconds"
+     print "      -e  operand:  expire time in seconds (0 == 7 days)"
      print "      -C  operand:  content type (pdf, text, html, mp3)"
      print "      -b  operand:  s3 bucket name"
      print "      -k  operand:  s3 key name"
@@ -500,7 +500,11 @@ do
 	case $arg in
             X) EXTRA=$OPTARG ;;
             N) NOTIFYTO=$OPTARG ;;
-            e) EXPIRES=$OPTARG ;;
+            e) EXPIRES=$OPTARG 
+               if [ $EXPIRES -eq 0 ] ; then
+                    EXPIRES=$((3600*24*7))
+               fi
+               ;;
             C) CTYPE=$OPTARG ;;
             b) S3BUCKET=$OPTARG ;;
             k) S3KEY=$OPTARG ;;
@@ -696,6 +700,20 @@ COMMANDPROC "TEST2" "Test Command Two"; if [ $bCmd -gt 0 ] ; then
      NOTHING=0
 fi
 
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: LAMBDA Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "LAMBDALS,LAMBDATLIST" "List Lambda Functions" "-a"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     FLDS="FunctionName,Description"
+     $AWS lambda list-functions --output json  --query 'Functions[].['$FLDS']'  | tr -d '\n] "' \
+      | tr '[' '\n' \
+      | tr ',' ' ' | column -t
+
+
+     #| perl -pe 's/arn:aws:lambda/\narn:aws:lambda/g' | tr ',' '\t' | sed -e 's/null/None/g'
+#      | tr -d '\n[] "' \
+fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: VPC Operations
 # -----------------------------------------------------------------------------------------------------------------------
@@ -1349,9 +1367,27 @@ fi
 
 
 
+COMMANDPROC "EC2SGSUM2" "Security Group Summary Report"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               aws --output json --profile $ACCOUNT ec2 describe-security-groups --query '
+                               SecurityGroups[*].[GroupId,
+                               IpPermissions[].[IpProtocol,FromPort,ToPort,IpRanges[].[CidrIp],UserIdGroupPairs[].[GroupId]]]'                            | tee ffed \
+                               | tr -d '\n[] "' \
+                               | perl -pe 's/sg-/\nsg-/g' \
+                               | perl -pe 's/tcp/\n\t\ttcp/g' \
+                               | perl -pe 's/udp/\n\t\tudp/g' \
+                               | perl -pe 's/icmp/\n\t\ticmp/g' \
+                               | tr ',' '\t' \
+                               | sed -e 's/null/N/g' 
+#                              |  gawk -F " " -v A=$ACCOUNT '
+#                BEGIN    {szOut="";}
+#                /^sg[-]/ {print szOut;szOut=$1;}
+#                /^PERM/ { szOut=szOut " " $3; }
+#            ' 
+fi
 #          XLIST=`aws --profile $ACCOUNT ec2 describe-regions --query "Regions[*].RegionName" --output text`
 
-COMMANDPROC "EC2-SGSUM" "Security Group Summary Report"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2SGSUM" "Security Group Summary Report"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                aws --output text --profile $ACCOUNT ec2 describe-security-groups --query '
                                SecurityGroups[*].{
@@ -1369,7 +1405,7 @@ COMMANDPROC "EC2-SGSUM" "Security Group Summary Report"; if [ $bCmd -gt 0 ] ; th
                /^PERM/ { szOut=szOut " " $3; }
            ' 
 fi
-COMMANDPROC "EC2-SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                aws --output text --profile $ACCOUNT ec2 describe-security-groups --query '
                                SecurityGroups[*].{

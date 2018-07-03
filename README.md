@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 29 08:53:44 EDT 2018
+       build date: Mon Jul  2 21:46:29 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -23,7 +23,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
       -t  operand:  thing name  (specify a resource or object name)
       -T  operand:  time window in hours (to specify (now minus T) to now)
       -D  operand:  specify a document\file to upload (e.g. a policy document)
-      -e  operand:  expire time in seconds
+      -e  operand:  expire time in seconds (0 == 7 days)
       -C  operand:  content type (pdf, text, html, mp3)
       -b  operand:  s3 bucket name
       -k  operand:  s3 key name
@@ -115,8 +115,9 @@ EC2 Commands
      ec2ls2                       -a           List Instances 2
      ec2ls                        -a           EC2 List
      ec2myls                      -a           My EC2 List
-     ec2-sg                       -a           Security Group Detail Report
-     ec2-sgsum                    -a           Security Group Summary Report
+     ec2sg                        -a           Security Group Detail Report
+     ec2sgsum2                    -a           Security Group Summary Report
+     ec2sgsum                     -a           Security Group Summary Report
      ec2spark                     -a -t        CloudWatch CPU Utilization with Spark Graphing
      ec2sparkmenu                 -a           Instance Menu
      ec2terminate                 -a           Terminate Instance
@@ -125,6 +126,9 @@ EC2 Commands
   
 AMI Commands  
      amils                        -a           List Local AMIs
+  
+LAMBDA Commands  
+     lambdals                     -a           List Lambda Functions
   
 S3 Commands  
      s3clearbucket                -a -b -k     S3 Remove Object, with wildcard (%) keys
@@ -187,12 +191,13 @@ CLOUDTRAIL-USER
 CLOUDTRAIL-WATCH                                                                  
 CLOUDTRAILMENU                                                                    
 CLOUDTRAILWORLD                  WORLD                                            
-EC2-SG                                                                            
-EC2-SGSUM                                                                         
 EC2-UTIL                                                                          
 EC2LS                            EC2LIST                                          
 EC2LS2                           EC2LIST2                                         
 EC2MYLS                          EC2LSMY                                          
+EC2SG                                                                             
+EC2SGSUM                                                                          
+EC2SGSUM2                                                                         
 EC2SPARK                                                                          
 EC2SPARKMENU                                                                      
 EC2TERMINATE                                                                      
@@ -206,6 +211,7 @@ GROUPREMOVEALLUSERS
 GROUPREMOVEUSER                                                                   
 GROUPSFORUSER                    LISTUSERGROUPS                                   
 KEYPAIRCREATE                    CREATEKEYPAIR                                    
+LAMBDALS                         LAMBDATLIST                                      
 PASSWORDCHANGE                   CHANGEPASSWORD                                   
 PASSWORDSCRAM                    SCRAMPASSWORD                                    
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                           
@@ -317,5 +323,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 29 08:53:46 EDT 2018
+Mon Jul  2 21:46:31 EDT 2018
 </pre>
