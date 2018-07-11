@@ -116,6 +116,9 @@ commandABBREVIATIONS() {
 # MACROS
 # ---------------------------------------------------------------------------------------------------------
 cryp() {
+#    echo "OpenSSL" | openssl enc -aes-256-cbc -a
+#    echo U2FsdGVkX19bfRRiWqfnhxlEVXuglE769NgeDe9k/Ns= | openssl enc -aes-256-cbc -d -a
+
                     print "encrypt"
                     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
                     UNIQUEKEY=`openssl rand -base64 40`
@@ -478,7 +481,7 @@ PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]
 
 # This is the modified get parameter function, with a default option
 MYCUUTAG=`gawk -v w=MYCUUTAG -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
-EXPIRES=`gawk -v w=EXPIRES -v def=900 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+EXPIRES=`gawk -v w=EXPIRES -v def=43200 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 REGION=`gawk -v w=REGION -v def=us-east-1 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TIMEFACTOR=`gawk -v w=TIMEFACTOR -v def=24 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TRUNCATELENGTH=`gawk -v w=TRUNCATELENGTH -v def=56 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
@@ -674,31 +677,6 @@ COMMANDINFO() {
     INFO[$szCmd]="$1"
     # print ${INFO[$szCmd]}
 }
-# -----------------------------------------------------------------------------------------------------------------------
-# -- COMMAND SET: TEST Operations
-# -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "TESTX" "Test Command"; if [ $bCmd -gt 0 ] ; then
-#      LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
-#      THIS=" --filters "
-#      for ITEM in $LIST; do
-#           time $AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM  --query 'Reservations[*].Instances[*].Tags[?Key==`Name`].Value'
-#            $AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value
-#       done
-#      exit 1
-      NOTHING=0
-fi
-
-COMMANDPROC "TEST2" "Test Command Two"; if [ $bCmd -gt 0 ] ; then
-     print "$AWS ec2 run-instances --image-id $AMI --count 1 --instance-type m5.large --key-name $KP --security-group-ids $SGID --subnet-id $SUBNET1"
-     IID=`$AWS ec2 run-instances --image-id $AMI --count 1 --instance-type m5.large --key-name $KP --security-group-ids $SGID --subnet-id $SUBNET1 --query "Instances[0].InstanceId"`
-     IP=`$AWS  ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].PublicIpAddress"`
-     $AWS ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].State.Name"
-     print $IID
-     print $IP
-     print $AWS" ec2 terminate-instances --instance-id "$IID
-     print "ssh -i "$KP" ec2-user@"$IP
-     NOTHING=0
-fi
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: LAMBDA Operations
@@ -1288,6 +1266,7 @@ COMMANDPROC "UTILPUBLISH,PUBLISH,S3PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt
      cuu -a $ACCOUNT -c S3COPY -b $S3BUCKET -D $DOCUMENT -C $CTYPE
      print "Bucket Copied"
      cuu -a $ACCOUNT -c S3HTML -b $S3BUCKET
+
 fi
 COMMANDPROC "S3PUBLISHCLEAR,PUBLISHCLEAR" "Clear Publish Bucket" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
@@ -2102,15 +2081,39 @@ fi
 # -- COMMAND SET: TEST Operations
 # -----------------------------------------------------------------------------------------------------------------------
 COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; then
-     LRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+#      LRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 #      assert "$ACCOUNT" "Profile not specified"
-# 
 #      aws --profile $ACCOUNT --region $REGION ec2 describe-instances --output table \
 #                             --query 'Reservations[].Instances[].[Tags[?Key==`Name`] | [0].Value,InstanceId,State.Name,InstanceType]'
-
+      echo "Welcome to LinuxCareer.com" | openssl enc -base64
+      echo "V2VsY29tZSB0byBMaW51eENhcmVlci5jb20K" | openssl enc -base64 -d
      NOTHING=0
 fi
 
+COMMANDPROC "TESTX" "Test Command"; if [ $bCmd -gt 0 ] ; then
+#      LIST=`$AWS ec2 describe-instances --query "Reservations[].Instances[].[InstanceId]"`
+#      THIS=" --filters "
+#      for ITEM in $LIST; do
+#           time $AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM  --query 'Reservations[*].Instances[*].Tags[?Key==`Name`].Value'
+#            $AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value
+#       done
+#      exit 1
+
+
+      NOTHING=0
+fi
+
+COMMANDPROC "TEST2" "Test Command Two"; if [ $bCmd -gt 0 ] ; then
+     print "$AWS ec2 run-instances --image-id $AMI --count 1 --instance-type m5.large --key-name $KP --security-group-ids $SGID --subnet-id $SUBNET1"
+     IID=`$AWS ec2 run-instances --image-id $AMI --count 1 --instance-type m5.large --key-name $KP --security-group-ids $SGID --subnet-id $SUBNET1 --query "Instances[0].InstanceId"`
+     IP=`$AWS  ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].PublicIpAddress"`
+     $AWS ec2 describe-instances --instance-id $INSTANCEID --query "Reservations[0].Instances[0].State.Name"
+     print $IID
+     print $IP
+     print $AWS" ec2 terminate-instances --instance-id "$IID
+     print "ssh -i "$KP" ec2-user@"$IP
+     NOTHING=0
+fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- THESE TWO COMMANDPROCs MUST ALWAYS BE THE LAST ONES DEFINED
 # -- THESE TWO COMMANDPROCs MUST ALWAYS BE THE LAST ONES DEFINED
