@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Thu Jul 12 18:24:59 EDT 2018
+       build date: Thu Jul 12 18:29:25 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -182,116 +182,116 @@ Utility Commands
 </pre>
 ### Command Aliases
 <pre>
-ACCESSKEYCREATE                  CREATEACCESSKEY                                  
-ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                
-ACCESSKEYSDELETE                 DELETEACCESSKEYS                                 
-ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY           
-AMILS                                                                             
-CLOUDTRAIL-ACTIVE                                                                 
-CLOUDTRAIL-USER                                                                   
-CLOUDTRAIL-WATCH                                                                  
-CLOUDTRAILMENU                                                                    
-CLOUDTRAILWORLD                  WORLD                                            
-EC2-UTIL                                                                          
-EC2LS                            EC2LIST                                          
-EC2LS2                           EC2LIST2                                         
-EC2MYLS                          EC2LSMY                                          
-EC2SG                                                                             
-EC2SGSUM                                                                          
-EC2SGSUM2                                                                         
-EC2SPARK                                                                          
-EC2SPARKMENU                                                                      
-EC2TERMINATE                                                                      
-EC2TERMINATELAST                                                                  
-GROUPADDUSER                                                                      
-GROUPCREATE                                                                       
-GROUPDELETE                                                                       
-GROUPLISTUSERS                   LISTUSERSINGROUP                                 
-GROUPLS                          GROUPLIST                LISTGROUPS              
-GROUPREMOVEALLUSERS                                                               
-GROUPREMOVEUSER                                                                   
-GROUPSFORUSER                    LISTUSERGROUPS                                   
-KEYPAIRCREATE                    CREATEKEYPAIR                                    
-LAMBDALS                         LAMBDATLIST                                      
-PASSWORDCHANGE                   CHANGEPASSWORD                                   
-PASSWORDSCRAM                    SCRAMPASSWORD                                    
-PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                 
-POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                           
-POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                               
-POLICYBYARN-ADD                                                                   
-POLICYBYARN-REMOVE                                                                
-POLICYBYNAME-ADD                                                                  
-POLICYBYNAME-REMOVE                                                               
-POLICYCODECOMMITPOWERUSER-ADD    IAMUSERCODECOMMITPOWERUSER-ADD                         
-POLICYCODECOMMITPOWERUSER-REMOVE IAMUSERCODECOMMITPOWERUSER-REMOVE                         
-POLICYCREATE                                                                      
-POLICYDELETE                                                                      
-POLICYGET                        GETPOLICY                                        
-POLICYGETALL                     GETALLPOLICIES           GAP                     
-POLICYGETLOCAL                   GETLOCALPOLICIES         GLP                     
-POLICYLISTALL                    LISTALLPOLICIES                                  
-POLICYLISTAWS                    LISTAWSPOLICIES                                  
-POLICYLISTLOCAL                  LISTLOCALPOLICIES                                
-POLICYLISTUSER                   LISTUSERPOLICIES                                 
-POLICYSETATTACH                  ATTACHPOLICYSET                                  
-POLICYSETREMOVE                  REMOVEPOLICYSET                                  
-POLICYUPDATE                     UPDATEPOLICY                                     
-POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                         
-POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                         
-POLICYUSERDETACHALL              DETACHUSERPOLICIES                               
-ROLELS                           ROLESLIST                LISTROLES               
-S3CLEARBUCKET                    S3CLEAR                                          
-S3COPY                                                                            
-S3COPY-1MINUTE                                                                    
-S3COPYWITHRENAMING                                                                
-S3CREATEBUCKET                                                                    
-S3CREATEBUCKET-EUCENTRAL1                                                         
-S3CREATEBUCKET-EUWEST1                                                            
-S3CREATEBUCKET-USEAST1                                                            
-S3CREATEBUCKET-USEAST2                                                            
-S3CREATEBUCKET-USWEST1                                                            
-S3CREATEBUCKET-USWEST2                                                            
-S3DELETEBUCKET                                                                    
-S3HTML                                                                            
-S3LS                             S3LIST                   LB                      
-S3LSR                            S3LISTRECURSIVE          LBR                     
-S3PRESIGN                                                                         
-S3PUBLISHCLEAR                   PUBLISHCLEAR                                     
-S3PUT                                                                             
-S3PUTHTML                                                                         
-S3PUTPDF                                                                          
-S3PUTPDFFILESET                                                                   
-S3PUTTEXT                                                                         
-S3REMOVE                         S3RM                                             
-S3RMFILESET                                                                       
-S3URL                                                                             
-TAGSLS                           TAGSLIST                                         
-USERCREATE                       CREATEUSER                                       
-USERCREATEADMIN                  CREATEREADMINUSER                                
-USERCREATENOKEY                  CREATEUSERNOKEY                                  
-USERCREATEREADONLY               CREATEREADONLYUSER                               
-USERDELETE                       DELETEUSER                                       
-USERDESCRIBE                     DESCRIBEUSERS            DU                      
-USERLS                           USERLIST                 LISTUSERS               
-USERLS-2                         USERLIST-2               LISTUSERS2              
-USERLS-JSON                      USERLIST-JSON            LISTUSERS-JSON          
-USERMENU                                                                          
-UTILACCOUNTNUMBER                ACCOUNTNUMBER                                    
-UTILALIAS                        ALIAS                                            
-UTILALIASLS                      ALIASLIST                                        
-UTILCONFIG                       CONFIG                                           
-UTILDUMPCONFIG                   DUMPCONFIG               DUMP                    
-UTILNEWPOLICYDOC                 NEWPOLICYDOC                                     
-UTILPUBLISH                      PUBLISH                  S3PUBLISH               
-UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                 
-UTILREPO                         REPO                                             
-UTILSWAP                                                                          
-UTILTIME                         TIME                                             
-VPCCREATE                        CREATEVPC-2SUBNETS                               
-VPCDELETE                        DELETEVPC                                        
-VPCINSTANCE                                                                       
-VPCLS                                                                             
-WWEC2                                                                             
+ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
+ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                                         
+ACCESSKEYSDELETE                 DELETEACCESSKEYS                                                          
+ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY                                    
+AMILS                                                                                                      
+CLOUDTRAIL-ACTIVE                                                                                          
+CLOUDTRAIL-USER                                                                                            
+CLOUDTRAIL-WATCH                                                                                           
+CLOUDTRAILMENU                                                                                             
+CLOUDTRAILWORLD                  WORLD                                                                     
+EC2-UTIL                                                                                                   
+EC2LS                            EC2LIST                                                                   
+EC2LS2                           EC2LIST2                                                                  
+EC2MYLS                          EC2LSMY                                                                   
+EC2SG                                                                                                      
+EC2SGSUM                                                                                                   
+EC2SGSUM2                                                                                                  
+EC2SPARK                                                                                                   
+EC2SPARKMENU                                                                                               
+EC2TERMINATE                                                                                               
+EC2TERMINATELAST                                                                                           
+GROUPADDUSER                                                                                               
+GROUPCREATE                                                                                                
+GROUPDELETE                                                                                                
+GROUPLISTUSERS                   LISTUSERSINGROUP                                                          
+GROUPLS                          GROUPLIST                LISTGROUPS                                       
+GROUPREMOVEALLUSERS                                                                                        
+GROUPREMOVEUSER                                                                                            
+GROUPSFORUSER                    LISTUSERGROUPS                                                            
+KEYPAIRCREATE                    CREATEKEYPAIR                                                             
+LAMBDALS                         LAMBDATLIST                                                               
+PASSWORDCHANGE                   CHANGEPASSWORD                                                            
+PASSWORDSCRAM                    SCRAMPASSWORD                                                             
+PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
+POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                                                    
+POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                                                        
+POLICYBYARN-ADD                                                                                            
+POLICYBYARN-REMOVE                                                                                         
+POLICYBYNAME-ADD                                                                                           
+POLICYBYNAME-REMOVE                                                                                        
+POLICYCODECOMMITPOWERUSER-ADD    IAMUSERCODECOMMITPOWERUSER-ADD                                                  
+POLICYCODECOMMITPOWERUSER-REMOVE IAMUSERCODECOMMITPOWERUSER-REMOVE                                                  
+POLICYCREATE                                                                                               
+POLICYDELETE                                                                                               
+POLICYGET                        GETPOLICY                                                                 
+POLICYGETALL                     GETALLPOLICIES           GAP                                              
+POLICYGETLOCAL                   GETLOCALPOLICIES         GLP                                              
+POLICYLISTALL                    LISTALLPOLICIES                                                           
+POLICYLISTAWS                    LISTAWSPOLICIES                                                           
+POLICYLISTLOCAL                  LISTLOCALPOLICIES                                                         
+POLICYLISTUSER                   LISTUSERPOLICIES                                                          
+POLICYSETATTACH                  ATTACHPOLICYSET                                                           
+POLICYSETREMOVE                  REMOVEPOLICYSET                                                           
+POLICYUPDATE                     UPDATEPOLICY                                                              
+POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                                                  
+POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                                                  
+POLICYUSERDETACHALL              DETACHUSERPOLICIES                                                        
+ROLELS                           ROLESLIST                LISTROLES                                        
+S3CLEARBUCKET                    S3CLEAR                                                                   
+S3COPY                                                                                                     
+S3COPY-1MINUTE                                                                                             
+S3COPYWITHRENAMING                                                                                         
+S3CREATEBUCKET                                                                                             
+S3CREATEBUCKET-EUCENTRAL1                                                                                  
+S3CREATEBUCKET-EUWEST1                                                                                     
+S3CREATEBUCKET-USEAST1                                                                                     
+S3CREATEBUCKET-USEAST2                                                                                     
+S3CREATEBUCKET-USWEST1                                                                                     
+S3CREATEBUCKET-USWEST2                                                                                     
+S3DELETEBUCKET                                                                                             
+S3HTML                                                                                                     
+S3LS                             S3LIST                   LB                                               
+S3LSR                            S3LISTRECURSIVE          LBR                                              
+S3PRESIGN                                                                                                  
+S3PUBLISHCLEAR                   PUBLISHCLEAR                                                              
+S3PUT                                                                                                      
+S3PUTHTML                                                                                                  
+S3PUTPDF                                                                                                   
+S3PUTPDFFILESET                                                                                            
+S3PUTTEXT                                                                                                  
+S3REMOVE                         S3RM                                                                      
+S3RMFILESET                                                                                                
+S3URL                                                                                                      
+TAGSLS                           TAGSLIST                                                                  
+USERCREATE                       CREATEUSER                                                                
+USERCREATEADMIN                  CREATEREADMINUSER                                                         
+USERCREATENOKEY                  CREATEUSERNOKEY                                                           
+USERCREATEREADONLY               CREATEREADONLYUSER                                                        
+USERDELETE                       DELETEUSER                                                                
+USERDESCRIBE                     DESCRIBEUSERS            DU                                               
+USERLS                           USERLIST                 LISTUSERS                LU                      
+USERLS-2                         USERLIST-2               LISTUSERS2                                       
+USERLS-JSON                      USERLIST-JSON            LISTUSERS-JSON                                   
+USERMENU                                                                                                   
+UTILACCOUNTNUMBER                ACCOUNTNUMBER                                                             
+UTILALIAS                        ALIAS                                                                     
+UTILALIASLS                      ALIASLIST                                                                 
+UTILCONFIG                       CONFIG                                                                    
+UTILDUMPCONFIG                   DUMPCONFIG               DUMP                                             
+UTILNEWPOLICYDOC                 NEWPOLICYDOC                                                              
+UTILPUBLISH                      PUBLISH                  S3PUBLISH                                        
+UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                                          
+UTILREPO                         REPO                                                                      
+UTILSWAP                                                                                                   
+UTILTIME                         TIME                                                                      
+VPCCREATE                        CREATEVPC-2SUBNETS                                                        
+VPCDELETE                        DELETEVPC                                                                 
+VPCINSTANCE                                                                                                
+VPCLS                                                                                                      
+WWEC2                                                                                                      
 </pre>
 ### ~/.cuu.txt can contain defaults for these settings
 <pre>
@@ -323,5 +323,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Thu Jul 12 18:25:02 EDT 2018
+Thu Jul 12 18:29:28 EDT 2018
 </pre>

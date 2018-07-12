@@ -2071,7 +2071,7 @@ COMMANDPROC "UTILALIAS,ALIAS" "Command Alias" "-a"; if [ $bCmd -gt 0 ] ; then
 fi
 COMMANDPROC "UTILALIASLS,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ; then
      for ITEM in ${COMMANDALIASES[@]}; do
-         echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s\n", trim($1), trim($2), trim($3) }'
+         echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s %-24s\n", trim($1), trim($2), trim($3), trim($4) }'
      done
 fi
 COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a"; if [ $bCmd -gt 0 ] ; then
