@@ -105,7 +105,6 @@ commandABBREVIATIONS() {
                                    USERNAME="ALL"
                                    ;;
             CW)                    COMMAND="CLOUDTRAIL-WATCH" ;;
-            LU)                    COMMAND="LISTUSERS" ;;
             LU2)                   COMMAND="LISTUSERS2" ;;
             LG)                    COMMAND="LISTGROUPS" ;;
             LR)                    COMMAND="LISTROLES" ;;
@@ -171,6 +170,11 @@ deleteUSER() {
 }
 wipeUSER() {
      assertACCOUNTandUSERNAME
+               MFALIST=`aws --profile $ACCOUNT --output text iam list-mfa-devices  --user-name $USERNAME --query "MFADevices[*].[SerialNumber]"`
+               for ITEM in $MFALIST; do
+                    aws --profile $ACCOUNT iam deactivate-mfa-device --user-name $USERNAME --serial-number $ITEM
+               done
+               MFALIST=""
      wipePOLICIES
      wipeGROUPS
      wipeACCESSKEYS
@@ -639,6 +643,7 @@ COMMANDPROC() {
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
+
      bCmd=0
      THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($2)}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
@@ -647,6 +652,7 @@ COMMANDPROC() {
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
+
      bCmd=0
      THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($3)}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
@@ -655,6 +661,16 @@ COMMANDPROC() {
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
+
+     bCmd=0
+     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($4)}'`
+     if [ "$THISCMD" == "" ] ; then return bCmd; fi
+     if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
+     print $THISCMD >> $CuuCommandFile
+     INFO[$THISCMD]="$2"
+     OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
+
      return 0
 }
 COMMANDLIST() {
@@ -1073,12 +1089,21 @@ COMMANDPROC "PASSWORDSCRAM,SCRAMPASSWORD" "Make a users password unkown (scram)"
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
 fi
+COMMANDPROC "PASSWORDSCRAMSET,SCRAMPASSWORDSET" "Make fileset of user password unkown (scram)" "-a -u"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAME
+          cat fileset | while read ITEM; do
+               RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "AAbb123!!"}'`
+               print $ITEM
+               print $RAN
+               aws --profile $ACCOUNT iam update-login-profile --user-name $ITEM --password $RAN
+          done
+fi
 COMMANDPROC "USERDELETE,DELETEUSER" "Delete user" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           wipeUSER
           deleteUSER
 fi
-COMMANDPROC "USERLS,USERLIST,LISTUSERS" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLS,USERLIST,LISTUSERS,LU" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
@@ -1144,6 +1169,8 @@ COMMANDPROC "USERDESCRIBE,DESCRIBEUSERS,DU" "Lists groups and policies associate
            aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  |
                                    gawk -v A=$USER -v B=$ITEM -v C="KEY" -f indent.awk |tee -a cuu.out
 
+           aws --output text  --profile $ITEM iam list-mfa-devices            --user-name $USER --query "MFADevices[*].[SerialNumber]"
+           # --query "MFADevices[*].[SerialNumber]"  | gawk -v A=$USER -v B=$ITEM -v C="KEY" -f indent.awk |tee -a cuu.out
            done 
      done 
 fi

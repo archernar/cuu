@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Wed Jul 11 19:22:30 EDT 2018
+       build date: Thu Jul 12 18:24:59 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -60,6 +60,7 @@ User Commands
 Password Commands  
      passwordchange               -a -u -p     Change a users password
      passwordscram                -a -u        Make a users password unkown (scram)
+     passwordscramset             -a -u        Make fileset of user password unkown (scram)
   
 AccessKey Commands  
      accesskeycreate              -a           Create access keys for user
@@ -214,6 +215,7 @@ KEYPAIRCREATE                    CREATEKEYPAIR
 LAMBDALS                         LAMBDATLIST                                      
 PASSWORDCHANGE                   CHANGEPASSWORD                                   
 PASSWORDSCRAM                    SCRAMPASSWORD                                    
+PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                 
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                           
 POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                               
 POLICYBYARN-ADD                                                                   
@@ -321,5 +323,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Wed Jul 11 19:22:33 EDT 2018
+Thu Jul 12 18:25:02 EDT 2018
 </pre>
