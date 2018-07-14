@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Thu Jul 12 18:29:25 EDT 2018
+       build date: Sat Jul 14 07:56:07 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -150,6 +150,7 @@ S3 Commands
      s3presign                    -a -b -k     Presign S3 URL
      s3publish                    -a           Publish Files
      s3publishclear               -a -b -k     Clear Publish Bucket
+     s3publishmore                -a           Publish Files (without clearing bucket)
      s3put                        -a -b -k -d  S3 Put Object
      s3puthtml                    -a -b -k -d  S3 Put HTML Object
      s3putpdf                     -a -b -k -d  S3 Put PDF Object
@@ -168,6 +169,7 @@ CloudTrail Commands
   
 Utility Commands  
      utilaccountnumber            -a           Print account number
+     utilcatpolicydoc             -a           Display policydoc.json template
      utilcommandls                -a           List Commands
      utilcommands                 -a           Command help
      utilconfig                   -a           Edit Configuration File ~/.cuu.txt
@@ -175,6 +177,7 @@ Utility Commands
      utilnewpolicydoc             -a           Create new this.json from policydoc.json template
      utilpublish                  -a           Publish Files
      utilpublishcuureport         -a           Publish cuureport.txt
+     utilpublishmore              -a           Publish Files (without clearing bucket)
      utilrepo                     -a           List the cuu repo url
      utilset                      -a           Set and Show configuration/environment variables
      utilswap                     -a           Swap a Policy for a Group
@@ -279,11 +282,13 @@ USERMENU
 UTILACCOUNTNUMBER                ACCOUNTNUMBER                                                             
 UTILALIAS                        ALIAS                                                                     
 UTILALIASLS                      ALIASLIST                                                                 
+UTILCATPOLICYDOC                 CATPOLICYDOC             SHOWPOLICYDOC                                    
 UTILCONFIG                       CONFIG                                                                    
 UTILDUMPCONFIG                   DUMPCONFIG               DUMP                                             
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                                              
 UTILPUBLISH                      PUBLISH                  S3PUBLISH                                        
 UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                                          
+UTILPUBLISHMORE                  PUBLISHMORE              S3PUBLISHMORE                                    
 UTILREPO                         REPO                                                                      
 UTILSWAP                                                                                                   
 UTILTIME                         TIME                                                                      
@@ -323,5 +328,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Thu Jul 12 18:29:28 EDT 2018
+Sat Jul 14 07:56:09 EDT 2018
 </pre>

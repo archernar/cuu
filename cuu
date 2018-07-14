@@ -237,10 +237,14 @@ buildREGIONLIST() {
      if [ "$REGION" == "REGIONLIST" ] ; then
           REGIONLIST=`gawk -v  w=REGIONLIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
      fi
-
+     if [ "$REGION" == "US" ] ; then
+          REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2"
+     fi
+     if [ "$REGION" == "EUROPE" ] ; then
+          REGIONLIST="eu-west-1 eu-west-2 eu-west-3 eu-central-1"
+     fi
      if [ "$REGION" == "GLOBAL" ] ; then
           REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
-
      fi
 }
 groupREMOVE() {
@@ -635,7 +639,7 @@ typeset -A COMMANDALIASES
 CMDRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "##"}'`
 COMMANDPROC() {
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($1)}'`
+     THISCMD=`echo "$1" | gawk -F, '@include "awk/trim.awk"; {print trim($1)}'`
      COMMANDALIASES["$THISCMD"]="$1"
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
@@ -645,7 +649,7 @@ COMMANDPROC() {
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($2)}'`
+     THISCMD=`echo "$1" | gawk -F, '@include "awk/trim.awk"; {print trim($2)}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD"(alias)" >> $CuuCommandFile
@@ -654,7 +658,7 @@ COMMANDPROC() {
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($3)}'`
+     THISCMD=`echo "$1" | gawk -F, '@include "awk/trim.awk"; {print trim($3)}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD >> $CuuCommandFile
@@ -663,7 +667,7 @@ COMMANDPROC() {
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($4)}'`
+     THISCMD=`echo "$1" | gawk -F, '@include "awk/trim.awk"; {print trim($4)}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD >> $CuuCommandFile
@@ -1295,6 +1299,20 @@ COMMANDPROC "UTILPUBLISH,PUBLISH,S3PUBLISH" "Publish Files" "-a"; if [ $bCmd -gt
      cuu -a $ACCOUNT -c S3HTML -b $S3BUCKET
 
 fi
+COMMANDPROC "UTILPUBLISHMORE,PUBLISHMORE,S3PUBLISHMORE" "Publish Files (without clearing bucket)" "-a"; if [ $bCmd -gt 0 ] ; then
+     assert   "$ACCOUNT"  "Profile not specified"
+     assert   "$S3BUCKET" "S3 Bucket not specified"
+     assert   "$CTYPE"    "Content Type not specified"
+     assert   "$DOCUMENT" "Document not specified"
+     wildcard "$DOCUMENT"
+     print    "Bucket is s3://"$S3BUCKET
+     confirm
+     print "Copying"
+     cuu -a $ACCOUNT -c S3COPY -b $S3BUCKET -D $DOCUMENT -C $CTYPE
+     print "Bucket Copied"
+     cuu -a $ACCOUNT -c S3HTML -b $S3BUCKET
+
+fi
 COMMANDPROC "S3PUBLISHCLEAR,PUBLISHCLEAR" "Clear Publish Bucket" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$S3BUCKET" "S3 Bucket not specified"
@@ -1412,8 +1430,14 @@ COMMANDPROC "EC2SGSUM" "Security Group Summary Report"; if [ $bCmd -gt 0 ] ; the
            ' 
 fi
 COMMANDPROC "EC2SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               aws --output text --profile $ACCOUNT ec2 describe-security-groups --query '
+buildPROFILELIST
+buildREGIONLIST
+clean
+for ACC in $PROFILELIST; do
+      for REG in $REGIONLIST; do
+               assert "$ACC" "Profile not specified"
+               print $REG
+               aws --output text --profile $ACC --region $REG ec2 describe-security-groups --query '
                                SecurityGroups[*].{
                                     SG:GroupId,
                                     PERM:IpPermissions[*].
@@ -1423,7 +1447,7 @@ COMMANDPROC "EC2SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                                           IP:IpRanges[*].CidrIp,
                                           UG:UserIdGroupPairs[*].{GI:GroupId}
                                          }
-                               }' |  gawk -F " " -v A=$ACCOUNT '
+                               }' |  gawk -F " " -v A=$ACC -v R=$REG '
                BEGIN    {FLAG=0;ct=6;}
                /^sg[-]/ {SG=$1;ct=6;}
                /^PERM/ {
@@ -1432,18 +1456,21 @@ COMMANDPROC "EC2SG" "Security Group Detail Report"; if [ $bCmd -gt 0 ] ; then
                     fport=$2; sub(/[-]1/,"all",fport);if (match(fport,/all/)>0) FLAG=1; 
                     tport=$4; sub(/None/,"all",tport);if (match(tport,/all/)>0) FLAG=1; 
                     tport=$4; sub(/[-]1/,"all",tport);if (match(tport,/all/)>0) FLAG=1; 
-                    printf("\n%4s %-20s %-5s %6s %6s",A,SG,proto,fport,tport)
-                    block="                                                   ";
+                    sub(/us-east-1/,"USE1",R); sub(/us-east-2/,"USE2",R); sub(/us-west-1/,"USW1",R); sub(/us-west-2/,"USW2",R);
+                    printf("\n%4s %4s %-20s %-5s %6s %6s",A,R,SG,proto,fport,tport)
+                    block="                                                       ";
                     ctl="\n";
                }
                /^UG/ { printf(" %28s",$2)}
                /^IP/ {     
                           if (match($2,/0[.]0[.]0[.]0/) > 0 ) FLAG=1; 
-                          if (( ct % 5) == 0) printf("\n                                             ");
-                          printf(" %28s",$2); ct++;
+                          if (( ct % 5) == 0) printf("\n                                        ==========");
+                          printf(" %22s",$2); ct++;
                      }
                END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n");}
            ' 
+done
+done
 fi
 
 COMMANDPROC "EC2SPARKMENU" "Instance Menu"; if [ $bCmd -gt 0 ] ; then
@@ -1503,13 +1530,13 @@ COMMANDPROC "EC2SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t";
                for ITEM in $LIST; do
                     let CT=$CT+1
                     print "Getting CloudWatch Data for "$ITEM" "$CT" of "$CTT
-                    TYE=`$AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM --query "Reservations[].Instances[].InstanceType" |gawk '@include "trim.awk";{
+                    TYE=`$AWS ec2 describe-instances --filters Name=instance-id,Values=$ITEM --query "Reservations[].Instances[].InstanceType" |gawk '@include "awk/trim.awk";{
                                   sz=$0;
                                   gsub(/[ ]/,"-",sz);
                                   sz=cutpad(sz,8,"_");
                                   printf("%s",sz);
                     }'`
-                    TNAME=`$AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value --output text | gawk '@include "trim.awk";{
+                    TNAME=`$AWS ec2 describe-tags --filters Name=resource-id,Values=$ITEM Name=key,Values=Name --query Tags[].Value --output text | gawk '@include "awk/trim.awk";{
                                     sz=$0;
                                     gsub(/[ ]/,"-",sz);
                                     sz=cutpad(sz,16,"_");
@@ -1523,7 +1550,7 @@ COMMANDPROC "EC2SPARK" "CloudWatch CPU Utilization with Spark Graphing" "-a -t";
                done
                print "Done Getting CloudWatch Data"
                cat $Tmp | gawk -v T=$TIMEFACTOR -v Q=$QUANTAFACTOR -v A=$ACCOUNT '
-                   @include "trim.awk" 
+                   @include "awk/trim.awk" 
                    BEGIN {dname=cutpad("NA",16,"-");}
                    END {print ""}
                    /TYE/ {tyname=$2;if (tyname=="") tyname="NA";}
@@ -1574,7 +1601,7 @@ COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; the
                aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
                $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.html"
                $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.m3u"
-               aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET | gawk '@include "trim.awk"; {$1="";$2="";$3="";print trim($0)}' > $Tmp
+               aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET | gawk '@include "awk/trim.awk"; {$1="";$2="";$3="";print trim($0)}' > $Tmp
                cat $Tmp | while read ITEM; do
                    aws --output text --profile $ACCOUNT s3 presign "s3://$S3BUCKET/$ITEM" --expires-in $EXPIRES | gawk -v A="$ITEM" '{print A "," $0}' >> $Tmp2
                done
@@ -2058,6 +2085,9 @@ fi
 COMMANDPROC "UTILNEWPOLICYDOC,NEWPOLICYDOC" "Create new this.json from policydoc.json template"; if [ $bCmd -gt 0 ] ; then
      cp policydoc.json this.json
 fi
+COMMANDPROC "UTILCATPOLICYDOC,CATPOLICYDOC,SHOWPOLICYDOC" "Display policydoc.json template"; if [ $bCmd -gt 0 ] ; then
+     cat policydoc.json
+fi
 COMMANDPROC "UTILTIME,TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
@@ -2071,7 +2101,7 @@ COMMANDPROC "UTILALIAS,ALIAS" "Command Alias" "-a"; if [ $bCmd -gt 0 ] ; then
 fi
 COMMANDPROC "UTILALIASLS,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ; then
      for ITEM in ${COMMANDALIASES[@]}; do
-         echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s %-24s\n", trim($1), trim($2), trim($3), trim($4) }'
+         echo "$ITEM" | gawk -F, '@include "awk/trim.awk"; {printf "%-32s %-24s %-24s %-24s\n", trim($1), trim($2), trim($3), trim($4) }'
      done
 fi
 COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a"; if [ $bCmd -gt 0 ] ; then
