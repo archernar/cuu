@@ -1605,7 +1605,7 @@ COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; the
                cat $Tmp | while read ITEM; do
                    aws --output text --profile $ACCOUNT s3 presign "s3://$S3BUCKET/$ITEM" --expires-in $EXPIRES | gawk -v A="$ITEM" '{print A "," $0}' >> $Tmp2
                done
-               cat $Tmp2 | gawk -F, -f html.awk > index.html
+               cat $Tmp2 | gawk -F, -f awk/html.awk > index.html
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key index.html --body ./index.html --content-type text/html
                aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.html --expires-in $EXPIRES  | tee $Tmp
                cat $Tmp | gawk '{ print "xdg-open \"" $0 "\" >/dev/null 2>&1";}' > $Tmp2
