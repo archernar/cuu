@@ -117,10 +117,10 @@ git add readme.awk
 git add README.md 
 git add html.awk
 git add tabber.awk
-git add indent.awk
-git add noindent.awk
+git add awk/indent.awk
+git add awk/noindent.awk
+git add awk/trim.awk
 git add cuu.awk
-git add trim.awk
 git add pushit
 git add spark
 git add cuu
