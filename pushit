@@ -116,7 +116,7 @@ echo "</pre>" >> README.md
 git add readme.awk
 git add README.md 
 git add tabber.awk
-git add awk/html.awk
+git add awk/isotolocal.awk
 git add awk/indent.awk
 git add awk/noindent.awk
 git add awk/trim.awk
