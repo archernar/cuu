@@ -121,7 +121,7 @@ git add awk/isotolocal.awk
 git add awk/indent.awk
 git add awk/noindent.awk
 git add awk/trim.awk
-git add cuu.awk
+git add awk/cuu.awk
 git add pushit
 git add spark
 git add cuu
