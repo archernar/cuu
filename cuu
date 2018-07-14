@@ -155,7 +155,7 @@ window() {
 createACCESSKEY() {
      assertACCOUNTandUSERNAME
      aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
-     cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME '@include "cuu.awk"; { print configrecord($0,A,U,A); }'
+     cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME '@include "awk/cuu.awk"; { print configrecord($0,A,U,A); }'
 }
 createUSER() {
      assertACCOUNTandUSERNAMEandPASSWORD
@@ -585,12 +585,12 @@ AWSJ="aws --profile $ACCOUNT --region $REGION --output json "
 # -----------------------------------------------------------------------------------------------------------------------
 # -- TIME SETUPS
 # -----------------------------------------------------------------------------------------------------------------------
-ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterhour(T);}'`
-ISOFUTURE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofuturehour(T);}'`
-ISOFUTUREMINUTE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofutureminute(1);}'`
-ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
-AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
-ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
+ISOAGO=`gawk -v T=$TIMEFACTOR '@include "awk/cuu.awk"; BEGIN { print isoyesterhour(T);}'`
+ISOFUTURE=`gawk -v T=$TIMEFACTOR '@include "awk/cuu.awk"; BEGIN { print isofuturehour(T);}'`
+ISOFUTUREMINUTE=`gawk -v T=$TIMEFACTOR '@include "awk/cuu.awk"; BEGIN { print isofutureminute(1);}'`
+ISOANON=`gawk '@include "awk/cuu.awk"; BEGIN { print isonow();}'`
+AGO=`gawk  -v T=$ISOAGO  '@include "awk/cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
+ANON=`gawk -v T=$ISOANON '@include "awk/cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 # -----------------------------------------------------------------------------------------------------------------------
 # Notes
 #   https://aws.amazon.com/blogs/security/a-simple-way-to-export-your-iam-settings/
@@ -1039,13 +1039,13 @@ COMMANDPROC "ACCESSKEYREPLACE,REPLACEACCESSKEYS" "Delete and replace access keys
           wipeACCESSKEYS
           aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-          cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U,A);}'
+          cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "awk/cuu.awk"; {print configrecord($0,A,U,A);}'
 fi
 COMMANDPROC "ACCESSKEYCREATE,CREATEACCESSKEY" "Create access keys for user"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
-          cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
+          cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "awk/cuu.awk"; {print configrecord($0,A,U);}'
 fi
 COMMANDPROC "ACCESSKEYSLS,ACCESSKEYLIST,LISTACCESSKEY" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
@@ -1568,14 +1568,14 @@ fi
 COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT '
-               @include "cuu.awk"
+               @include "awk/cuu.awk"
                {
                sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 300 --namespace AWS/EC2 --statistics Maximum \
                    --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterday(1) " --end-time " isonow()
                print "INSTANCE " $0
                system(sz)
            } ' | gawk '
-           @include "cuu.awk" 
+           @include "awk/cuu.awk" 
            /INSTANCE/ {printf("%s\n",$0)}
            /DATAPOINTS/ {printf("METRIC %5.2f %s\n", $2, isotolocal($3))}
            ' 
@@ -1893,7 +1893,7 @@ COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $
                     fi
                fi
                cat $Tmp | gawk  -v TL=$TRUNCATELENGTH -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
-               @include "cuu.awk"
+               @include "awk/cuu.awk"
                /^EVENTS/ {
                     if (match(SMY,/^yes/) != 0) {
                          BE="yes"
