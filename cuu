@@ -931,7 +931,7 @@ COMMANDPROC "POLICYUPDATE,UPDATEPOLICY" "Update policy" "-a -t -D"; if [ $bCmd -
      asserte "$DOCUMENT" "Document not specified"
      THIS=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
      ARN="arn:aws:iam::"$THIS":policy/"$THING
-     LIST=`aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId]" |gawk -f skipfirst.awk`
+     LIST=`aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId]" |gawk -f awk/skipfirst.awk`
      for ITEM in $LIST; do
           aws --profile $ACCOUNT iam delete-policy-version --policy-arn $ARN --version-id $ITEM
      done
