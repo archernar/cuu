@@ -1111,7 +1111,7 @@ COMMANDPROC "USERLS,USERLIST,LISTUSERS,LU" "User listing" "-a"; if [ $bCmd -gt 0
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
-               aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
+               aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f awk/noindent.awk >> $Tmp
           done
           cat $Tmp | column -t
 fi
@@ -1163,18 +1163,18 @@ COMMANDPROC "USERDESCRIBE,DESCRIBEUSERS,DU" "Lists groups and policies associate
            print $ITEM $USER |tee -a cuu.out
            GROUPLIST=`aws --profile $ITEM iam list-groups-for-user  --output text --user-name $USER --query "Groups[*].[GroupName]"`
            aws --profile $ITEM iam list-groups-for-user        --user-name $USER --query "Groups[*].{ARN:Arn}" |
-                                   gawk -v A=$USER -v B=$ITEM -v C="GRP" -f indent.awk |tee -a cuu.out
+                                   gawk -v A=$USER -v B=$ITEM -v C="GRP" -f awk/indent.awk |tee -a cuu.out
            for G in $GROUPLIST; do
                 aws --profile $ITEM iam list-attached-group-policies --group-name $G --query "AttachedPolicies[*].{ARN:PolicyArn}" |
-                                        gawk -v A=$USER -v B=$ITEM -v C="GPO" -f indent.awk |tee -a cuu.out 
+                                        gawk -v A=$USER -v B=$ITEM -v C="GPO" -f awk/indent.awk |tee -a cuu.out 
            done
            aws --profile $ITEM iam list-attached-user-policies --user-name $USER --query "AttachedPolicies[*].{ARN:PolicyArn}" |
-                                   gawk -v A=$USER -v B=$ITEM -v C="UPO" -f indent.awk |tee -a cuu.out 
+                                   gawk -v A=$USER -v B=$ITEM -v C="UPO" -f awk/indent.awk |tee -a cuu.out 
            aws --profile $ITEM iam list-access-keys            --user-name $USER --query "AccessKeyMetadata[*].[AccessKeyId]"  |
-                                   gawk -v A=$USER -v B=$ITEM -v C="KEY" -f indent.awk |tee -a cuu.out
+                                   gawk -v A=$USER -v B=$ITEM -v C="KEY" -f awk/indent.awk |tee -a cuu.out
 
            aws --output text  --profile $ITEM iam list-mfa-devices            --user-name $USER --query "MFADevices[*].[SerialNumber]"
-           # --query "MFADevices[*].[SerialNumber]"  | gawk -v A=$USER -v B=$ITEM -v C="KEY" -f indent.awk |tee -a cuu.out
+           # --query "MFADevices[*].[SerialNumber]"  | gawk -v A=$USER -v B=$ITEM -v C="KEY" -f awk/indent.awk |tee -a cuu.out
            done 
      done 
 fi
@@ -1186,7 +1186,7 @@ COMMANDPROC "ROLELS,ROLESLIST,LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
-                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
+                    aws --profile $ITEM iam list-roles --query "Roles[*].[Arn]" | gawk -v A=$ITEM -f awk/noindent.awk >> $Tmp
                done
                cat $Tmp | column -t
 fi
@@ -1212,7 +1212,7 @@ COMMANDPROC "GROUPLS,GROUPLIST,LISTGROUPS" "List groups in profile" "-a"; if [ $
                for ITEM in $ACCOUNT; do
                     aws --profile $ACCOUNT iam list-groups --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
                done
-               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+               cat $Tmp | gawk -v A=$ITEM -f awk/noindent.awk | column -t
 fi
 COMMANDPROC "GROUPLISTUSERS,LISTUSERSINGROUP" "List users in group"; if [ $bCmd -gt 0 ] ; then
               assertACCOUNTandTHING "Group-Name"
@@ -1228,7 +1228,7 @@ COMMANDPROC "GROUPADDUSER" "Add user/userlist to group" "-a -t"; if [ $bCmd -gt 
               print $USERLIST
               for USER in $USERLIST; do
                    $AWS iam add-user-to-group --group-name $THING  --user-name $USER
-                   $AWS iam list-groups-for-user --user-name $USER --query "Groups[*].{ARN:Arn}" | gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f noindent.awk
+                   $AWS iam list-groups-for-user --user-name $USER --query "Groups[*].{ARN:Arn}" | gawk -v A=$USER -v B=$ACCOUNT -v C="GRP" -f awk/noindent.awk
               done
 fi
 COMMANDPROC "GROUPSFORUSER,LISTUSERGROUPS" "List groups attached to user"; if [ $bCmd -gt 0 ] ; then
@@ -1354,7 +1354,7 @@ COMMANDPROC "TAGSLS,TAGSLIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      $AWS ec2 describe-instances \
      --query 'Reservations[*].Instances[*].['$TAGS']' \
      --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' |tee ffed | sed -e 's/null/None/g' | grep '^i-' \
-                                                                               | gawk -v A=$ACCOUNT -f noindent.awk | column -t
+                                                                               | gawk -v A=$ACCOUNT -f awk/noindent.awk | column -t
 fi
 FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
 COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
@@ -1362,7 +1362,7 @@ COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      $AWS ec2 describe-instances \
      --query 'Reservations[*].Instances[*].['$FLDS']' \
      --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
-                                                                                                                                          | gawk -v A=$ACCOUNT -f noindent.awk
+                                                                                                                                          | gawk -v A=$ACCOUNT -f awk/noindent.awk
 fi
 COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; then
      buildPROFILELIST
@@ -1372,7 +1372,7 @@ COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; the
       for REG in $REGIONLIST; do
         aws --profile $ACC --region $REG  ec2 describe-instances \
         --query 'Reservations[*].Instances[*].['$FLDS']' \
-        --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | gawk -v A=$ACC -f noindent.awk >> $Tmp
+        --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | gawk -v A=$ACC -f awk/noindent.awk >> $Tmp
       done
      done
      cat $Tmp | sort -k 1,1 -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t | tee $Tmp2
@@ -1386,7 +1386,7 @@ COMMANDPROC "EC2MYLS,EC2LSMY" "My EC2 List"; if [ $bCmd -gt 0 ] ; then
      --query 'Reservations[*].Instances[*].['$FLDS']' \
      --filter Name=tag:CuuTag,Values=$MYCUUTAG \
      --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
-                                                                                                                                          | gawk -v A=$ACCOUNT -f noindent.awk
+                                                                                                                                          | gawk -v A=$ACCOUNT -f awk/noindent.awk
 fi
 
 
@@ -1590,9 +1590,9 @@ COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a"; if [ $bCmd -gt 0 ] ; then
                clean
                for ITEM in $PROFILELIST; do
                     if [ "$S3BUCKET" == "" ] ; then
-                         aws --profile $ITEM s3 ls| gawk -v A=$ITEM -f noindent.awk
+                         aws --profile $ITEM s3 ls| gawk -v A=$ITEM -f awk/noindent.awk
                     else
-                         aws --profile $ITEM s3 ls s3://$S3BUCKET| gawk -v A=$ITEM -f noindent.awk
+                         aws --profile $ITEM s3 ls s3://$S3BUCKET| gawk -v A=$ITEM -f awk/noindent.awk
                     fi
                done
 fi
@@ -1624,9 +1624,9 @@ COMMANDPROC "S3LSR,S3LISTRECURSIVE,LBR" "S3 Recursive List" "-a"; if [ $bCmd -gt
                clean
                for ITEM in $PROFILELIST; do
                     if [ "$S3BUCKET" == "" ] ; then
-                         aws --profile $ITEM s3 ls --recursive | gawk -v A=$ITEM -f noindent.awk
+                         aws --profile $ITEM s3 ls --recursive | gawk -v A=$ITEM -f awk/noindent.awk
                     else
-                         aws --profile $ITEM s3 ls --recursive s3://$S3BUCKET | gawk -v A=$ITEM -f noindent.awk
+                         aws --profile $ITEM s3 ls --recursive s3://$S3BUCKET | gawk -v A=$ITEM -f awk/noindent.awk
                     fi
                done
 fi
