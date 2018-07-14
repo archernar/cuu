@@ -1361,7 +1361,7 @@ COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      $AWS ec2 describe-instances \
      --query 'Reservations[*].Instances[*].['$FLDS']' \
-     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f awk/isotolocal.awk | column -t \
                                                                                                                                           | gawk -v A=$ACCOUNT -f awk/noindent.awk
 fi
 COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; then
@@ -1375,7 +1375,7 @@ COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; the
         --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | gawk -v A=$ACC -f awk/noindent.awk >> $Tmp
       done
      done
-     cat $Tmp | sort -k 1,1 -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t | tee $Tmp2
+     cat $Tmp | sort -k 1,1 -k 5,5 -k 9,9 | gawk -f awk/isotolocal.awk | column -t | tee $Tmp2
      # cat $Tmp2 | mailx -r $NOTIFYFROM -s 'EC2 Listing' $NOTIFYTO
 
 
@@ -1385,7 +1385,7 @@ COMMANDPROC "EC2MYLS,EC2LSMY" "My EC2 List"; if [ $bCmd -gt 0 ] ; then
      $AWS ec2 describe-instances \
      --query 'Reservations[*].Instances[*].['$FLDS']' \
      --filter Name=tag:CuuTag,Values=$MYCUUTAG \
-     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f awk/isotolocal.awk | column -t \
                                                                                                                                           | gawk -v A=$ACCOUNT -f awk/noindent.awk
 fi
 

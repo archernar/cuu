@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sat Jul 14 09:02:55 EDT 2018
+       build date: Sat Jul 14 09:05:44 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -328,5 +328,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Jul 14 09:02:58 EDT 2018
+Sat Jul 14 09:05:47 EDT 2018
 </pre>
