@@ -118,7 +118,7 @@ echo "### Build Date" >> README.md
 echo "<pre>" >> README.md
 date >> README.md
 echo "</pre>" >> README.md
-
+egrep -v "^[<]" readme.md
 
 git add README.md 
 git add tabber.awk
