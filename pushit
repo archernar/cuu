@@ -32,6 +32,7 @@ print "## CUU - An AWS CLI Wrapper" >> README.md
 print "###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory" >> README.md
 echo "<pre>" >> README.md
 gawk -v ANON="$ANON" -f awk/readme.awk cuu  >> README.md
+gawk -v ANON="$ANON" -f awk/readme.awk cuu  >  cuuhelp.txt
 echo "</pre>" >> README.md
 
 
