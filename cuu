@@ -1653,6 +1653,16 @@ COMMANDPROC "S3URL" "Create a Signed URL" "-a -b -k" ; if [ $bCmd -gt 0 ] ; then
      java Gpurl $REGION  $S3BUCKET $S3KEY 5
 fi
 
+
+COMMANDPROC "VIMS3PUT,S3VIMPUT" "S3 Vim Put" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$S3BUCKET" "S3 Bucket not specified"
+     assert "$DOCUMENT" "Document(s) not specified"
+     $AWS s3 cp ./$DOCUMENT s3://$S3BUCKET/$DOCUMENT --sse
+fi
+
+
+
 COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      assert "$S3BUCKET" "S3 Bucket not specified"
@@ -2160,8 +2170,13 @@ COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; t
 #      assert "$ACCOUNT" "Profile not specified"
 #      aws --profile $ACCOUNT --region $REGION ec2 describe-instances --output table \
 #                             --query 'Reservations[].Instances[].[Tags[?Key==`Name`] | [0].Value,InstanceId,State.Name,InstanceType]'
-      echo "Welcome to LinuxCareer.com" | openssl enc -base64
-      echo "V2VsY29tZSB0byBMaW51eENhcmVlci5jb20K" | openssl enc -base64 -d
+#       echo "Welcome to LinuxCareer.com" | openssl enc -base64
+#       echo "V2VsY29tZSB0byBMaW51eENhcmVlci5jb20K" | openssl enc -base64 -d
+     while [[ $i -lt 10000 ]] ; do
+           LRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+           print $LRAN >> /tmp/big
+           (( i += 1 ))
+       done
      NOTHING=0
 fi
 

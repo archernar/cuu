@@ -14,7 +14,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sun Jul 15 09:51:07 EDT 2018
+       build date: Sun Jul 15 10:53:33 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -159,6 +159,8 @@ S3 Commands
      s3remove                     -a -b -k     S3 Remove Object, with wildcard (%) keys
      s3rmfileset                  -a -b        S3 Remove Fileset
      s3url                        -a -b -k     Create a Signed URL
+Vim Commands  
+     vims3put                     -a -b -d     S3 Vim Put
   
 CloudTrail Commands  
      cloudtrail-active            -a           Cloudtrail watch all activity in the time window
@@ -292,6 +294,7 @@ UTILPUBLISHMORE                  PUBLISHMORE              S3PUBLISHMORE
 UTILREPO                         REPO                                                                      
 UTILSWAP                                                                                                   
 UTILTIME                         TIME                                                                      
+VIMS3PUT                         S3VIMPUT                                                                  
 VPCCREATE                        CREATEVPC-2SUBNETS                                                        
 VPCDELETE                        DELETEVPC                                                                 
 VPCINSTANCE                                                                                                
@@ -328,5 +331,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sun Jul 15 09:51:09 EDT 2018
+Sun Jul 15 10:53:35 EDT 2018
 </pre>
