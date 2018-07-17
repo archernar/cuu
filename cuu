@@ -158,6 +158,10 @@ createACCESSKEY() {
      aws --profile $ACCOUNT --output text iam create-access-key --user-name $USERNAME > $Tmp
      cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME '@include "cuu.awk"; { print configrecord($0,A,U,A); }'
 }
+createLOGINPROFILE() {
+     assertACCOUNTandUSERNAMEandPASSWORD
+     aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+}
 createUSER() {
      assertACCOUNTandUSERNAMEandPASSWORD
      aws --profile $ACCOUNT iam create-user --user-name $USERNAME
@@ -1085,6 +1089,13 @@ COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -
           optionalGROUPADD
           createACCESSKEY
 fi
+
+COMMANDPROC "LOGINPROFILECREATE" "Create Login Profile" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAMEandPASSWORD
+          confirm
+          createLOGINPROFILE
+fi
+
 COMMANDPROC "PASSWORDCHANGE,CHANGEPASSWORD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
@@ -1225,7 +1236,7 @@ COMMANDPROC "GROUPLISTUSERS,LISTUSERSINGROUP" "List users in group"; if [ $bCmd 
               done
               USERLIST=""
 fi
-COMMANDPROC "GROUPADDUSER" "Add user/userlist to group" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPADDUSER,GROUPADD" "Add user/userlist to group" "-a -t"; if [ $bCmd -gt 0 ] ; then
               assertACCOUNTandTHING "Group-Name"
               buildUSERLIST $ACCOUNT
               print $USERLIST

@@ -1,0 +1,81 @@
+#!/usr/bin/ksh
+Tmp="/tmp/$$"
+trap 'rm -f "$Tmp" >/dev/null 2>&1;' 0
+trap "exit 2" 1 2 3 13 15
+rm $Tmp  >/dev/null 2>&1
+assert() { if [ "$1" == "" ] ; then echo "$2"; exit 1; fi }
+
+while getopts "ha:r:" arg
+do
+	case $arg in
+            a) ACCOUNT=$OPTARG ;;
+            r) REGION=$OPTARG ;;
+            h) print "ec2sg -a <PROFILE> -r <REGION>  (US, EUROPE, GLOBALm or specific region string)" ;;
+	    *) exit 0 ;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+buildREGIONLIST() {
+     REGIONLIST=$REGION;
+     if [ "$REGION" == "REGIONLIST" ] ; then
+          REGIONLIST=`gawk -v  w=REGIONLIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+     fi
+     if [ "$REGION" == "US" ] ; then
+          REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2"
+     fi
+     if [ "$REGION" == "EUROPE" ] ; then
+          REGIONLIST="eu-west-1 eu-west-2 eu-west-3 eu-central-1"
+     fi
+     if [ "$REGION" == "GLOBAL" ] ; then
+          REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
+     fi
+}
+
+
+buildREGIONLIST
+for REG in $REGIONLIST; do
+               assert "$ACCOUNT" "Profile not specified"
+               aws --output text --profile $ACCOUNT --region $REG ec2 describe-security-groups --query '
+                               SecurityGroups[*].{
+                                    SG:GroupId,
+                                    PERM:IpPermissions[*].
+                                         {PR:IpProtocol,
+                                          FP:FromPort,
+                                          TP:ToPort,
+                                          IP:IpRanges[*].CidrIp,
+                                          UG:UserIdGroupPairs[*].{GI:GroupId}
+                                         }
+                               }' | gawk -F " " -v A=$ACCOUNT -v R=$REG '
+               BEGIN    {FLAG=0;ct=6;}
+               /^sg[-]/ {SG=$1;
+                         if (length(SG)>12) sub(/sg-......../,"sg--",SG);
+                         ct=6;
+                        }
+               /^PERM/ {
+                    proto=$3; 
+                    fport=$2; 
+                    fport=$2; 
+                    tport=$4; 
+                    tport=$4; 
+                    sub(/us-east-1/,"USE1",R); sub(/us-east-2/,"USE2",R); sub(/us-west-1/,"USW1",R); sub(/us-west-2/,"USW2",R);
+                    sub(/eu-west-1/,"EUW1",R); sub(/eu-west-2/,"EUW2",R); sub(/eu-west-3/,"EUW3",R); sub(/eu-central-1/,"EUC1",R);
+                    sub(/ap-south-1/,"ASO1",R); sub(/ap-northeast-1/,"ANE1",R); sub(/ap-northeast-2/,"ANE2",R); sub(/ap-southeast-1/,"ASE1",R);
+                    sub(/ap-southeast-2/,"ASE2",R); sub(/ca-central-1/,"CAC1",R); sub(/sa-east-1/,"SAE1",R);
+                    printf("\n%4s %4s %-14s %-5s %6s %6s",A,R,SG,proto,fport,tport)
+                    block="                                                 ";
+                    ctl="\n";
+               }
+               /^UG/ { 
+                          UG=$2;
+                          if (length(UG)>12) sub(/sg-......../,"sg--",UG);
+                          printf(" %22s",UG)
+                     }
+               /^IP/ {     
+                          if (match($2,/0[.]0[.]0[.]0/) > 0 ) { szsz = szsz " " SG " " $2; FLAG=1;} 
+                          if (( ct % 5) == 0) printf("\n                                  ==========");
+                          printf(" %22s",$2); ct++;
+                     }
+               END   { printf("\n"); if (FLAG==1) printf("\n*** FLAGGED SUSPECT IPs/SGs/Protos ***\n" szsz);}
+           ' 
+done

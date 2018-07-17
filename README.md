@@ -3,6 +3,7 @@ Script | Description | Usage | Defaults
 ------ | ----------- | ----- | --------
 cuu | A multi function AWS CLI Wrapper Utility | See below
 ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>" | All US regions
+ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | EUROPE, US, GLOBAL, or specific region string
 ### Examples
 <pre>
  cuu -a ENV1 -c USERLIST
@@ -14,7 +15,7 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sun Jul 15 11:39:07 EDT 2018
+       build date: Tue Jul 17 13:55:49 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -210,7 +211,7 @@ EC2SPARK
 EC2SPARKMENU                                                                                               
 EC2TERMINATE                                                                                               
 EC2TERMINATELAST                                                                                           
-GROUPADDUSER                                                                                               
+GROUPADDUSER                     GROUPADD                                                                  
 GROUPCREATE                                                                                                
 GROUPDELETE                                                                                                
 GROUPLISTUSERS                   LISTUSERSINGROUP                                                          
@@ -220,6 +221,7 @@ GROUPREMOVEUSER
 GROUPSFORUSER                    LISTUSERGROUPS                                                            
 KEYPAIRCREATE                    CREATEKEYPAIR                                                             
 LAMBDALS                         LAMBDATLIST                                                               
+LOGINPROFILECREATE                                                                                         
 PASSWORDCHANGE                   CHANGEPASSWORD                                                            
 PASSWORDSCRAM                    SCRAMPASSWORD                                                             
 PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
@@ -333,5 +335,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sun Jul 15 11:39:10 EDT 2018
+Tue Jul 17 13:55:51 EDT 2018
 </pre>
