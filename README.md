@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jul 17 13:55:49 EDT 2018
+       build date: Wed Aug  1 08:38:29 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -49,7 +49,8 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
 <pre>
 User Commands  
      usercreateadmin              -a -u -p     Create admin user
-     usercreate                   -a -u -p     Create a user and assign access keys
+     usercreate                   -a -u -p -t  Create a user and assign access keys
+     usercreatedefault            -a -u -p -t  Create a user with default settings
      usercreatenokey              -a -u -p     Create a user with no access keys
      usercreatereadonly           -a -u -p     Create readonly user
      userdelete                   -a -u        Delete user
@@ -60,6 +61,7 @@ User Commands
      usermenu                     -a           Menu driven user information
 Password Commands  
      passwordchange               -a -u -p     Change a users password
+     passwordchangehard           -a -u -p     Change a users password
      passwordscram                -a -u        Make a users password unkown (scram)
      passwordscramset             -a -u        Make fileset of user password unkown (scram)
   
@@ -80,8 +82,10 @@ Policy Commands
      policycodecommitpoweruser-remove -a           Remove arn:aws:iam::aws:policy/AWSCodeCommitPowerUser from user
      policycreate                 -a -t        Create policy bu name and upload policy document this.json
      policydelete                 -a -t        Delete local policy ARN
+     policydetach                 -a -u -t     Detach policy from user
      policygetall                 -a           Get all policy documents
      policyget                    -a -t        Get policy
+     policygetdocument            -a           Get policy document
      policygetlocal               -a           Get local policy documents
      policylistall                -a           List all policies
      policylistaws                -a           List all AWS policies
@@ -122,6 +126,8 @@ EC2 Commands
      ec2sgsum                     -a           Security Group Summary Report
      ec2spark                     -a -t        CloudWatch CPU Utilization with Spark Graphing
      ec2sparkmenu                 -a           Instance Menu
+     ec2tags2222                  -a           EC2 Tags
+     ec2tags                      -a           EC2 Tags
      ec2terminate                 -a           Terminate Instance
      ec2terminatelast             -a           Terminate Last Instance
      ec2-util                     -a           CloudWatch CPU Utilization
@@ -180,6 +186,7 @@ Utility Commands
      utilconfig                   -a           Edit Configuration File ~/.cuu.txt
      utildumpconfig               -a           Dump Configuration File ~/.cuu.txt
      utilnewpolicydoc             -a           Create new this.json from policydoc.json template
+     utiloginurl                  -a           Print console login URL
      utilpublish                  -a           Publish Files
      utilpublishcuureport         -a           Publish cuureport.txt
      utilpublishmore              -a           Publish Files (without clearing bucket)
@@ -192,11 +199,11 @@ Utility Commands
 <pre>
 ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                                         
-ACCESSKEYSDELETE                 DELETEACCESSKEYS                                                          
+ACCESSKEYSDELETE                 ACCESSKEYCLEAR           DELETEACCESSKEYS                                 
 ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY                                    
 AMILS                                                                                                      
 CLOUDTRAIL-ACTIVE                                                                                          
-CLOUDTRAIL-USER                                                                                            
+CLOUDTRAIL-USER                  CU                                                                        
 CLOUDTRAIL-WATCH                                                                                           
 CLOUDTRAILMENU                                                                                             
 CLOUDTRAILWORLD                  WORLD                                                                     
@@ -209,6 +216,8 @@ EC2SGSUM
 EC2SGSUM2                                                                                                  
 EC2SPARK                                                                                                   
 EC2SPARKMENU                                                                                               
+EC2TAGS                                                                                                    
+EC2TAGS2222                                                                                                
 EC2TERMINATE                                                                                               
 EC2TERMINATELAST                                                                                           
 GROUPADDUSER                     GROUPADD                                                                  
@@ -223,6 +232,7 @@ KEYPAIRCREATE                    CREATEKEYPAIR
 LAMBDALS                         LAMBDATLIST                                                               
 LOGINPROFILECREATE                                                                                         
 PASSWORDCHANGE                   CHANGEPASSWORD                                                            
+PASSWORDCHANGEHARD               CHANGEPASSWORDHARD                                                        
 PASSWORDSCRAM                    SCRAMPASSWORD                                                             
 PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                                                    
@@ -235,8 +245,10 @@ POLICYCODECOMMITPOWERUSER-ADD    IAMUSERCODECOMMITPOWERUSER-ADD
 POLICYCODECOMMITPOWERUSER-REMOVE IAMUSERCODECOMMITPOWERUSER-REMOVE                                                  
 POLICYCREATE                                                                                               
 POLICYDELETE                                                                                               
+POLICYDETACH                                                                                               
 POLICYGET                        GETPOLICY                                                                 
 POLICYGETALL                     GETALLPOLICIES           GAP                                              
+POLICYGETDOCUMENT                                                                                          
 POLICYGETLOCAL                   GETLOCALPOLICIES         GLP                                              
 POLICYLISTALL                    LISTALLPOLICIES                                                           
 POLICYLISTAWS                    LISTAWSPOLICIES                                                           
@@ -277,6 +289,7 @@ S3URL
 TAGSLS                           TAGSLIST                                                                  
 USERCREATE                       CREATEUSER                                                                
 USERCREATEADMIN                  CREATEREADMINUSER                                                         
+USERCREATEDEFAULT                CREATEDEFAULTUSER                                                         
 USERCREATENOKEY                  CREATEUSERNOKEY                                                           
 USERCREATEREADONLY               CREATEREADONLYUSER                                                        
 USERDELETE                       DELETEUSER                                                                
@@ -292,6 +305,7 @@ UTILCATPOLICYDOC                 CATPOLICYDOC             SHOWPOLICYDOC
 UTILCONFIG                       CONFIG                                                                    
 UTILDUMPCONFIG                   DUMPCONFIG               DUMP                                             
 UTILNEWPOLICYDOC                 NEWPOLICYDOC                                                              
+UTILOGINURL                      LOGINURL                 LOGIN                                            
 UTILPUBLISH                      PUBLISH                  S3PUBLISH                                        
 UTILPUBLISHCUUREPORT             PUBLISHCUUREPORT                                                          
 UTILPUBLISHMORE                  PUBLISHMORE              S3PUBLISHMORE                                    
@@ -335,5 +349,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jul 17 13:55:51 EDT 2018
+Wed Aug  1 08:38:31 EDT 2018
 </pre>

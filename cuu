@@ -1,9 +1,11 @@
 #!/usr/bin/ksh
 Tmp="/tmp/$$"
 Tmp2="/tmp/$$_$$"
+Tmp3="/tmp/$$_$$_$$"
 TmpDir="/tmp/dir$$"
 CuuCommandFile="/tmp/CuuCommandFile$$"
-trap 'rm -f "$Tmp" >/dev/null 2>&1;rm -f "$Tmp2" >/dev/null 2>&1;rm -f "$CuuCommandFile" >/dev/null 2>&1;' 0
+# trap 'rm -f "$Tmp" >/dev/null 2>&1;rm -f "$Tmp2" >/dev/null 2>&1;rm -f "$CuuCommandFile" >/dev/null 2>&1;' 0
+trap 'rm -f "$Tmp" >/dev/null 2>&1;rm -f "$CuuCommandFile" >/dev/null 2>&1;' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 # -----------------------------------------------------------------------------------------------------------------------
@@ -101,7 +103,6 @@ commandABBREVIATIONS() {
             LAWSP)                 COMMAND="LISTAWSPOLICIES" ;;
             CP)                    COMMAND="CHANGEPASSWORD" ;;
             CA)                    COMMAND="CLOUDTRAIL-ACTIVE" ;;
-            CU)                    COMMAND="CLOUDTRAIL-USER" ;;
             CZ)                    COMMAND="CLOUDTRAIL-USER"
                                    USERNAME="ALL"
                                    ;;
@@ -161,6 +162,7 @@ createACCESSKEY() {
 createLOGINPROFILE() {
      assertACCOUNTandUSERNAMEandPASSWORD
      aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+     optionalGROUPADD
 }
 createUSER() {
      assertACCOUNTandUSERNAMEandPASSWORD
@@ -224,6 +226,22 @@ buildUSERLIST() {
      fi
 }
 buildPROFILELIST() {
+     PROFILELIST=""
+     PROFILELIST=$ACCOUNT
+     if [ "$ACCOUNT" == "ACCOUNTLIST" ] ; then
+          PROFILELIST=`cat profilelist`
+     fi
+     if [ "$ACCOUNT" == "" ] ; then
+          confirmprompt "You have selected all the accounts from ~/.cuu.txt"
+          PROFILELIST=`gawk -v  w=PROFILELIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+     fi
+     if [ "$ACCOUNT" == "ALL" ] ; then
+          confirmprompt "You have selected all the accounts from ~/.cuu.txt"
+          PROFILELIST=`gawk -v  w=PROFILELIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+     fi
+     print $PROFILELIST
+}
+buildPROFILELIST2() {
      PROFILELIST=""
      if [ "$ACCOUNT" == "ACCOUNTLIST" ] ; then
           PROFILELIST=`cat profilelist`
@@ -491,7 +509,8 @@ SUBNET2=`gawk -v  w=SUBNET2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);
 AMI=`gawk -v  w=AMI -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-
+DEFAULTUSERGROUP=`gawk -v  w=DEFAULTUSERGROUP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+DEFAULTUSERPOLICY=`gawk -v  w=DEFAULTUSERPOLICY -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 # This is the modified get parameter function, with a default option
 MYCUUTAG=`gawk -v w=MYCUUTAG -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 EXPIRES=`gawk -v w=EXPIRES -v def=43200 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
@@ -513,7 +532,7 @@ CTYPE="";
 EXTRA="";
 
 
-while getopts "X:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihSZBET:Q:" arg
+while getopts "X:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihH:SZBET:Q:" arg
 do
 	case $arg in
             X) EXTRA=$OPTARG ;;
@@ -556,6 +575,9 @@ do
             R) SHOWRAW="yes" ;;
             p) PASSWORD=$OPTARG ;;
             t) THING=$OPTARG ;;
+            t) THING=$OPTARG ;;
+	    H) cuu -c commands | egrep -i "^[ ]*$OPTARG"
+               exit 0;;
 	    h) cat usage.txt 
                cuu -c commands
                exit 0 ;;
@@ -905,6 +927,11 @@ COMMANDPROC "POLICYLISTUSER,LISTUSERPOLICIES" "List policies atttached to user" 
      assertACCOUNTandUSERNAME
      aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
 fi
+COMMANDPROC "POLICYDETACH" "Detach policy from user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     confirm
+     aws --profile $ACCOUNT iam detach-user-policy --user-name $USERNAME --policy-arn $THING 
+fi
 COMMANDPROC "POLICYUSERDETACHALL,DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      confirm
@@ -971,6 +998,13 @@ COMMANDPROC "POLICYGETALL,GETALLPOLICIES,GAP" "Get all policy documents"; if [ $
           aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $gARN --version-id $gVER | jq .[].Document.Statement > $gARNFILE
           cp $gARNFILE this.json
      done
+fi
+COMMANDPROC "POLICYGETDOCUMENT" "Get policy document"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$THING"    "Policy"
+     THIS=`aws --profile $ACCOUNT iam list-policies --scope All --output text --query "Policies[*].[join(',',[PolicyName,Arn,DefaultVersionId])]" |egrep $THING | gawk -F, '{print $3}'`
+#      aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $THING --version-id $gVER | jq .[].Document.Statement > $gARNFILE
+     aws --profile $ACCOUNT --output json iam get-policy-version --policy-arn $THING --version-id $THIS | jq .[].Document.Statement
 fi
 COMMANDPROC "POLICYGETLOCAL,GETLOCALPOLICIES,GLP" "Get local policy documents"; if [ $bCmd -gt 0 ] ; then
           assert "$ACCOUNT"  "Profile not specified"
@@ -1058,7 +1092,7 @@ COMMANDPROC "ACCESSKEYSLS,ACCESSKEYLIST,LISTACCESSKEY" "List a users access keys
           assertACCOUNTandUSERNAME
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
 fi
-COMMANDPROC "ACCESSKEYSDELETE,DELETEACCESSKEYS" "Delete all access keys attached to user"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ACCESSKEYSDELETE,ACCESSKEYCLEAR,DELETEACCESSKEYS" "Delete all access keys attached to user"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           confirm
           wipeACCESSKEYS
@@ -1083,11 +1117,21 @@ COMMANDPROC "USERCREATENOKEY,CREATEUSERNOKEY" "Create a user with no access keys
           createUSER
           optionalGROUPADD
 fi
-COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -u -p -t"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           optionalGROUPADD
           createACCESSKEY
+fi
+COMMANDPROC "USERCREATEDEFAULT,CREATEDEFAULTUSER" "Create a user with default settings" "-a -u -p -t"; if [ $bCmd -gt 0 ] ; then
+          assert "$DEFAULTUSERGROUP" "Default user group"
+          assertACCOUNTandUSERNAMEandPASSWORD
+          THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+          createUSER
+          $AWS iam add-user-to-group --group-name $DEFAULTUSERGROUP  --user-name $USERNAME
+          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword    --user-name $USERNAME
+          $AWS iam attach-user-policy --policy-arn arn:aws:iam::$THISACCT:policy/$DEFAULTUSERPOLICY --user-name $USERNAME
+          cuu -a $ACCOUNT -c du -u $USERNAME
 fi
 
 COMMANDPROC "LOGINPROFILECREATE" "Create Login Profile" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
@@ -1100,6 +1144,11 @@ COMMANDPROC "PASSWORDCHANGE,CHANGEPASSWORD" "Change a users password" "-a -u -p"
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+fi
+COMMANDPROC "PASSWORDCHANGEHARD,CHANGEPASSWORDHARD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAMEandPASSWORD
+          confirm
+          aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD
 fi
 COMMANDPROC "PASSWORDSCRAM,SCRAMPASSWORD" "Make a users password unkown (scram)" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
@@ -1378,6 +1427,72 @@ COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
                                                                                                                                           | gawk -v A=$ACCOUNT -f noindent.awk
 fi
+
+
+# aws --profile ADM ec2 describe-tags --filters "Name=resource-id,Values=i-00be83e2267acb66d"
+
+COMMANDPROC "EC2TAGS" "EC2 Tags"; if [ $bCmd -gt 0 ] ; then
+     buildPROFILELIST
+     buildREGIONLIST
+     clean
+     rm -rf $Tmp2
+     rm -rf $Tmp3
+     assert "$ACCOUNT" "Profile not specified"
+     for ACC in $PROFILELIST; do
+          for REG in $REGIONLIST; do
+          aws --profile $ACC --region $REG  ec2 describe-tags | grep instance | gawk -v A=$ACC -v R=$REG '
+          @include "trim.awk";
+          ($4=="instance"){
+                       sz=$0
+                       key=trim($2)
+                       INSTANCETAGS[key]=1
+                       instance=trim($3)
+                       $1="";$2="";$3="";$4="";
+                       value=trim($0)
+                       if (length(value) > 64) value=substr(value,1,64) "(TRUNCATED)";
+                       OFS=" "
+                       printf("%s %s %-22s %-40s %s\n", A,R,instance,key,value)
+          }
+          '
+          aws --profile $ACC --region $REG  ec2 describe-tags | grep instance | gawk -v A=$ACC -v R=$REG '($4=="instance"){print A,R,$3}' >> $Tmp2
+          aws --profile $ACC --region $REG  ec2 describe-instances --query 'Reservations[*].Instances[*].['InstanceId']' | gawk -v A=$ACC -v R=$REG '{print A,R,$0}' >> $Tmp3
+     done
+     done
+     rm -rf $Tmp
+     cat $Tmp2 | sort > $Tmp; cp $Tmp $Tmp2
+     rm -rf $Tmp
+     cat $Tmp3 | sort > $Tmp; cp $Tmp $Tmp3
+     print "==========================================="
+     print "These Instances Have No Tags"
+     print "==========================================="
+     diff --changed-group-format='%>' --unchanged-group-format='' $Tmp2  $Tmp3
+ fi
+COMMANDPROC "EC2TAGS2222" "EC2 Tags"; if [ $bCmd -gt 0 ] ; then
+     buildPROFILELIST
+     buildREGIONLIST
+     clean
+     assert "$ACCOUNT" "Profile not specified"
+     for ACC in $PROFILELIST; do
+          for REG in $REGIONLIST; do
+          aws --profile $ACC --region $REG  ec2 describe-instances --query 'Reservations[*].Instances[*].['InstanceId']' > $Tmp
+               cat $Tmp | while read ITEM; do
+                    aws --profile $ACC --region $REG ec2 describe-tags --filters "Name=resource-id,Values=$ITEM" | gawk '
+                    {
+                       key=$2
+                       instance=$3
+                       $1="";$2="";$3="";$4="";
+                       value=$0
+                       OFS=" "
+                       print instance,key,value
+                    }
+                    '
+              done
+          done
+     done
+fi
+
+
+
 COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; then
      buildPROFILELIST
      buildREGIONLIST
@@ -1913,7 +2028,7 @@ COMMANDPROC "CLOUDTRAIL-WATCH" "Cloudtrail watch a user across multiple profiles
                     done
                fi
 fi
-COMMANDPROC "CLOUDTRAIL-USER" "Tracks a user's activity via cloud trail"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "CLOUDTRAIL-USER,CU" "Tracks a user's activity via cloud trail"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$USERNAME" "Username not specified"
                clean
@@ -2133,7 +2248,14 @@ COMMANDPROC "UTILTIME,TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
 fi
 COMMANDPROC "UTILACCOUNTNUMBER,ACCOUNTNUMBER" "Print account number"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
-     aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"
+     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     print $THISACCT
+     print "https://$THISACCT.signin.aws.amazon.com/console/"
+fi
+COMMANDPROC "UTILOGINURL,LOGINURL,LOGIN" "Print console login URL"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     print "https://$THISACCT.signin.aws.amazon.com/console/"
 fi
 COMMANDPROC "UTILALIAS,ALIAS" "Command Alias" "-a"; if [ $bCmd -gt 0 ] ; then
      print "Aliases for "$THING": "${COMMANDALIASES[$THING]}
