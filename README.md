@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Wed Aug  1 08:38:29 EDT 2018
+       build date: Thu Aug  2 09:40:09 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -322,6 +322,12 @@ WWEC2
 ### ~/.cuu.txt can contain defaults for these settings
 <pre>
 MYCUUTAG=
+DEFAULTUSERGROUP=
+DEFAULTUSERPOLICY=
+REGION=
+REGIONLIST=
+PROFILELIST=
+PUBLISHBUCKET=
 PASSWORD=
 STARTDATE=2018-05-01T00:00:00Z        ; Obsolete
 WATCHPROFILE=
@@ -349,5 +355,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Wed Aug  1 08:38:31 EDT 2018
+Thu Aug  2 09:40:13 EDT 2018
 </pre>
