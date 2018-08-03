@@ -395,6 +395,24 @@ assert() {
          exit 1
     fi
 }
+groupassert() {
+    if [ "$1" == "" ] ; then
+         NOTHING=0
+    else
+         assertACCOUNTandUSERNAME
+         print "asserting "$1
+         $AWS iam add-user-to-group --group-name $1  --user-name $USERNAME
+    fi
+}
+policyassert() {
+    if [ "$1" == "" ] ; then
+         NOTHING=0
+    else
+         assertACCOUNTandUSERNAME
+         print "asserting "$1
+         $AWS iam attach-user-policy --policy-arn $1 --user-name $USERNAME
+    fi
+}
 wildcard() {
     THIS=`echo "$1" | gawk -v re="[*]" '{sz=""; if ($0 ~ re) sz="match";} END {print sz;}'`
     if [ "$THIS" == "" ] ; then
@@ -511,6 +529,15 @@ KP=`gawk -v  w=KP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w)
 PUBLISHBUCKET=`gawk -v w=PUBLISHBUCKET -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DEFAULTUSERGROUP=`gawk -v  w=DEFAULTUSERGROUP -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 DEFAULTUSERPOLICY=`gawk -v  w=DEFAULTUSERPOLICY -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+AWSPOLICY1=`gawk -v  w=AWSPOLICY1 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+AWSPOLICY2=`gawk -v  w=AWSPOLICY2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+AWSPOLICY3=`gawk -v  w=AWSPOLICY3 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+AWSPOLICY4=`gawk -v  w=AWSPOLICY4 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+GROUPNAME1=`gawk -v  w=GROUPNAME1 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+GROUPNAME2=`gawk -v  w=GROUPNAME2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+GROUPNAME3=`gawk -v  w=GROUPNAME3 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+GROUPNAME4=`gawk -v  w=GROUPNAME4 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+
 # This is the modified get parameter function, with a default option
 MYCUUTAG=`gawk -v w=MYCUUTAG -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 EXPIRES=`gawk -v w=EXPIRES -v def=43200 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
@@ -1124,13 +1151,21 @@ COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -
           createACCESSKEY
 fi
 COMMANDPROC "USERCREATEDEFAULT,CREATEDEFAULTUSER" "Create a user with default settings" "-a -u -p -t"; if [ $bCmd -gt 0 ] ; then
-          assert "$DEFAULTUSERGROUP" "Default user group"
           assertACCOUNTandUSERNAMEandPASSWORD
           THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
           createUSER
-          $AWS iam add-user-to-group --group-name $DEFAULTUSERGROUP  --user-name $USERNAME
-          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword    --user-name $USERNAME
-          $AWS iam attach-user-policy --policy-arn arn:aws:iam::$THISACCT:policy/$DEFAULTUSERPOLICY --user-name $USERNAME
+          groupassert  $GROUPNAME1
+          groupassert  $GROUPNAME2
+          groupassert  $GROUPNAME3
+          groupassert  $GROUPNAME4
+          policyassert $AWSPOLICY1
+          policyassert $AWSPOLICY2
+          policyassert $AWSPOLICY3
+          policyassert $AWSPOLICY4
+#          $AWS iam attach-user-policy --policy-arn arn:aws:iam::$THISACCT:policy/$DEFAULTUSERPOLICY --user-name $USERNAME
+
+#          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword    --user-name $USERNAME
+#          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser   --user-name $USERNAME
           cuu -a $ACCOUNT -c du -u $USERNAME
 fi
 
