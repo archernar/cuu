@@ -512,7 +512,18 @@ AMI=""
 # -- SETUPS
 # -----------------------------------------------------------------------------------------------------------------------
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+P1=`gawk -v w=P1 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+P2=`gawk -v w=P2 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+P3=`gawk -v w=P3 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+P4=`gawk -v w=P4 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+P5=`gawk -v w=P5 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+G1=`gawk -v w=G1 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+G2=`gawk -v w=G2 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+G3=`gawk -v w=G3 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+G4=`gawk -v w=G4 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+G5=`gawk -v w=G5 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+FIXEDWORD=`gawk -v w=FIXEDWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 PROFILELIST=`gawk -v w=PROFILELIST -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -537,6 +548,7 @@ GROUPNAME1=`gawk -v  w=GROUPNAME1 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"
 GROUPNAME2=`gawk -v  w=GROUPNAME2 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 GROUPNAME3=`gawk -v  w=GROUPNAME3 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 GROUPNAME4=`gawk -v  w=GROUPNAME4 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+
 
 # This is the modified get parameter function, with a default option
 MYCUUTAG=`gawk -v w=MYCUUTAG -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
@@ -917,6 +929,56 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: POLICY Operations
 # -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "POLICYP1-ADD" "Attach policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyATTACH $P1
+fi
+COMMANDPROC "POLICYP2-ADD" "Attach policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyATTACH $P2
+fi
+COMMANDPROC "POLICYP3-ADD" "Attach policy P3 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyATTACH $P3
+fi
+COMMANDPROC "POLICYP4-ADD" "Attach policy P4 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyATTACH $P4
+fi
+COMMANDPROC "POLICYP5-ADD" "Attach policy P5 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyATTACH $P5
+fi
+COMMANDPROC "POLICYP1-REMOVE" "Attach policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyREMOVE $P1
+fi
+COMMANDPROC "POLICYP2-REMOVE" "Attach policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyREMOVE $P2
+fi
+COMMANDPROC "POLICYP3-REMOVE" "Attach policy P3 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyREMOVE $P3
+fi
+COMMANDPROC "POLICYP4-REMOVE" "Attach policy P4 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyREMOVE $P4
+fi
+COMMANDPROC "POLICYP5-REMOVE" "Attach policy P5 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT"  "Profile not specified"
+     assert "$USERNAME" "Username not specified"
+     policyREMOVE $P5
+fi
 COMMANDPROC "POLICYBYARN-REMOVE" "Detach policy from user by ARN" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAMEandTHING "Policy-ARN"
      policyREMOVE $THING
@@ -1001,6 +1063,9 @@ COMMANDPROC "POLICYUPDATE,UPDATEPOLICY" "Update policy" "-a -t -D"; if [ $bCmd -
      aws --profile $ACCOUNT iam list-policy-versions --output text --policy-arn $ARN --query "Versions[*].[VersionId,CreateDate,IsDefaultVersion]" 
      THIS=""
      ARN=""
+fi
+COMMANDPROC "GAPP" "Get all policy documents"; if [ $bCmd -gt 0 ] ; then
+          $AWS--profile $ACCOUNT iam list-policies  --output text
 fi
 COMMANDPROC "POLICYGETALL,GETALLPOLICIES,GAP" "Get all policy documents"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
@@ -1168,13 +1233,52 @@ COMMANDPROC "USERCREATEDEFAULT,CREATEDEFAULTUSER" "Create a user with default se
 #          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser   --user-name $USERNAME
           cuu -a $ACCOUNT -c du -u $USERNAME
 fi
-
+# COMMANDPROC "RDSX" "List RDS Instances" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+#      $AWSJ rds describe-db-instances > zed
+# fi
+#             "DBInstanceStatus": "available", 
+#             "IAMDatabaseAuthenticationEnabled": false, 
+#             "EngineVersion": "9.6.6", 
+#             "AvailabilityZone": "us-east-1f", 
+#             "DomainMemberships": [], 
+#             "StorageType": "io1", 
+#             "DbiResourceId": "db-5XGR7JQPCAHY5JOH76F7W4OVBE", 
+#             "CACertificateIdentifier": "rds-ca-2015", 
+#             "Iops": 1000, 
+#             "StorageEncrypted": false, 
+#             "DbInstancePort": 0, 
+#             "DBInstanceIdentifier": "rds30"
+COMMANDPROC "RDSLIST" "List RDS Instances" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     buildPROFILELIST
+     buildREGIONLIST
+     clean
+     rm -rf $Tmp2
+     rm -rf $Tmp3
+     for ACC in $PROFILELIST; do
+          for REG in $REGIONLIST; do
+               aws --profile $ACC --region $REG rds describe-db-instances --query 'DBInstances[*].{AZ:AvailabilityZone,
+                                                                                                   ARN:DBInstanceArn,
+                                                                                                   Class:DBInstanceClass,
+                                                                                                   Engine:Engine,
+                                                                                                   CT:InstanceCreateTime,
+                                                                                                   DB:DBName,
+                                                                                                   STG:AllocatedStorage,
+                                                                                                   STA:DBInstanceStatus,
+                                                                                                   ID:DBInstanceIdentifier}'
+          done
+     done
+fi
 COMMANDPROC "LOGINPROFILECREATE" "Create Login Profile" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
           createLOGINPROFILE
 fi
 
+COMMANDPROC "PASSWORDFIXED,FIXED" "Change a users password (fixed)" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          confirm
+          aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $FIXEDWORD 
+fi
 COMMANDPROC "PASSWORDCHANGE,CHANGEPASSWORD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
@@ -1319,6 +1423,46 @@ COMMANDPROC "GROUPLISTUSERS,LISTUSERSINGROUP" "List users in group"; if [ $bCmd 
                   print $USER
               done
               USERLIST=""
+fi
+COMMANDPROC "GROUPP1-ADD" "Add usert to group G1" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam add-user-to-group --group-name $G1  --user-name $USERNAME
+fi
+COMMANDPROC "GROUPP2-ADD" "Add usert to group G2" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam add-user-to-group --group-name $G2  --user-name $USERNAME
+fi
+COMMANDPROC "GROUPP3-ADD" "Add usert to group G3" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam add-user-to-group --group-name $G3  --user-name $USERNAME
+fi
+COMMANDPROC "GROUPP4-ADD" "Add usert to group G4" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam add-user-to-group --group-name $G4  --user-name $USERNAME
+fi
+COMMANDPROC "GROUPP5-ADD" "Add usert to group G5" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam add-user-to-group --group-name $G5  --user-name $USERNAME
+fi
+COMMANDPROC "GROUPP1-REMOVE" "Remove user from group G1" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam remove-user-from-group --user-name $USERNAME --group-name $G1
+fi
+COMMANDPROC "GROUPP2-REMOVE" "Remove user from group G2" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam remove-user-from-group --user-name $USERNAME --group-name $G2
+fi
+COMMANDPROC "GROUPP3-REMOVE" "Remove user from group G3" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam remove-user-from-group --user-name $USERNAME --group-name $G3
+fi
+COMMANDPROC "GROUPP4-REMOVE" "Remove user from group G4" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam remove-user-from-group --user-name $USERNAME --group-name $G4
+fi
+COMMANDPROC "GROUPP5-REMOVE" "Remove user from group G5" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandUSERNAME
+     $AWS iam remove-user-from-group --user-name $USERNAME --group-name $G5
 fi
 COMMANDPROC "GROUPADDUSER,GROUPADD" "Add user/userlist to group" "-a -t"; if [ $bCmd -gt 0 ] ; then
               assertACCOUNTandTHING "Group-Name"
@@ -2286,6 +2430,9 @@ COMMANDPROC "UTILACCOUNTNUMBER,ACCOUNTNUMBER" "Print account number"; if [ $bCmd
      THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
      print $THISACCT
      print "https://$THISACCT.signin.aws.amazon.com/console/"
+     print ""
+     $AWS iam list-account-aliases
+
 fi
 COMMANDPROC "UTILOGINURL,LOGINURL,LOGIN" "Print console login URL"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
@@ -2311,6 +2458,17 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      print "WINDOW END TIME    "$ISOANON
      print ""
      print "MYCIDR             "$MYCIDR
+     print ""
+     print "P1                 "$P1
+     print "P2                 "$P2
+     print "P3                 "$P3
+     print "P4                 "$P4
+     print "P5                 "$P5
+     print "G1                 "$G1
+     print "G2                 "$G2
+     print "G3                 "$G3
+     print "G4                 "$G4
+     print "G5                 "$G5
      print ""
      getconfigecho "LASTVPCID";   LASTVPCID=$CONFIGITEM
      getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM

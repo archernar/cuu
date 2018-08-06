@@ -72,6 +72,9 @@ cat $Tmp | egrep "^[ ]*ec2" >> README.md
 echo "  " >> README.md
 
 
+echo "RDS Commands  " >> README.md
+cat $Tmp | egrep "^[ ]*rds" >> README.md
+echo "  " >> README.md
 
 echo "AMI Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*ami" >> README.md

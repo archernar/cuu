@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Thu Aug  2 21:59:41 EDT 2018
+       build date: Mon Aug  6 18:39:10 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -62,6 +62,7 @@ User Commands
 Password Commands  
      passwordchange               -a -u -p     Change a users password
      passwordchangehard           -a -u -p     Change a users password
+     passwordfixed                -a -u -p     Change a users password (fixed)
      passwordscram                -a -u        Make a users password unkown (scram)
      passwordscramset             -a -u        Make fileset of user password unkown (scram)
   
@@ -91,6 +92,16 @@ Policy Commands
      policylistaws                -a           List all AWS policies
      policylistlocal              -a           List local policies
      policylistuser               -a -u        List policies atttached to user
+     policyp1-add                 -a -u -t     Attach policy P1 to user
+     policyp1-remove              -a -u -t     Attach policy P1 to user
+     policyp2-add                 -a -u -t     Attach policy P2 to user
+     policyp2-remove              -a -u -t     Attach policy P2 to user
+     policyp3-add                 -a -u -t     Attach policy P3 to user
+     policyp3-remove              -a -u -t     Attach policy P3 to user
+     policyp4-add                 -a -u -t     Attach policy P4 to user
+     policyp4-remove              -a -u -t     Attach policy P4 to user
+     policyp5-add                 -a -u -t     Attach policy P5 to user
+     policyp5-remove              -a -u -t     Attach policy P5 to user
      policysetattach              -a -u        Attach all policies specified in policyset.txt to user
      policysetremove              -a -u        Remove all policies specified in policyset.txt from user
      policyupdate                 -a -t -D     Update policy
@@ -104,6 +115,16 @@ Group Commands
      groupdelete                  -a -u -t     Delete group from profile by group name
      grouplistusers               -a           List users in group
      groupls                      -a           List groups in profile
+     groupp1-add                  -a -t        Add usert to group G1
+     groupp1-remove               -a -t        Remove user from group G1
+     groupp2-add                  -a -t        Add usert to group G2
+     groupp2-remove               -a -t        Remove user from group G2
+     groupp3-add                  -a -t        Add usert to group G3
+     groupp3-remove               -a -t        Remove user from group G3
+     groupp4-add                  -a -t        Add usert to group G4
+     groupp4-remove               -a -t        Remove user from group G4
+     groupp5-add                  -a -t        Add usert to group G5
+     groupp5-remove               -a -t        Remove user from group G5
      groupremoveallusers          -a           Remove all groups atttach to user
      groupremoveuser              -a           Remove user from group by group name
      groupsforuser                -a           List groups attached to user
@@ -131,6 +152,9 @@ EC2 Commands
      ec2terminate                 -a           Terminate Instance
      ec2terminatelast             -a           Terminate Last Instance
      ec2-util                     -a           CloudWatch CPU Utilization
+  
+RDS Commands  
+     rdslist                      -a -u -p     List RDS Instances
   
 AMI Commands  
      amils                        -a           List Local AMIs
@@ -220,11 +244,22 @@ EC2TAGS
 EC2TAGS2222                                                                                                
 EC2TERMINATE                                                                                               
 EC2TERMINATELAST                                                                                           
+GAPP                                                                                                       
 GROUPADDUSER                     GROUPADD                                                                  
 GROUPCREATE                                                                                                
 GROUPDELETE                                                                                                
 GROUPLISTUSERS                   LISTUSERSINGROUP                                                          
 GROUPLS                          GROUPLIST                LISTGROUPS                                       
+GROUPP1-ADD                                                                                                
+GROUPP1-REMOVE                                                                                             
+GROUPP2-ADD                                                                                                
+GROUPP2-REMOVE                                                                                             
+GROUPP3-ADD                                                                                                
+GROUPP3-REMOVE                                                                                             
+GROUPP4-ADD                                                                                                
+GROUPP4-REMOVE                                                                                             
+GROUPP5-ADD                                                                                                
+GROUPP5-REMOVE                                                                                             
 GROUPREMOVEALLUSERS                                                                                        
 GROUPREMOVEUSER                                                                                            
 GROUPSFORUSER                    LISTUSERGROUPS                                                            
@@ -233,6 +268,7 @@ LAMBDALS                         LAMBDATLIST
 LOGINPROFILECREATE                                                                                         
 PASSWORDCHANGE                   CHANGEPASSWORD                                                            
 PASSWORDCHANGEHARD               CHANGEPASSWORDHARD                                                        
+PASSWORDFIXED                    FIXED                                                                     
 PASSWORDSCRAM                    SCRAMPASSWORD                                                             
 PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                                                    
@@ -254,12 +290,23 @@ POLICYLISTALL                    LISTALLPOLICIES
 POLICYLISTAWS                    LISTAWSPOLICIES                                                           
 POLICYLISTLOCAL                  LISTLOCALPOLICIES                                                         
 POLICYLISTUSER                   LISTUSERPOLICIES                                                          
+POLICYP1-ADD                                                                                               
+POLICYP1-REMOVE                                                                                            
+POLICYP2-ADD                                                                                               
+POLICYP2-REMOVE                                                                                            
+POLICYP3-ADD                                                                                               
+POLICYP3-REMOVE                                                                                            
+POLICYP4-ADD                                                                                               
+POLICYP4-REMOVE                                                                                            
+POLICYP5-ADD                                                                                               
+POLICYP5-REMOVE                                                                                            
 POLICYSETATTACH                  ATTACHPOLICYSET                                                           
 POLICYSETREMOVE                  REMOVEPOLICYSET                                                           
 POLICYUPDATE                     UPDATEPOLICY                                                              
 POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                                                  
 POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                                                  
 POLICYUSERDETACHALL              DETACHUSERPOLICIES                                                        
+RDSLIST                                                                                                    
 ROLELS                           ROLESLIST                LISTROLES                                        
 S3CLEARBUCKET                    S3CLEAR                                                                   
 S3COPY                                                                                                     
@@ -355,5 +402,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Thu Aug  2 21:59:44 EDT 2018
+Mon Aug  6 18:39:13 EDT 2018
 </pre>
