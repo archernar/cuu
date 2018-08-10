@@ -1233,9 +1233,21 @@ COMMANDPROC "USERCREATEDEFAULT,CREATEDEFAULTUSER" "Create a user with default se
 #          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser   --user-name $USERNAME
           cuu -a $ACCOUNT -c du -u $USERNAME
 fi
-# COMMANDPROC "RDSX" "List RDS Instances" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
-#      $AWSJ rds describe-db-instances > zed
-# fi
+
+COMMANDPROC "RDSLIMITS" "List RDS Limits" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+       buildPROFILELIST
+       clean
+       rm -rf $Tmp
+       rm -rf $Tmp2
+       for ACC in $PROFILELIST; do
+            aws --profile $ACC rds describe-account-attributes |  gawk -v A=$ACC '{print A,"RDS",$2,$3,$4}' >> $Tmp2
+       done
+       cat $Tmp2 | column -t | sort -k 3,3 -k 1,1 > $Tmp
+       cat $Tmp
+       # echo "$Tmp"  | mailx -q $Tmp -r $NOTIFYFROM -s "$0"  $NOTIFYFROM
+fi
+
+
 #             "DBInstanceStatus": "available", 
 #             "IAMDatabaseAuthenticationEnabled": false, 
 #             "EngineVersion": "9.6.6", 
@@ -1248,6 +1260,7 @@ fi
 #             "StorageEncrypted": false, 
 #             "DbInstancePort": 0, 
 #             "DBInstanceIdentifier": "rds30"
+
 COMMANDPROC "RDSLIST" "List RDS Instances" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      buildPROFILELIST
@@ -1392,6 +1405,56 @@ COMMANDPROC "ROLELS,ROLESLIST,LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
                done
                cat $Tmp | column -t
 fi
+# -----------------------------------------------------------------------------------------------------------------------
+# -- COMMAND SET: DDB Operations
+# -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "DDBCREATETABLE" "Create a DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING"   "Table not specified"
+     $AWS dynamodb create-table --table-name $THING \
+                                --attribute-definitions  AttributeName=Artist,AttributeType=S \
+                                                         AttributeName=SongTitle,AttributeType=S \
+                                --key-schema             AttributeName=Artist,KeyType=HASH \
+                                                         AttributeName=SongTitle,KeyType=RANGE \
+                                --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+fi
+COMMANDPROC "DDBCREATENAMEVALUETABLE" "Create a Name-Value DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+#                                                          AttributeName=Value,KeyType=RANGE \
+#                                                          AttributeName=Value,AttributeType=S \
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING"   "Table not specified"
+     $AWS dynamodb create-table --table-name $THING \
+                                --attribute-definitions  AttributeName=Name,AttributeType=S \
+                                --key-schema             AttributeName=Name,KeyType=HASH \
+                                --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+fi
+COMMANDPROC "DDBLIST" "List DynamoDB tables" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     $AWS dynamodb list-tables
+fi
+COMMANDPROC "DDBDELETETABLE" "Delete DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING"   "Table not specified"
+     $AWS dynamodb delete-table --table-name $THING 
+fi
+COMMANDPROC "DDBPUTNAMEVALUE" "Put iteminto Name-Value DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING"   "Table not specified"
+     $AWS dynamodb put-item --table-name $THING --item '{"Name": {"S": "Indie Band"},"Value": {"S": "Obscure"}}'
+#     $AWS dynamodb put-item --table-name $THING --item '{"Name": {"S": $LRAN1},"Value": {"S": $LRAN2}}'
+fi
+COMMANDPROC "DDBGETNAMEVALUE" "Get iteminto Name-Value DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING"   "Table not specified"
+     $AWS dynamodb get-item --table-name $THING --key '{"Name": {"S": "Indie Band"},"Value": {"S": "Obscure"}}'
+fi
+COMMANDPROC "DDBQUERYNAMEVALUE" "Query Name-Value DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     assert "$THING"   "Table not specified"
+     $AWS dynamodb query --table-name $THING
+fi
+# --condition-expression "attribute_not_exists(Artist)"
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: GROUP Operations
@@ -1424,27 +1487,27 @@ COMMANDPROC "GROUPLISTUSERS,LISTUSERSINGROUP" "List users in group"; if [ $bCmd 
               done
               USERLIST=""
 fi
-COMMANDPROC "GROUPP1-ADD" "Add usert to group G1" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPG1-ADD" "Add usert to group G1" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      $AWS iam add-user-to-group --group-name $G1  --user-name $USERNAME
 fi
-COMMANDPROC "GROUPP2-ADD" "Add usert to group G2" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPG2-ADD" "Add usert to group G2" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      $AWS iam add-user-to-group --group-name $G2  --user-name $USERNAME
 fi
-COMMANDPROC "GROUPP3-ADD" "Add usert to group G3" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPG3-ADD" "Add usert to group G3" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      $AWS iam add-user-to-group --group-name $G3  --user-name $USERNAME
 fi
-COMMANDPROC "GROUPP4-ADD" "Add usert to group G4" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPG4-ADD" "Add usert to group G4" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      $AWS iam add-user-to-group --group-name $G4  --user-name $USERNAME
 fi
-COMMANDPROC "GROUPP5-ADD" "Add usert to group G5" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPG5-ADD" "Add usert to group G5" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      $AWS iam add-user-to-group --group-name $G5  --user-name $USERNAME
 fi
-COMMANDPROC "GROUPP1-REMOVE" "Remove user from group G1" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPG1-REMOVE" "Remove user from group G1" "-a -t"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      $AWS iam remove-user-from-group --user-name $USERNAME --group-name $G1
 fi

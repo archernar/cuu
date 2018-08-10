@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Mon Aug  6 18:39:10 EDT 2018
+       build date: Fri Aug 10 13:43:37 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -113,17 +113,17 @@ Group Commands
      groupadduser                 -a -t        Add user/userlist to group
      groupcreate                  -a -t        Create group in profile
      groupdelete                  -a -u -t     Delete group from profile by group name
+     groupg1-add                  -a -t        Add usert to group G1
+     groupg1-remove               -a -t        Remove user from group G1
+     groupg2-add                  -a -t        Add usert to group G2
+     groupg3-add                  -a -t        Add usert to group G3
+     groupg4-add                  -a -t        Add usert to group G4
+     groupg5-add                  -a -t        Add usert to group G5
      grouplistusers               -a           List users in group
      groupls                      -a           List groups in profile
-     groupp1-add                  -a -t        Add usert to group G1
-     groupp1-remove               -a -t        Remove user from group G1
-     groupp2-add                  -a -t        Add usert to group G2
      groupp2-remove               -a -t        Remove user from group G2
-     groupp3-add                  -a -t        Add usert to group G3
      groupp3-remove               -a -t        Remove user from group G3
-     groupp4-add                  -a -t        Add usert to group G4
      groupp4-remove               -a -t        Remove user from group G4
-     groupp5-add                  -a -t        Add usert to group G5
      groupp5-remove               -a -t        Remove user from group G5
      groupremoveallusers          -a           Remove all groups atttach to user
      groupremoveuser              -a           Remove user from group by group name
@@ -154,6 +154,7 @@ EC2 Commands
      ec2-util                     -a           CloudWatch CPU Utilization
   
 RDS Commands  
+     rdslimits                    -a -u -p     List RDS Limits
      rdslist                      -a -u -p     List RDS Instances
   
 AMI Commands  
@@ -231,6 +232,13 @@ CLOUDTRAIL-USER                  CU
 CLOUDTRAIL-WATCH                                                                                           
 CLOUDTRAILMENU                                                                                             
 CLOUDTRAILWORLD                  WORLD                                                                     
+DDBCREATENAMEVALUETABLE                                                                                    
+DDBCREATETABLE                                                                                             
+DDBDELETETABLE                                                                                             
+DDBGETNAMEVALUE                                                                                            
+DDBLIST                                                                                                    
+DDBPUTNAMEVALUE                                                                                            
+DDBQUERYNAMEVALUE                                                                                          
 EC2-UTIL                                                                                                   
 EC2LS                            EC2LIST                                                                   
 EC2LS2                           EC2LIST2                                                                  
@@ -248,17 +256,17 @@ GAPP
 GROUPADDUSER                     GROUPADD                                                                  
 GROUPCREATE                                                                                                
 GROUPDELETE                                                                                                
+GROUPG1-ADD                                                                                                
+GROUPG1-REMOVE                                                                                             
+GROUPG2-ADD                                                                                                
+GROUPG3-ADD                                                                                                
+GROUPG4-ADD                                                                                                
+GROUPG5-ADD                                                                                                
 GROUPLISTUSERS                   LISTUSERSINGROUP                                                          
 GROUPLS                          GROUPLIST                LISTGROUPS                                       
-GROUPP1-ADD                                                                                                
-GROUPP1-REMOVE                                                                                             
-GROUPP2-ADD                                                                                                
 GROUPP2-REMOVE                                                                                             
-GROUPP3-ADD                                                                                                
 GROUPP3-REMOVE                                                                                             
-GROUPP4-ADD                                                                                                
 GROUPP4-REMOVE                                                                                             
-GROUPP5-ADD                                                                                                
 GROUPP5-REMOVE                                                                                             
 GROUPREMOVEALLUSERS                                                                                        
 GROUPREMOVEUSER                                                                                            
@@ -306,6 +314,7 @@ POLICYUPDATE                     UPDATEPOLICY
 POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                                                  
 POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                                                  
 POLICYUSERDETACHALL              DETACHUSERPOLICIES                                                        
+RDSLIMITS                                                                                                  
 RDSLIST                                                                                                    
 ROLELS                           ROLESLIST                LISTROLES                                        
 S3CLEARBUCKET                    S3CLEAR                                                                   
@@ -402,5 +411,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Mon Aug  6 18:39:13 EDT 2018
+Fri Aug 10 13:43:40 EDT 2018
 </pre>
