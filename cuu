@@ -126,7 +126,7 @@ cryp() {
                     NAME=$1
                     openssl aes-256-cbc -nosalt -k $UNIQUEKEY -in $NAME  -out /tmp/$NAME.$EPOCHTIME.re
                     print $UNIQUEKEY > /tmp/$NAME.$EPOCHTIME.key
-                    openssl aes-256-cbc -nosalt -k FRI33iop -in /tmp/$NAME.$EPOCHTIME.key -out /tmp/$NAME.$EPOCHTIME.rek
+                    openssl aes-256-cbc -nosalt -k hereswherethekeyis -in /tmp/$NAME.$EPOCHTIME.key -out /tmp/$NAME.$EPOCHTIME.rek
                     KEY=`base64 < /tmp/$NAME.$EPOCHTIME.rek`
                     mv /tmp/$NAME.$EPOCHTIME.re /tmp/$NAME.$EPOCHTIME.$KEY.re
                     rm -f /tmp/$NAME.$EPOCHTIME.key 2>&1 > /dev/null
@@ -239,7 +239,6 @@ buildPROFILELIST() {
           confirmprompt "You have selected all the accounts from ~/.cuu.txt"
           PROFILELIST=`gawk -v  w=PROFILELIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
      fi
-     print $PROFILELIST
 }
 buildPROFILELIST2() {
      PROFILELIST=""
@@ -269,6 +268,7 @@ buildREGIONLIST() {
      if [ "$REGION" == "GLOBAL" ] ; then
           REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
      fi
+     print $REGIONLIST
 }
 groupREMOVE() {
      aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
@@ -315,20 +315,28 @@ policysetATTACH() {
 }
 
 policyREMOVE() {
-               assertACCOUNTandUSERNAME
-               if [ "$USERNAME" == "USERLIST" ] ; then
-                   LIST=`cat userlist`
-               else
-                    LIST=$USERNAME
-               fi
-               for USER in $LIST; do
-                    print $USER $1
-                    aws --profile $ACCOUNT iam detach-user-policy --policy-arn $1 --user-name $USER
-               done
-               LIST=""
+     assertACCOUNTandUSERNAME
+     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     THISPOLICY=`echo $1 | sed -e s/THISACCOUNT/$THISACCT/g`
+     echo $1
+     echo $THISPOLICY
+     if [ "$USERNAME" == "USERLIST" ] ; then
+          LIST=`cat userlist`
+     else
+          LIST=$USERNAME
+     fi
+     for USER in $LIST; do
+          print $USER $THISPOLICY
+          aws --profile $ACCOUNT iam detach-user-policy --policy-arn $THISPOLICY --user-name $USER
+     done
+     LIST=""
 }
 policyATTACH() {
      assertACCOUNTandUSERNAME
+     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     THISPOLICY=`echo $1 | sed -e s/THISACCOUNT/$THISACCT/g`
+     echo $1
+     echo $THISPOLICY
      if [ "$USERNAME" == "USERLIST" ] ; then
          LIST=`cat userlist`
      else
@@ -336,7 +344,7 @@ policyATTACH() {
      fi
      for USER in $LIST; do
           print $USER $1
-          aws --profile $ACCOUNT iam attach-user-policy --policy-arn $1 --user-name $USER
+          aws --profile $ACCOUNT iam attach-user-policy --policy-arn $THISPOLICY --user-name $USER
      done
      LIST=""
 }
@@ -374,6 +382,11 @@ crack() {
 # -----------------------------------------------------------------------------------------------------------------------
 # -- ASSERTS
 # -----------------------------------------------------------------------------------------------------------------------
+debug() {
+    if [ 1 == 1 ] ; then
+         print $1
+    fi
+}
 assertfile() {
     if [ -a $1 ] ; then
          NOTHING=0
@@ -410,7 +423,8 @@ policyassert() {
     else
          assertACCOUNTandUSERNAME
          print "asserting "$1
-         $AWS iam attach-user-policy --policy-arn $1 --user-name $USERNAME
+         policyATTACH $1
+         # $AWS iam attach-user-policy --policy-arn $1 --user-name $USERNAME
     fi
 }
 wildcard() {
@@ -621,6 +635,8 @@ do
                cuu -c commands
                exit 0 ;;
             a) ACCOUNT=$OPTARG
+               ;;
+            abc) ACCOUNT=$OPTARG
                if [ "$ACCOUNT" == "ALL" ] ; then
                    ACCOUNT=$PROFILELIST
                fi
@@ -705,6 +721,12 @@ CUUABEND() { print "CUU Internal Error!"; print "     Duplicate Command: "$1; ex
 typeset -A COMMANDSET
 typeset -A COMMANDALIASES
 CMDRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "##"}'`
+LOGCOMMAND() {
+     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+     print "$@"
+     NOTHING=0
+     return 0
+}
 COMMANDPROC() {
      bCmd=0
      THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($1)}'`
@@ -714,7 +736,9 @@ COMMANDPROC() {
      print $THISCMD >> $CuuCommandFile
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then LOGCOMMAND; fi
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
+
 
      bCmd=0
      THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($2)}'`
@@ -723,6 +747,7 @@ COMMANDPROC() {
      print $THISCMD"(alias)" >> $CuuCommandFile
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then LOGCOMMAND; fi
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
@@ -732,6 +757,7 @@ COMMANDPROC() {
      print $THISCMD >> $CuuCommandFile
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then LOGCOMMAND; fi
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
@@ -741,6 +767,7 @@ COMMANDPROC() {
      print $THISCMD >> $CuuCommandFile
      INFO[$THISCMD]="$2"
      OPTO[$THISCMD]="$3"
+     if [ "$COMMAND" == "$THISCMD" ] ; then LOGCOMMAND; fi
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      return 0
@@ -932,7 +959,7 @@ fi
 COMMANDPROC "POLICYP1-ADD" "Attach policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
-     policyATTACH $P1
+     policyATTACH $THISPOLICY
 fi
 COMMANDPROC "POLICYP2-ADD" "Attach policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
@@ -1661,13 +1688,29 @@ COMMANDPROC "TAGSLS,TAGSLIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
      --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' |tee ffed | sed -e 's/null/None/g' | grep '^i-' \
                                                                                | gawk -v A=$ACCOUNT -f noindent.awk | column -t
 fi
+
+COMMANDPROC "TAGG" "TAGG"; if [ $bCmd -gt 0 ] ; then
+    aws --output json  --profile $ACCOUNT ec2 describe-tags --filters "Name=Key"
+     # | grep instance | grep "Name" > zedd
+     # gawk '{print $2}' zed | while read ITEM; do
+#     done
+fi
+
+
+
 FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
 COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
-     assert "$ACCOUNT" "Profile not specified"
-     $AWS ec2 describe-instances \
+   assert "$ACCOUNT" "Profile not specified"
+   buildPROFILELIST
+   buildREGIONLIST
+   for ACC in $PROFILELIST; do
+   for REG in $REGIONLIST; do
+     aws --profile $ACC --region $REG ec2 describe-instances \
      --query 'Reservations[*].Instances[*].['$FLDS']' \
      --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
-                                                                                                                                          | gawk -v A=$ACCOUNT -f noindent.awk
+                                                                                                                                          | gawk -v A=$ACC -f noindent.awk
+ done
+ done
 fi
 
 
@@ -1693,9 +1736,16 @@ COMMANDPROC "EC2TAGS" "EC2 Tags"; if [ $bCmd -gt 0 ] ; then
                        value=trim($0)
                        if (length(value) > 64) value=substr(value,1,64) "(TRUNCATED)";
                        OFS=" "
-                       printf("%s %s %-22s %-40s %s\n", A,R,instance,key,value)
+                       if (trim(key) == "Name" )
+                            key="A " key;
+                       else
+                            key="B " key;
+
+                       printf("%s %s %-20s %-30s %s\n", A,R,instance,key,value)
           }
-          '
+          ' | sort -k 3,3 -k 4,4
+
+
           aws --profile $ACC --region $REG  ec2 describe-tags | grep instance | gawk -v A=$ACC -v R=$REG '($4=="instance"){print A,R,$3}' >> $Tmp2
           aws --profile $ACC --region $REG  ec2 describe-instances --query 'Reservations[*].Instances[*].['InstanceId']' | gawk -v A=$ACC -v R=$REG '{print A,R,$0}' >> $Tmp3
      done
@@ -2270,11 +2320,55 @@ COMMANDPROC "CLOUDTRAIL-WATCH" "Cloudtrail watch a user across multiple profiles
                     done
                fi
 fi
+
+COMMANDPROC "CLOUDTRAILBYUSER-RAW,CTRU" "CloudTrail Raw By User"; if [ $bCmd -gt 0 ] ; then
+     rm -rf $Tmp
+     aws --profile ECD5 --output json cloudtrail lookup-events --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME | tee $Tmp | grep Token
+     cat i$Tmp
+fi
+
+
+
+COMMANDPROC "CL" "Console Logins"; if [ $bCmd -gt 0 ] ; then
+$AWS cloudtrail lookup-events --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME --max-results 500 > $Tmp
+
+
+               cat $Tmp | gawk  -v TL=$TRUNCATELENGTH -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
+               @include "cuu.awk"
+               BEGIN { CT=0 }
+               /^EVENTS/ {
+                    if (match(SMY,/^yes/) != 0) {
+                         BE="yes"
+                         BN="yes"
+                    }
+                    sz=$0;
+                    timepre=jget($0, "^.*[\"]eventTime[\"]:","NA");
+                    ip=  jget($0, "^.*[\"]sourceIPAddress[\"]:","NA");
+                    ty=  jget($0, "^.*[\"]eventType[\"]:","NA");
+                    en=  jget($0, "^.*[\"]eventName[\"]:","NA");
+                    req= jget($0, "^.*[\"]requestParameters[\"]:","NA");
+                    resp= jget($0, "^.*[\"]responseElements[\"]:","NA");
+                    time=isotolocal(timepre, "%m/%d/%Y %I:%M:%S%p");
+                    shorttime=isotolocal(timepre, "%m/%d/%Y");
+                    if (match(ISOTIME,/^yes/) > 0 ) {
+                         time=timepre;
+                         shorttime=timepre;
+                    }
+                    name=$NF;
+                    CT++
+                    print CT,name,time,ty,en, req,respi
+              }'
+
+#$AWS cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=ConsoleLogin
+fi
+
+
 COMMANDPROC "CLOUDTRAIL-USER,CU" "Tracks a user's activity via cloud trail"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$USERNAME" "Username not specified"
                clean
                window | tee -a cuureport.txt
+               print $ISOAGO
                if [ "$USERNAME" == "USERLIST" ] ; then
                     rm -rf $Tmp  >/dev/null 2>&1
                     LIST=`cat userlist`
@@ -2285,9 +2379,13 @@ COMMANDPROC "CLOUDTRAIL-USER,CU" "Tracks a user's activity via cloud trail"; if 
                     if [ "$USERNAME" == "ALL" ] ; then
                       $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO  > $Tmp
                     else
-                      $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                      # $AWS cloudtrail lookup-events --no-paginate --start-time $ISOAGO --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                      # $AWS cloudtrail lookup-events --no-paginate  --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
+                      $AWS cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=ConsoleLogin > $Tmp
+                      #$AWS cloudtrail lookup-events --lookup-attributes AttributeKey=Username,AttributeValue=$USERNAME > $Tmp
                     fi
                fi
+               cat $Tmp > fed 
                cat $Tmp | gawk  -v TL=$TRUNCATELENGTH -v REG=$REGION -v SMY=$SUMMARY -v USR=$USERNAME -v ACCT=$ACCOUNT -v DETAIL=$DETAIL -v BN=$BIGNAMES -v BE=$BIGEVENTS -v RAW=$SHOWRAW -v ISOTIME=$ISOTIME '
                @include "cuu.awk"
                /^EVENTS/ {
@@ -2465,7 +2563,9 @@ COMMANDPROC "CLOUDTRAIL-USER,CU" "Tracks a user's activity via cloud trail"; if 
                          print trim(ACCT), REG, time, name, ty, en, "OU-" resp
                     }
                     if (match(RAW,/^yes/) != 0) print $0 "\n\n"
-               }'  
+               }' > ffed
+               cat ffed
+#        echo "ffed"  | mailx -q ffed -r $NOTIFYFROM -s "Data"  $NOTIFYFROM
 #                > $Tmp
 # 
 #                if [ "$SUMMARY" == "yes" ] ; then
@@ -2487,6 +2587,11 @@ fi
 COMMANDPROC "UTILTIME,TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
+fi
+COMMANDPROC "CONSOLEOPEN" "Open AWS Console"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     xdg-open  "https://$THISACCT.signin.aws.amazon.com/console/" >/dev/null 2>&1
 fi
 COMMANDPROC "UTILACCOUNTNUMBER,ACCOUNTNUMBER" "Print account number"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
@@ -2561,11 +2666,21 @@ COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; t
 #                             --query 'Reservations[].Instances[].[Tags[?Key==`Name`] | [0].Value,InstanceId,State.Name,InstanceType]'
 #       echo "Welcome to LinuxCareer.com" | openssl enc -base64
 #       echo "V2VsY29tZSB0byBMaW51eENhcmVlci5jb20K" | openssl enc -base64 -d
-     while [[ $i -lt 10000 ]] ; do
-           LRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
-           print $LRAN >> /tmp/big
-           (( i += 1 ))
-       done
+#      while [[ $i -lt 10000 ]] ; do
+#            LRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+#            print $LRAN >> /tmp/big
+#            (( i += 1 ))
+#        done
+
+     ELE1=`head /dev/urandom | tr -dc ABCDEFGHJKLMNPRTUWXY  | head -c 2 ; echo ''`
+     ELE2=`head /dev/urandom | tr -dc abcdefghjklmnprtuwxy  | head -c 2 ; echo ''`
+     ELE3=`head /dev/urandom | tr -dc ABCDEFGHJKLMNPRTUWXY  | head -c 2 ; echo ''`
+     ELE4=`head /dev/urandom | tr -dc 2-9                   | head -c 2 ; echo ''`
+     ELE5=`head /dev/urandom | tr -dc !%                    | head -c 2 ; echo ''`
+     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
+     RANDI=$ELE1$ELE2$ELE3$ELE4$ELE5
+     print $RANDI
+     print $EPOCHTIME
      NOTHING=0
 fi
 

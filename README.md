@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Aug 10 13:43:37 EDT 2018
+       build date: Wed Aug 15 08:12:18 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -198,6 +198,7 @@ Vim Commands
   
 CloudTrail Commands  
      cloudtrail-active            -a           Cloudtrail watch all activity in the time window
+     cloudtrailbyuser-raw         -a           CloudTrail Raw By User
      cloudtrailmenu               -a           Menu interface to pick and watch users via cloudtrail
      cloudtrail-user              -a           Tracks a user's activity via cloud trail
      cloudtrail-watch             -a           Cloudtrail watch a user across multiple profiles
@@ -222,16 +223,20 @@ Utility Commands
 </pre>
 ### Command Aliases
 <pre>
+
 ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                                         
 ACCESSKEYSDELETE                 ACCESSKEYCLEAR           DELETEACCESSKEYS                                 
 ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY                                    
 AMILS                                                                                                      
+CL                                                                                                         
 CLOUDTRAIL-ACTIVE                                                                                          
 CLOUDTRAIL-USER                  CU                                                                        
 CLOUDTRAIL-WATCH                                                                                           
+CLOUDTRAILBYUSER-RAW             CTRU                                                                      
 CLOUDTRAILMENU                                                                                             
 CLOUDTRAILWORLD                  WORLD                                                                     
+CONSOLEOPEN                                                                                                
 DDBCREATENAMEVALUETABLE                                                                                    
 DDBCREATETABLE                                                                                             
 DDBDELETETABLE                                                                                             
@@ -342,6 +347,7 @@ S3PUTTEXT
 S3REMOVE                         S3RM                                                                      
 S3RMFILESET                                                                                                
 S3URL                                                                                                      
+TAGG                                                                                                       
 TAGSLS                           TAGSLIST                                                                  
 USERCREATE                       CREATEUSER                                                                
 USERCREATEADMIN                  CREATEREADMINUSER                                                         
@@ -411,5 +417,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Aug 10 13:43:40 EDT 2018
+Wed Aug 15 08:12:21 EDT 2018
 </pre>
