@@ -116,22 +116,6 @@ commandABBREVIATIONS() {
 # ---------------------------------------------------------------------------------------------------------
 # MACROS
 # ---------------------------------------------------------------------------------------------------------
-cryp() {
-#    echo "OpenSSL" | openssl enc -aes-256-cbc -a
-#    echo U2FsdGVkX19bfRRiWqfnhxlEVXuglE769NgeDe9k/Ns= | openssl enc -aes-256-cbc -d -a
-
-                    print "encrypt"
-                    EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
-                    UNIQUEKEY=`openssl rand -base64 40`
-                    NAME=$1
-                    openssl aes-256-cbc -nosalt -k $UNIQUEKEY -in $NAME  -out /tmp/$NAME.$EPOCHTIME.re
-                    print $UNIQUEKEY > /tmp/$NAME.$EPOCHTIME.key
-                    openssl aes-256-cbc -nosalt -k hereswherethekeyis -in /tmp/$NAME.$EPOCHTIME.key -out /tmp/$NAME.$EPOCHTIME.rek
-                    KEY=`base64 < /tmp/$NAME.$EPOCHTIME.rek`
-                    mv /tmp/$NAME.$EPOCHTIME.re /tmp/$NAME.$EPOCHTIME.$KEY.re
-                    rm -f /tmp/$NAME.$EPOCHTIME.key 2>&1 > /dev/null
-                    rm -f /tmp/$NAME.$EPOCHTIME.rek 2>&1 > /dev/null
-}
 putconfig() {
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
      cp  ~/.cuu.txt  ~/.cuu.$EPOCHTIME.txt
@@ -1273,20 +1257,6 @@ COMMANDPROC "RDSLIMITS" "List RDS Limits" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
        cat $Tmp
        # echo "$Tmp"  | mailx -q $Tmp -r $NOTIFYFROM -s "$0"  $NOTIFYFROM
 fi
-
-
-#             "DBInstanceStatus": "available", 
-#             "IAMDatabaseAuthenticationEnabled": false, 
-#             "EngineVersion": "9.6.6", 
-#             "AvailabilityZone": "us-east-1f", 
-#             "DomainMemberships": [], 
-#             "StorageType": "io1", 
-#             "DbiResourceId": "db-5XGR7JQPCAHY5JOH76F7W4OVBE", 
-#             "CACertificateIdentifier": "rds-ca-2015", 
-#             "Iops": 1000, 
-#             "StorageEncrypted": false, 
-#             "DbInstancePort": 0, 
-#             "DBInstanceIdentifier": "rds30"
 
 COMMANDPROC "RDSLIST" "List RDS Instances" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"

@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Wed Aug 15 08:12:18 EDT 2018
+       build date: Wed Aug 15 08:14:00 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -417,5 +417,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Wed Aug 15 08:12:21 EDT 2018
+Wed Aug 15 08:14:03 EDT 2018
 </pre>
