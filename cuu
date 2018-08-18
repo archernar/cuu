@@ -252,7 +252,6 @@ buildREGIONLIST() {
      if [ "$REGION" == "GLOBAL" ] ; then
           REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
      fi
-     print $REGIONLIST
 }
 groupREMOVE() {
      aws --profile $ACCOUNT iam remove-user-from-group --user-name $USERNAME --group-name $1
@@ -263,7 +262,7 @@ optionalGROUPADD() {
      fi
 }
 groupADD() {
-     aws --profile $ACCOUNT iam add-user-to-group      --user-name $USERNAME --group-name $1
+     aws --profile $ACCOUNT iam add-user-to-group --user-name $USERNAME --group-name $1
 }
 groupsetREMOVE() {
                THISSET=`cat groupset.txt | egrep -v "(^#)|(^$)" | egrep arn[:]aws[:]iam`
@@ -350,6 +349,8 @@ xnotify() {
 
 clean() {
     rm -rf $Tmp
+    rm -rf $Tmp2
+    rm -rf $Tmp3
     rm -rf ./cuu.out
     rm -rf ./cuureport.txt
 }
@@ -397,8 +398,7 @@ groupassert() {
          NOTHING=0
     else
          assertACCOUNTandUSERNAME
-         print "asserting "$1
-         $AWS iam add-user-to-group --group-name $1  --user-name $USERNAME
+         groupADD $1
     fi
 }
 policyassert() {
@@ -406,9 +406,7 @@ policyassert() {
          NOTHING=0
     else
          assertACCOUNTandUSERNAME
-         print "asserting "$1
          policyATTACH $1
-         # $AWS iam attach-user-policy --policy-arn $1 --user-name $USERNAME
     fi
 }
 wildcard() {
@@ -640,6 +638,13 @@ shift $(($OPTIND - 1))
 if [ $# -eq 1 ] ; then
      if [ "$COMMAND" == "" ] ; then
           COMMAND=$1
+          ARG2=""
+     fi
+fi
+if [ $# -eq 2 ] ; then
+     if [ "$COMMAND" == "" ] ; then
+          COMMAND=$1
+          ARG2=$2
      fi
 fi
 
@@ -707,7 +712,6 @@ typeset -A COMMANDALIASES
 CMDRAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "##"}'`
 LOGCOMMAND() {
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
-     print "$@"
      NOTHING=0
      return 0
 }
@@ -768,7 +772,11 @@ COMMANDLIST() {
           printf "     %-28s %-12s %s\n" $v "$SZOPTO" "${INFO[$ITEM]}" >> $Tmp
      done
      cp $Tmp fed
-     cat $Tmp | sort
+     if [ "$1" == "" ] ; then 
+          cat $Tmp | sort
+     else
+          cat $Tmp | sort | egrep -i "^[ ]*$1"
+     fi
      NOTHING=0
      LIST=""
 }
@@ -1226,30 +1234,26 @@ COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -
           optionalGROUPADD
           createACCESSKEY
 fi
-COMMANDPROC "USERCREATEDEFAULT,CREATEDEFAULTUSER" "Create a user with default settings" "-a -u -p -t"; if [ $bCmd -gt 0 ] ; then
-          assertACCOUNTandUSERNAMEandPASSWORD
+COMMANDPROC "USERCREATEDEFAULT,CREATEDEFAULTUSER" "Create a user with default settings" "-a -u"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAME
           THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
           createUSER
-          groupassert  $GROUPNAME1
-          groupassert  $GROUPNAME2
-          groupassert  $GROUPNAME3
-          groupassert  $GROUPNAME4
-          policyassert $AWSPOLICY1
-          policyassert $AWSPOLICY2
-          policyassert $AWSPOLICY3
-          policyassert $AWSPOLICY4
-#          $AWS iam attach-user-policy --policy-arn arn:aws:iam::$THISACCT:policy/$DEFAULTUSERPOLICY --user-name $USERNAME
-
-#          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/IAMUserChangePassword    --user-name $USERNAME
-#          $AWS iam attach-user-policy --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser   --user-name $USERNAME
+          groupassert  $G1
+          groupassert  $G2
+          groupassert  $G3
+          groupassert  $G4
+          groupassert  $G5
+          policyassert $P1
+          policyassert $P2
+          policyassert $P3
+          policyassert $P4
+          policyassert $P5
           cuu -a $ACCOUNT -c du -u $USERNAME
 fi
 
 COMMANDPROC "RDSLIMITS" "List RDS Limits" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
        buildPROFILELIST
        clean
-       rm -rf $Tmp
-       rm -rf $Tmp2
        for ACC in $PROFILELIST; do
             aws --profile $ACC rds describe-account-attributes |  gawk -v A=$ACC '{print A,"RDS",$2,$3,$4}' >> $Tmp2
        done
@@ -1258,26 +1262,28 @@ COMMANDPROC "RDSLIMITS" "List RDS Limits" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
        # echo "$Tmp"  | mailx -q $Tmp -r $NOTIFYFROM -s "$0"  $NOTIFYFROM
 fi
 
-COMMANDPROC "RDSLIST" "List RDS Instances" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "RDSLIST,RDSLS" "List RDS Instances" "-a -r -t (grep)"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      buildPROFILELIST
      buildREGIONLIST
      clean
-     rm -rf $Tmp2
-     rm -rf $Tmp3
      for ACC in $PROFILELIST; do
           for REG in $REGIONLIST; do
-               aws --profile $ACC --region $REG rds describe-db-instances --query 'DBInstances[*].{AZ:AvailabilityZone,
-                                                                                                   ARN:DBInstanceArn,
-                                                                                                   Class:DBInstanceClass,
-                                                                                                   Engine:Engine,
-                                                                                                   CT:InstanceCreateTime,
-                                                                                                   DB:DBName,
-                                                                                                   STG:AllocatedStorage,
-                                                                                                   STA:DBInstanceStatus,
-                                                                                                   ID:DBInstanceIdentifier}'
+               aws --profile $ACC --region $REG rds describe-db-instances --query 'DBInstances[*].[AvailabilityZone,
+                                                                                                   DBInstanceClass,
+                                                                                                   Engine,
+                                                                                                   InstanceCreateTime,
+                                                                                                   DBName,
+                                                                                                   AllocatedStorage,
+                                                                                                   DBInstanceStatus,
+                                                                                                   DBInstanceIdentifier]' | sort -k 7,7 -k 8,8 >> $Tmp
           done
      done
+    if [ "$THING" == "" ] ; then
+     cat $Tmp
+    else
+     cat $Tmp | grep -i "$THING"
+    fi
 fi
 COMMANDPROC "LOGINPROFILECREATE" "Create Login Profile" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
@@ -1668,6 +1674,37 @@ fi
 
 
 
+COMMANDPROC "VOLUMESTORAGE" "Aggregate Volume Size"; if [ $bCmd -gt 0 ] ; then
+   assert "$ACCOUNT" "Profile not specified"
+   buildPROFILELIST
+   buildREGIONLIST
+   rm -rf $Tmp
+   for ACC in $PROFILELIST; do
+   for REG in $REGIONLIST; do
+     aws --profile $ACC --region $REG ec2 describe-volumes --query "Volumes[*].{SZ:Size}" >> $Tmp
+ done
+ done
+    gawk '{ct=ct+$1} END {print ct}' $Tmp
+fi
+COMMANDPROC "VOLUMESLS,VOLUMELS, VOLLS" "Volume List"; if [ $bCmd -gt 0 ] ; then
+   assert "$ACCOUNT" "Profile not specified"
+   buildPROFILELIST
+   buildREGIONLIST
+   for ACC in $PROFILELIST; do
+   for REG in $REGIONLIST; do
+     # aws --profile $ACC --output json --region $REG ec2 describe-volumes > zzed
+     aws --profile $ACC --region $REG ec2 describe-volumes --query "Volumes[*].{ID:VolumeId,TY:VolumeType,IO:Iops,SZ:Size}"
+#             "Encrypted": false, 
+#             "VolumeType": "gp2", 
+#             "VolumeId": "vol-0b454f04a3247bdf4", 
+#             "State": "in-use", 
+#             "Iops": 100, 
+#             "SnapshotId": "snap-08fa959d3e8a15334", 
+#             "CreateTime": "2018-05-21T03:37:04.123Z", 
+#             "Size": 8
+ done
+ done
+fi
 FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
 COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
    assert "$ACCOUNT" "Profile not specified"
@@ -2689,6 +2726,9 @@ COMMANDPROC "UTILCOMMANDS,COMMANDS" "Command help"; if [ $bCmd -gt 0 ] ; then
      COMMANDLIST
 fi
 
+COMMANDPROC "HELP" "Help User Commands"; if [ $bCmd -gt 0 ] ; then
+     COMMANDLIST $ARG2
+fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET END
 # -----------------------------------------------------------------------------------------------------------------------

@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Wed Aug 15 08:14:00 EDT 2018
+       build date: Sat Aug 18 09:27:42 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -50,7 +50,7 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
 User Commands  
      usercreateadmin              -a -u -p     Create admin user
      usercreate                   -a -u -p -t  Create a user and assign access keys
-     usercreatedefault            -a -u -p -t  Create a user with default settings
+     usercreatedefault            -a -u        Create a user with default settings
      usercreatenokey              -a -u -p     Create a user with no access keys
      usercreatereadonly           -a -u -p     Create readonly user
      userdelete                   -a -u        Delete user
@@ -153,9 +153,13 @@ EC2 Commands
      ec2terminatelast             -a           Terminate Last Instance
      ec2-util                     -a           CloudWatch CPU Utilization
   
+VOLUME Commands  
+     volumesls                    -a           Volume List
+     volumestorage                -a           Aggregate Volume Size
+  
 RDS Commands  
      rdslimits                    -a -u -p     List RDS Limits
-     rdslist                      -a -u -p     List RDS Instances
+     rdslist                      -a -r -t (grep) List RDS Instances
   
 AMI Commands  
      amils                        -a           List Local AMIs
@@ -223,7 +227,6 @@ Utility Commands
 </pre>
 ### Command Aliases
 <pre>
-
 ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                                         
 ACCESSKEYSDELETE                 ACCESSKEYCLEAR           DELETEACCESSKEYS                                 
@@ -320,7 +323,7 @@ POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD
 POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                                                  
 POLICYUSERDETACHALL              DETACHUSERPOLICIES                                                        
 RDSLIMITS                                                                                                  
-RDSLIST                                                                                                    
+RDSLIST                          RDSLS                                                                     
 ROLELS                           ROLESLIST                LISTROLES                                        
 S3CLEARBUCKET                    S3CLEAR                                                                   
 S3COPY                                                                                                     
@@ -375,6 +378,9 @@ UTILREPO                         REPO
 UTILSWAP                                                                                                   
 UTILTIME                         TIME                                                                      
 VIMS3PUT                         S3VIMPUT                                                                  
+VOLUMESLS                        VOLUMELS                                                                  
+VOLLS                                                                                                      
+VOLUMESTORAGE                                                                                              
 VPCCREATE                        CREATEVPC-2SUBNETS                                                        
 VPCDELETE                        DELETEVPC                                                                 
 VPCINSTANCE                                                                                                
@@ -417,5 +423,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Wed Aug 15 08:14:03 EDT 2018
+Sat Aug 18 09:27:46 EDT 2018
 </pre>

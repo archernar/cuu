@@ -71,6 +71,9 @@ echo "EC2 Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*ec2" >> README.md
 echo "  " >> README.md
 
+echo "VOLUME Commands  " >> README.md
+cat $Tmp | egrep "^[ ]*volume" >> README.md
+echo "  " >> README.md
 
 echo "RDS Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*rds" >> README.md
