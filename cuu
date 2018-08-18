@@ -948,52 +948,52 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: POLICY Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "POLICYP1-ADD" "Attach policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP1-ADD,P1A" "Attach policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyATTACH $THISPOLICY
 fi
-COMMANDPROC "POLICYP2-ADD" "Attach policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP2-ADD,P2A" "Attach policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyATTACH $P2
 fi
-COMMANDPROC "POLICYP3-ADD" "Attach policy P3 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP3-ADD,P3A" "Attach policy P3 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyATTACH $P3
 fi
-COMMANDPROC "POLICYP4-ADD" "Attach policy P4 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP4-ADD,P4A" "Attach policy P4 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyATTACH $P4
 fi
-COMMANDPROC "POLICYP5-ADD" "Attach policy P5 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP5-ADD,P5A" "Attach policy P5 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyATTACH $P5
 fi
-COMMANDPROC "POLICYP1-REMOVE" "Attach policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP1-REMOVE,P1R" "Remove policy P1 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyREMOVE $P1
 fi
-COMMANDPROC "POLICYP2-REMOVE" "Attach policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP2-REMOVE,P2R" "Remove policy P2 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyREMOVE $P2
 fi
-COMMANDPROC "POLICYP3-REMOVE" "Attach policy P3 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP3-REMOVE.P3R" "Remove policy P3 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyREMOVE $P3
 fi
-COMMANDPROC "POLICYP4-REMOVE" "Attach policy P4 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP4-REMOVE,P4R" "Remove policy P4 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyREMOVE $P4
 fi
-COMMANDPROC "POLICYP5-REMOVE" "Attach policy P5 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYP5-REMOVE,P5R" "Remove policy P5 to user" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$USERNAME" "Username not specified"
      policyREMOVE $P5

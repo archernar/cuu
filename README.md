@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sat Aug 18 09:27:42 EDT 2018
+       build date: Sat Aug 18 09:34:26 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -93,15 +93,15 @@ Policy Commands
      policylistlocal              -a           List local policies
      policylistuser               -a -u        List policies atttached to user
      policyp1-add                 -a -u -t     Attach policy P1 to user
-     policyp1-remove              -a -u -t     Attach policy P1 to user
+     policyp1-remove              -a -u -t     Remove policy P1 to user
      policyp2-add                 -a -u -t     Attach policy P2 to user
-     policyp2-remove              -a -u -t     Attach policy P2 to user
+     policyp2-remove              -a -u -t     Remove policy P2 to user
      policyp3-add                 -a -u -t     Attach policy P3 to user
-     policyp3-remove              -a -u -t     Attach policy P3 to user
+     policyp3-remove.p3r          -a -u -t     Remove policy P3 to user
      policyp4-add                 -a -u -t     Attach policy P4 to user
-     policyp4-remove              -a -u -t     Attach policy P4 to user
+     policyp4-remove              -a -u -t     Remove policy P4 to user
      policyp5-add                 -a -u -t     Attach policy P5 to user
-     policyp5-remove              -a -u -t     Attach policy P5 to user
+     policyp5-remove              -a -u -t     Remove policy P5 to user
      policysetattach              -a -u        Attach all policies specified in policyset.txt to user
      policysetremove              -a -u        Remove all policies specified in policyset.txt from user
      policyupdate                 -a -t -D     Update policy
@@ -306,16 +306,16 @@ POLICYLISTALL                    LISTALLPOLICIES
 POLICYLISTAWS                    LISTAWSPOLICIES                                                           
 POLICYLISTLOCAL                  LISTLOCALPOLICIES                                                         
 POLICYLISTUSER                   LISTUSERPOLICIES                                                          
-POLICYP1-ADD                                                                                               
-POLICYP1-REMOVE                                                                                            
-POLICYP2-ADD                                                                                               
-POLICYP2-REMOVE                                                                                            
-POLICYP3-ADD                                                                                               
-POLICYP3-REMOVE                                                                                            
-POLICYP4-ADD                                                                                               
-POLICYP4-REMOVE                                                                                            
-POLICYP5-ADD                                                                                               
-POLICYP5-REMOVE                                                                                            
+POLICYP1-ADD                     P1A                                                                       
+POLICYP1-REMOVE                  P1R                                                                       
+POLICYP2-ADD                     P2A                                                                       
+POLICYP2-REMOVE                  P2R                                                                       
+POLICYP3-ADD                     P3A                                                                       
+POLICYP3-REMOVE.P3R                                                                                        
+POLICYP4-ADD                     P4A                                                                       
+POLICYP4-REMOVE                  P4R                                                                       
+POLICYP5-ADD                     P5A                                                                       
+POLICYP5-REMOVE                  P5R                                                                       
 POLICYSETATTACH                  ATTACHPOLICYSET                                                           
 POLICYSETREMOVE                  REMOVEPOLICYSET                                                           
 POLICYUPDATE                     UPDATEPOLICY                                                              
@@ -423,5 +423,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Aug 18 09:27:46 EDT 2018
+Sat Aug 18 09:34:29 EDT 2018
 </pre>
