@@ -209,6 +209,19 @@ buildUSERLIST() {
           fi
      fi
 }
+buildPROFILELISTnp() {
+     PROFILELIST=""
+     PROFILELIST=$ACCOUNT
+     if [ "$ACCOUNT" == "ACCOUNTLIST" ] ; then
+          PROFILELIST=`cat profilelist`
+     fi
+     if [ "$ACCOUNT" == "" ] ; then
+          PROFILELIST=`gawk -v  w=PROFILELIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+     fi
+     if [ "$ACCOUNT" == "ALL" ] ; then
+          PROFILELIST=`gawk -v  w=PROFILELIST -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+     fi
+}
 buildPROFILELIST() {
      PROFILELIST=""
      PROFILELIST=$ACCOUNT
@@ -332,8 +345,12 @@ policyATTACH() {
      LIST=""
 }
 notify() {
-                     #    cat $Tmp | mailx -r $NOTIFYFROM -s 'CUU Notification' $NOTIFYTO
+               if [ "$NOTIFYTO" == "" ] ; then
                      NOTHING=0
+               else
+                   print "Sending...."
+                   cat $Tmp | mailx -r $NOTIFYFROM -s $1 $NOTIFYTO
+               fi
 }
 xnotify() {
      if [ "$NOTIFICATION" == "ON" ] ; then
@@ -547,13 +564,15 @@ GROUPNAME4=`gawk -v  w=GROUPNAME4 -F= '{b="";gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"
 
 
 # This is the modified get parameter function, with a default option
+NOTIFYTO=""
+
 MYCUUTAG=`gawk -v w=MYCUUTAG -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 EXPIRES=`gawk -v w=EXPIRES -v def=43200 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 REGION=`gawk -v w=REGION -v def=us-east-1 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TIMEFACTOR=`gawk -v w=TIMEFACTOR -v def=24 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 TRUNCATELENGTH=`gawk -v w=TRUNCATELENGTH -v def=56 -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 NOTIFICATION=`gawk -v w=NOTIFICATION -v def="ON" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
-NOTIFYTO=`gawk -v w=NOTIFYTO -v def="NONE" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
+# NOTIFYTO=`gawk -v w=NOTIFYTO -v def="NONE" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 NOTIFYFROM=`gawk -v w=NOTIFYFROM -v def="NONE" -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
 DETAILFLAG=""
 SHOWRAW="no" 
@@ -1674,7 +1693,7 @@ fi
 
 
 
-COMMANDPROC "VOLUMESTORAGE" "Aggregate Volume Size"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VOLUMESTORAGE,EBS" "Aggregate Volume Size"; if [ $bCmd -gt 0 ] ; then
    assert "$ACCOUNT" "Profile not specified"
    buildPROFILELIST
    buildREGIONLIST
@@ -2271,7 +2290,258 @@ COMMANDPROC "S3CREATEBUCKET-USWEST2" "Create S3 Bucket in us-west-2" "-a -b"; if
 fi
 
 
-# aws --profile  ce get-cost-and-usage --granularity MONTHLY --metrics BlendedCost --time-period Start=2018-04-01,End=2018-04-30  
+COMMANDPROC "COSTY" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+$AWS ce get-dimension-values  --dimension SERVICE --time-period Start=$CESTART,End=$CEEND  
+fi
+
+
+COMMANDPROC "COSTDDB,COSTDYNAMODB" "DynamoDB Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
+              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon DynamoDB" ] } }' | \
+              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s DynamoDB\n", $2,$3)}' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+
+ fi
+COMMANDPROC "COSTLAMBDA" "Lambda Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
+              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "AWS Lambda" ] } }' | \
+              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s Lambda\n", $2,$3)}' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+
+ fi
+COMMANDPROC "COSTS3" "S3 Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
+              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Simple Storage Service" ] } }' | \
+              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s S3\n", $2,$3)}' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+
+ fi
+COMMANDPROC "COSTEC2" "EC2 Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
+              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Elastic Compute Cloud - Compute","EC2 - Other" ] } }' | \
+              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s EC2\n", $2,$3)}' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+
+ fi
+COMMANDPROC "COSTRDS" "RDS Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND \
+                   --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Relational Database Service" ] } }' | \
+                                                                                    gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                    /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
+                                                                                    /BLENDEDCOST/ {printf("%8.0f %s RDS\n", $2,$3)}
+                                                                                    ' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+
+ fi
+# ddcat ffed | gnuplot -p -e "set terminal dumb size 120, 30; set autoscale; plot '-' using 1:2 with lines notitle"
+
+
+COMMANDPROC "COSTYEARBYDAY,COSTYD" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity DAILY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                   /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
+                                                                                   /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)}
+                                                                                   ' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+ fi
+COMMANDPROC "COSTYEAR,COST" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                   /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
+                                                                                   /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)}
+                                                                                   ' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
+     notify "CUU-BILLING-REPORT-THIS-YEAR"
+ fi
+COMMANDPROC "COSTMONTH" "Cost report this month" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                   /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
+                                                                                   /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)}
+                                                                                   ' | tee -a $Tmp
+     done
+     notify "CUU-BILLING-REPORT-THIS-MONTH"
+
+fi
+
+COMMANDPROC "PLOT" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
+      gnuplot -p <<-EOFMarker
+          set term wxt
+          set title "ECD4: Charges this Month" font ",14" textcolor rgbcolor "royalblue"
+set decimal locale
+set format y "%'g"
+          set xlabel 'Day'
+          set ylabel 'Dollars'
+          set boxwidth 0.5
+          set style fill solid
+          set yrange [0:50000]
+          plot -3+sin(x*5)/x 
+EOFMarker
+fi
+COMMANDPROC "COSTDAY" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity DAILY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                   /BLENDEDCOST/ {ct++;printf("%d %1.0f\n",ct,$2)}
+                                                                                   ' | tee -a $Tmp
+     done
+     cp $Tmp $Tmp2
+#      cat $Tmp2 | gnuplot -p -e "set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
+#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 120, 30; set title "time"; set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
+#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 200, 30;set autoscale;set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes" | tee -a $Tmp
+#      cat $Tmp2 | gnuplot -p -e "set terminal x11;set autoscale;set xlabel 'Day'; set ylabel 'Dollars'; set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes"
+      gnuplot -p <<-EOFMarker
+          set terminal x11
+          set title "ECD4: Charges this Month" font ",14" textcolor rgbcolor "royalblue"
+set decimal locale
+set format y "%'g"
+          set xlabel 'Day'
+          set ylabel 'Dollars'
+          set boxwidth 0.5
+          set style fill solid
+          set yrange [0:50000]
+          plot '$Tmp2' using 1:2:xtic(1) with boxes notitle
+EOFMarker
+
+     notify "CUU-BILLING-REPORT-THIS-MONTH"
+
+#           set autoscale
+
+#     set title "Walt pedometer" font ",14" textcolor rgbcolor "royalblue"
+#     set timefmt "%y/%m/%d"
+#     set yrange $minval:$maxval
+#     set xdata time
+#     set pointsize 1
+#     set terminal wxt  enhanced title "Walt's steps " persist raise
+#     plot "/home/walt/var/Pedometer" using 1:2 with linespoints
+fi
+
+COMMANDPROC "COSTDAYALL" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity DAILY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                   /BLENDEDCOST/ {ct++;printf("%d %1.0f\n",ct,$2)}
+                                                                                   ' > /tmp/$ACC
+     done
+      gnuplot -geometry 1200x600 -p <<-EOFMarker
+          set terminal x11
+          set title "ECD4,ECD5,ECD6: Charges this Month by Day" font ",14" textcolor rgbcolor "royalblue"
+set decimal locale
+set format y "%'g"
+          set xlabel 'Day'
+          set ylabel 'Dollars'
+          set boxwidth 0.7
+          set style fill solid
+          plot '/tmp/ECD4' using 1:2 title 'ECD4' with boxes, \
+               '/tmp/ECD5' using 1:2 title 'ECD5' with boxes, \
+               '/tmp/ECD6' using 1:2 title 'ECD6' with boxes
+EOFMarker
+fi
+COMMANDPROC "COSTYEARALL" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                                                                                   /BLENDEDCOST/ {ct++;printf("%d %1.0f\n",ct,$2)}
+                                                                                   ' > /tmp/$ACC
+     done
+      gnuplot -geometry 1200x600 -p <<-EOFMarker
+          set terminal x11
+          set title "ECD4,ECD5,ECD6: Charges 2018 charges by month" font ",14" textcolor rgbcolor "black"
+set decimal locale
+set format y "%'g"
+          set xlabel 'Day'
+          set ylabel 'Dollars'
+          set boxwidth 0.7
+          set style fill solid
+          set autoscale
+          plot '/tmp/ECD4' using 1:2 title 'ECD4' with boxes, \
+               '/tmp/ECD5' using 1:2 title 'ECD5' with boxes, \
+               '/tmp/ECD6' using 1:2 title 'ECD6' with boxes
+EOFMarker
+fi
+
+
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: CLOUD TRAIL Operations
 # -----------------------------------------------------------------------------------------------------------------------

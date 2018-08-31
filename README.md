@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sat Aug 18 09:34:26 EDT 2018
+       build date: Fri Aug 31 09:27:31 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -240,6 +240,18 @@ CLOUDTRAILBYUSER-RAW             CTRU
 CLOUDTRAILMENU                                                                                             
 CLOUDTRAILWORLD                  WORLD                                                                     
 CONSOLEOPEN                                                                                                
+COSTDAY                                                                                                    
+COSTDAYALL                                                                                                 
+COSTDDB                          COSTDYNAMODB                                                              
+COSTEC2                                                                                                    
+COSTLAMBDA                                                                                                 
+COSTMONTH                                                                                                  
+COSTRDS                                                                                                    
+COSTS3                                                                                                     
+COSTY                                                                                                      
+COSTYEAR                         COST                                                                      
+COSTYEARALL                                                                                                
+COSTYEARBYDAY                    COSTYD                                                                    
 DDBCREATENAMEVALUETABLE                                                                                    
 DDBCREATETABLE                                                                                             
 DDBDELETETABLE                                                                                             
@@ -287,6 +299,7 @@ PASSWORDCHANGEHARD               CHANGEPASSWORDHARD
 PASSWORDFIXED                    FIXED                                                                     
 PASSWORDSCRAM                    SCRAMPASSWORD                                                             
 PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
+PLOT                                                                                                       
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                                                    
 POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                                                        
 POLICYBYARN-ADD                                                                                            
@@ -380,7 +393,7 @@ UTILTIME                         TIME
 VIMS3PUT                         S3VIMPUT                                                                  
 VOLUMESLS                        VOLUMELS                                                                  
 VOLLS                                                                                                      
-VOLUMESTORAGE                                                                                              
+VOLUMESTORAGE                    EBS                                                                       
 VPCCREATE                        CREATEVPC-2SUBNETS                                                        
 VPCDELETE                        DELETEVPC                                                                 
 VPCINSTANCE                                                                                                
@@ -423,5 +436,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Aug 18 09:34:29 EDT 2018
+Fri Aug 31 09:27:35 EDT 2018
 </pre>
