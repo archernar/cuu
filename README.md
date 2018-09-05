@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Aug 31 09:27:31 EDT 2018
+       build date: Tue Sep  4 23:32:04 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -299,7 +299,6 @@ PASSWORDCHANGEHARD               CHANGEPASSWORDHARD
 PASSWORDFIXED                    FIXED                                                                     
 PASSWORDSCRAM                    SCRAMPASSWORD                                                             
 PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
-PLOT                                                                                                       
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                                                    
 POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                                                        
 POLICYBYARN-ADD                                                                                            
@@ -436,5 +435,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Aug 31 09:27:35 EDT 2018
+Tue Sep  4 23:32:07 EDT 2018
 </pre>

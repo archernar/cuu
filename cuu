@@ -524,6 +524,11 @@ AMI=""
 # -----------------------------------------------------------------------------------------------------------------------
 # -- SETUPS
 # -----------------------------------------------------------------------------------------------------------------------
+LASTMONTHSTART=`echo "1" | gawk '@include "time.awk"; { print lastMONTH(thisMONTH(0)); }'`
+LASTMONTHEND=`echo "1" | gawk '@include "time.awk"; { print MONTHEND(lastMONTH(thisMONTH(0))); }'`
+THISMONTHSTART=`echo "1" | gawk '@include "time.awk"; { print thisMONTH(0); }'`
+THISMONTHEND=`echo "1" | gawk '@include "time.awk"; { print MONTHEND(thisMONTH(0)); }'`
+
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 P1=`gawk -v w=P1 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 P2=`gawk -v w=P2 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -2433,53 +2438,44 @@ COMMANDPROC "COSTMONTH" "Cost report this month" "-a -b"; if [ $bCmd -gt 0 ] ; t
 
 fi
 
-COMMANDPROC "PLOT" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
-      gnuplot -p <<-EOFMarker
-          set term wxt
-          set title "ECD4: Charges this Month" font ",14" textcolor rgbcolor "royalblue"
-set decimal locale
-set format y "%'g"
-          set xlabel 'Day'
-          set ylabel 'Dollars'
-          set boxwidth 0.5
-          set style fill solid
-          set yrange [0:50000]
-          plot -3+sin(x*5)/x 
-EOFMarker
-fi
 COMMANDPROC "COSTDAY" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
      CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
      CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     CESTART="2018-08-01"
+     CEEND="2018-09-01"
      buildPROFILELISTnp
      clean
      for ACC in $PROFILELIST; do
           aws --profile $ACC  ce get-cost-and-usage --granularity DAILY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
                                                                                    gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
                                                                                    /BLENDEDCOST/ {ct++;printf("%d %1.0f\n",ct,$2)}
-                                                                                   ' | tee -a $Tmp
+                                                                                   ' > $Tmp
      done
-     cp $Tmp $Tmp2
-#      cat $Tmp2 | gnuplot -p -e "set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
-#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 120, 30; set title "time"; set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
-#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 200, 30;set autoscale;set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes" | tee -a $Tmp
-#      cat $Tmp2 | gnuplot -p -e "set terminal x11;set autoscale;set xlabel 'Day'; set ylabel 'Dollars'; set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes"
-      gnuplot -p <<-EOFMarker
-          set terminal x11
-          set title "ECD4: Charges this Month" font ",14" textcolor rgbcolor "royalblue"
-set decimal locale
-set format y "%'g"
+     gnuplot46 -p <<-EOFMarker
+          set terminal wxt
+          set title "Charges this Month by Day" font ",14" textcolor rgbcolor "royalblue"
+          set decimal locale
+          set format y "%'g"
           set xlabel 'Day'
           set ylabel 'Dollars'
           set boxwidth 0.5
           set style fill solid
-          set yrange [0:50000]
-          plot '$Tmp2' using 1:2:xtic(1) with boxes notitle
+          plot '$Tmp' using 1:2:xtic(1) with boxes notitle
 EOFMarker
 
      notify "CUU-BILLING-REPORT-THIS-MONTH"
-
+fi
+# ------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------
+#      cat $Tmp2 | gnuplot -p -e "set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
+#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 120, 30; set title "time"; set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
+#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 200, 30;set autoscale;set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes" | tee -a $Tmp
+#      cat $Tmp2 | gnuplot -p -e "set terminal x11;set autoscale;set xlabel 'Day'; set ylabel 'Dollars'; set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes"
+# ------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------------------
 #           set autoscale
-
 #     set title "Walt pedometer" font ",14" textcolor rgbcolor "royalblue"
 #     set timefmt "%y/%m/%d"
 #     set yrange $minval:$maxval
@@ -2487,11 +2483,12 @@ EOFMarker
 #     set pointsize 1
 #     set terminal wxt  enhanced title "Walt's steps " persist raise
 #     plot "/home/walt/var/Pedometer" using 1:2 with linespoints
-fi
 
 COMMANDPROC "COSTDAYALL" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
      CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
      CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     CESTART="2018-06-01"
+     CEEND="2018-08-31"
      buildPROFILELISTnp
      clean
      for ACC in $PROFILELIST; do
@@ -2500,8 +2497,8 @@ COMMANDPROC "COSTDAYALL" "Cost report this month by day" "-a -b"; if [ $bCmd -gt
                                                                                    /BLENDEDCOST/ {ct++;printf("%d %1.0f\n",ct,$2)}
                                                                                    ' > /tmp/$ACC
      done
-      gnuplot -geometry 1200x600 -p <<-EOFMarker
-          set terminal x11
+      gnuplot46 -p <<-EOFMarker
+          set terminal wxt enhanced 
           set title "ECD4,ECD5,ECD6: Charges this Month by Day" font ",14" textcolor rgbcolor "royalblue"
 set decimal locale
 set format y "%'g"
@@ -2509,9 +2506,12 @@ set format y "%'g"
           set ylabel 'Dollars'
           set boxwidth 0.7
           set style fill solid
-          plot '/tmp/ECD4' using 1:2 title 'ECD4' with boxes, \
-               '/tmp/ECD5' using 1:2 title 'ECD5' with boxes, \
-               '/tmp/ECD6' using 1:2 title 'ECD6' with boxes
+          set y2tics 0,500,1000,10000
+          set ytics nomirror
+          plot  \
+               '/tmp/ECD4' using 1:2 axis x1y1 lc rgb 'black' title 'ECD4' with linespoint, \
+               '/tmp/ECD5' using 1:2 axis x1y2 lc rgb 'blue'  title 'ECD5' with linespoint, \
+               '/tmp/ECD6' using 1:2 axis x1y2 lc rgb 'red'   title 'ECD6' with linespoint
 EOFMarker
 fi
 COMMANDPROC "COSTYEARALL" "Cost report this month by day" "-a -b"; if [ $bCmd -gt 0 ] ; then
@@ -2948,16 +2948,10 @@ COMMANDPROC "TEST,HELLOWORLD" "Hello World Test Command"; if [ $bCmd -gt 0 ] ; t
 #            print $LRAN >> /tmp/big
 #            (( i += 1 ))
 #        done
-
-     ELE1=`head /dev/urandom | tr -dc ABCDEFGHJKLMNPRTUWXY  | head -c 2 ; echo ''`
-     ELE2=`head /dev/urandom | tr -dc abcdefghjklmnprtuwxy  | head -c 2 ; echo ''`
-     ELE3=`head /dev/urandom | tr -dc ABCDEFGHJKLMNPRTUWXY  | head -c 2 ; echo ''`
-     ELE4=`head /dev/urandom | tr -dc 2-9                   | head -c 2 ; echo ''`
-     ELE5=`head /dev/urandom | tr -dc !%                    | head -c 2 ; echo ''`
-     EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
-     RANDI=$ELE1$ELE2$ELE3$ELE4$ELE5
-     print $RANDI
-     print $EPOCHTIME
+     print $LASTMONTHSTART
+     print $LASTMONTHEND
+     print $THISMONTHSTART
+     print $THISMONTHEND
      NOTHING=0
 fi
 
