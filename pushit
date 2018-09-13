@@ -92,6 +92,10 @@ echo "S3 Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*s3" >> README.md
 echo "  " >> README.md
 
+echo "COST Commands  " >> README.md
+cat $Tmp | egrep "^[ ]*cost" >> README.md
+echo "  " >> README.md
+
 echo "Vim Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*vim" >> README.md
 echo "  " >> README.md

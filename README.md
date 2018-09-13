@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Sep  4 23:33:06 EDT 2018
+       build date: Thu Sep 13 15:30:35 EDT 2018
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -54,10 +54,11 @@ User Commands
      usercreatenokey              -a -u -p     Create a user with no access keys
      usercreatereadonly           -a -u -p     Create readonly user
      userdelete                   -a -u        Delete user
+     userdeletelist               -a -u        Delete list of users
      userdescribe                 -a -u        Lists groups and policies associated with user/userlist
-     userls-2                     -a           User listing (simple format)
      userls                       -a           User listing
      userls-json                  -a           User list in json format
+     userlsp                      -a           User listing (simple format)
      usermenu                     -a           Menu driven user information
 Password Commands  
      passwordchange               -a -u -p     Change a users password
@@ -196,13 +197,25 @@ S3 Commands
      s3rmfileset                  -a -b        S3 Remove Fileset
      s3url                        -a -b -k     Create a Signed URL
   
+COST Commands  
+     costday2                     -a -b        Cost report last month to today
+     costday                      -a -b        Cost report last month to today
+     costddb                      -a -b        DynamoDB Cost report this year
+     costec2                      -a -b        EC2 Cost report this year
+     costlambda                   -a -b        Lambda Cost report this year
+     costmonth                    -a -b        Cost report this month
+     costrds                      -a -b        RDS Cost report this year
+     costs3                       -a -b        S3 Cost report this year
+     costy                        -a -b        Cost report this year
+     costyear                     -a -b        Cost report this year
+     costyearbyday                -a -b        Cost report this year
+  
 Vim Commands  
      vims3put                     -a -b -d     S3 Vim Put
   
   
 CloudTrail Commands  
      cloudtrail-active            -a           Cloudtrail watch all activity in the time window
-     cloudtrailbyuser-raw         -a           CloudTrail Raw By User
      cloudtrailmenu               -a           Menu interface to pick and watch users via cloudtrail
      cloudtrail-user              -a           Tracks a user's activity via cloud trail
      cloudtrail-watch             -a           Cloudtrail watch a user across multiple profiles
@@ -233,15 +246,15 @@ ACCESSKEYSDELETE                 ACCESSKEYCLEAR           DELETEACCESSKEYS
 ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY                                    
 AMILS                                                                                                      
 CL                                                                                                         
+CLEARCUUOUT                                                                                                
 CLOUDTRAIL-ACTIVE                                                                                          
 CLOUDTRAIL-USER                  CU                                                                        
 CLOUDTRAIL-WATCH                                                                                           
-CLOUDTRAILBYUSER-RAW             CTRU                                                                      
 CLOUDTRAILMENU                                                                                             
 CLOUDTRAILWORLD                  WORLD                                                                     
-CONSOLEOPEN                                                                                                
+CONSOLEOPEN                      CONSOLE                                                                   
 COSTDAY                                                                                                    
-COSTDAYALL                                                                                                 
+COSTDAY2                                                                                                   
 COSTDDB                          COSTDYNAMODB                                                              
 COSTEC2                                                                                                    
 COSTLAMBDA                                                                                                 
@@ -250,7 +263,6 @@ COSTRDS
 COSTS3                                                                                                     
 COSTY                                                                                                      
 COSTYEAR                         COST                                                                      
-COSTYEARALL                                                                                                
 COSTYEARBYDAY                    COSTYD                                                                    
 DDBCREATENAMEVALUETABLE                                                                                    
 DDBCREATETABLE                                                                                             
@@ -362,6 +374,7 @@ S3PUTTEXT
 S3REMOVE                         S3RM                                                                      
 S3RMFILESET                                                                                                
 S3URL                                                                                                      
+STAMPCUUOUT                      STAMP                                                                     
 TAGG                                                                                                       
 TAGSLS                           TAGSLIST                                                                  
 USERCREATE                       CREATEUSER                                                                
@@ -370,10 +383,11 @@ USERCREATEDEFAULT                CREATEDEFAULTUSER
 USERCREATENOKEY                  CREATEUSERNOKEY                                                           
 USERCREATEREADONLY               CREATEREADONLYUSER                                                        
 USERDELETE                       DELETEUSER                                                                
+USERDELETELIST                                                                                             
 USERDESCRIBE                     DESCRIBEUSERS            DU                                               
 USERLS                           USERLIST                 LISTUSERS                LU                      
-USERLS-2                         USERLIST-2               LISTUSERS2                                       
 USERLS-JSON                      USERLIST-JSON            LISTUSERS-JSON                                   
+USERLSP                          LUP                                                                       
 USERMENU                                                                                                   
 UTILACCOUNTNUMBER                ACCOUNTNUMBER                                                             
 UTILALIAS                        ALIAS                                                                     
@@ -435,5 +449,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Sep  4 23:33:10 EDT 2018
+Thu Sep 13 15:30:39 EDT 2018
 </pre>
