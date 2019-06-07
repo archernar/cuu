@@ -83,10 +83,24 @@ function isonow() {
      fmt = "%Y-%m-%dT%H:%M:%SZ";
      return strftime(fmt, systime() + (4 * 3600) )
 }
+function isonowhour() {
+     fmt = "%Y-%m-%dT%H:00:00Z";
+     return strftime(fmt, systime() + (4 * 3600) )
+}
 function isoyesterday(n) {
      fmt = "%Y-%m-%dT%H:%M:%SZ";
      if ( n <=0 ) n = 1;
      return strftime(fmt, (systime() + (4 * 3600)) - (24 * 3600 * n) )
+}
+function isoyesterfiveday() {
+     fmt = "%Y-%m-%dT%H:%M:%SZ";
+     fmt = "%Y-%m-%dT%H:00:00Z";
+     return strftime(fmt, (systime() + (4 * 3600)) - (24 * 3600 * 5) )
+}
+function isoyestertenday() {
+     fmt = "%Y-%m-%dT%H:%M:%SZ";
+     fmt = "%Y-%m-%dT%H:00:00Z";
+     return strftime(fmt, (systime() + (4 * 3600)) - (24 * 3600 * 10) )
 }
 function isoyesterhour(n) {
      fmt = "%Y-%m-%dT%H:%M:%SZ";

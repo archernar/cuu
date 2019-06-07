@@ -1,4 +1,5 @@
 #!/usr/bin/ksh
+PN="$$"
 Tmp="/tmp/$$"
 Tmp2="/tmp/$$_$$"
 Tmp3="/tmp/$$_$$_$$"
@@ -215,6 +216,9 @@ wipeACCESSKEYS() {
      assertACCOUNTandUSERNAME
      ACCESSKEYLIST=`aws --profile $ACCOUNT iam list-access-keys --user-name $USERNAME  --query "AccessKeyMetadata[*].[AccessKeyId]" --output text`
      for ITEM in $ACCESSKEYLIST; do
+          print $ITEM
+     done
+     for ITEM in $ACCESSKEYLIST; do
           aws --profile $ACCOUNT iam delete-access-key --user-name $USERNAME --access-key-id $ITEM
      done
      ACCESSKEYLIST=""
@@ -283,6 +287,14 @@ buildPROFILELIST2() {
      fi
      print $PROFILELIST
 }
+buildVOLUMELIST() {
+     VOLUMELIST=""
+     VOLUMELIST=`aws --profile $ACCOUNT --region $REGION ec2 describe-volumes --query "Volumes[*].{ID:VolumeId}"`
+}
+buildINSTANCELIST() {
+     INSTANCELIST=""
+     INSTANCELIST=`aws --profile $ACCOUNT --region $REGION ec2 describe-instances --query "Reservations[*].[Instances[*].InstanceId]"`
+}
 buildREGIONLIST() {
      REGIONLIST=$REGION;
      if [ "$REGION" == "REGIONLIST" ] ; then
@@ -296,6 +308,11 @@ buildREGIONLIST() {
      fi
      if [ "$REGION" == "GLOBAL" ] ; then
           REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
+     fi
+}
+verbose() {
+     if [ "$VERBOSE" == "1" ] ; then
+          print $1 >&2
      fi
 }
 groupREMOVE() {
@@ -573,7 +590,9 @@ THISYEAR=`echo "1" | gawk '@include "time.awk"; { print thisYEAR(); }'`
 THISYEAREND=`echo "1" | gawk '@include "time.awk"; { print thisYEAREND(); }'`
 NEXTYEAR=`echo "1" | gawk '@include "time.awk"; { print nextYEAR(); }'`
 NEXTYEAREND=`echo "1" | gawk '@include "time.awk"; { print nextYEAREND(); }'`
-
+USREGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2"
+EUROPEREGIONLIST="eu-west-1 eu-west-2 eu-west-3 eu-central-1"
+GLOBALREGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
 P1=`gawk -v w=P1 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 P2=`gawk -v w=P2 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -634,11 +653,15 @@ S3BUCKET=""
 S3KEY="";
 CTYPE="";
 EXTRA="";
+VERBOSE="0"
+MAILME="0"
 
 
-while getopts "X:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihH:SZBET:Q:" arg
+while getopts "mvX:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihH:SZBET:Q:" arg
 do
 	case $arg in
+            v) VERBOSE="1" ;;
+            m) MAILME="1" ;;
             X) EXTRA=$OPTARG ;;
             N) NOTIFYTO=$OPTARG ;;
             e) EXPIRES=$OPTARG 
@@ -773,7 +796,10 @@ LOGCOMMAND() {
 }
 COMMANDPROC() {
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($1)}'`
+     # echo "$1" | gawk -v C=$COMMAND -F, '{if ($0 ~ C) print "YES ||" $0;}'
+
+
+     THISCMD=`echo "$1" | gawk -F, '{s=$1;sub(/^ */, "", s);sub(/ *$/, "", s);print s;}'`
      COMMANDALIASES["$THISCMD"]="$1"
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
@@ -785,7 +811,7 @@ COMMANDPROC() {
 
 
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($2)}'`
+     THISCMD=`echo "$1" | gawk -F, '{s=$2;sub(/^ */, "", s);sub(/ *$/, "", s);print s;}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD"(alias)" >> $CuuCommandFile
@@ -795,7 +821,7 @@ COMMANDPROC() {
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($3)}'`
+     THISCMD=`echo "$1" | gawk -F, '{s=$3;sub(/^ */, "", s);sub(/ *$/, "", s);print s;}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD >> $CuuCommandFile
@@ -805,7 +831,7 @@ COMMANDPROC() {
      if [ "$COMMAND" == "$THISCMD" ] ; then bCmd=1; gCmd=1; szCmd="$COMMAND"; return bCmd; fi
 
      bCmd=0
-     THISCMD=`echo "$1" | gawk -F, '@include "trim.awk"; {print trim($4)}'`
+     THISCMD=`echo "$1" | gawk -F, '{s=$4;sub(/^ */, "", s);sub(/ *$/, "", s);print s;}'`
      if [ "$THISCMD" == "" ] ; then return bCmd; fi
      if [ "${COMMANDSET[$THISCMD]}" == "$CMDRAN" ] ; then CUUABEND "$THISCMD"; else COMMANDSET[$THISCMD]="$CMDRAN"; fi
      print $THISCMD >> $CuuCommandFile
@@ -841,6 +867,9 @@ COMMANDINFO() {
     # print ${INFO[$szCmd]}
 }
 
+COMMANDPROC "ONE,TWO,THREE" "Mark the cuu.out file with a stamp" "-a"; if [ $bCmd -gt 0 ] ; then
+     print "START"
+fi
 COMMANDPROC "STAMPCUUOUT,STAMP" "Mark the cuu.out file with a stamp" "-a"; if [ $bCmd -gt 0 ] ; then
      stampCUUOUT
 fi
@@ -922,7 +951,29 @@ COMMANDPROC "EC2TERMINATELAST" "Terminate Last Instance" "-a"; if [ $bCmd -gt 0 
      print "Instance ID "$LASTINSTANCEID
      $AWS ec2 terminate-instances --instance-id $LASTINSTANCEID
 fi
-
+COMMANDPROC "AMICREATE" "AMI CREATE" "-a"; if [ $bCmd -gt 0 ] ; then
+   assert "$ACCOUNT" "Profile not specified"
+#   assert "$THING"   "Instance ID not specified (use -t)"
+   buildINSTANCELIST
+   for IID in $INSTANCELIST; do
+#   if [ "$THING" != "" ] ; then
+          IDETAIL=`aws --output text --profile $ACCOUNT ec2 describe-instances --instance-ids $IID --query "Reservations[*].Instances[*].Tags[?Key=='Name'].Value"`
+          if [ -z "${IDETAIL}" ] ; then
+              IDETAIL="EMPTY"
+          fi
+              IDETAIL=$IDETAIL","$IID,$PN
+          IDETAILFILTERED=`print "$IDETAIL" | gawk '{gsub(/[, ]/,"-",$0);print $0}'`
+          print $IDETAILFILTERED
+          print $IDETAIL
+#         AMIID=`aws --profile ADM ec2 create-image --description "DELETE ME" --name "DELETE ME2" --instance-id i-004b3821c2935b790 --output text`
+          AMIID=`aws --profile $ACCOUNT ec2 create-image --description "$IDETAIL" --name "$IDETAILFILTERED"  --instance-id $IID`
+          if [ -z "${AMIID}" ] ; then
+               aws --profile $ACCOUNT ec2 create-tags   --resources $AMIID --tags Key=CUU,Value=CUU
+          fi
+          print $AMIID
+   done
+#   fi
+fi
 COMMANDPROC "AMILS" "List Local AMIs" "-a"; if [ $bCmd -gt 0 ] ; then
     $AWS ec2 --output text describe-images --owners self --query "Images[].[ImageId,Name,RootDeviceName,CreationDate,BlockDeviceMappings[].[DeviceName,Ebs.SnapshotId]]" | \
           egrep "(ami)|(snap)" | gawk '/^ami-/ { sz = $0; getline; print sz " "$0; }' | sort -k2.2 |column -t
@@ -1262,9 +1313,25 @@ COMMANDPROC "ACCESSKEYCREATE,CREATEACCESSKEY" "Create access keys for user"; if 
           aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
           cat $Tmp | gawk -v A=$ACCOUNT -v U=$USERNAME ' @include "cuu.awk"; {print configrecord($0,A,U);}'
 fi
-COMMANDPROC "ACCESSKEYSLS,ACCESSKEYLIST,LISTACCESSKEY" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
-          assertACCOUNTandUSERNAME
-          aws --profile $ACCOUNT --output text iam list-access-keys --user-name $USERNAME
+COMMANDPROC "ACCESSKEYSLS,ACCESSKEYLIST,LISTACCESSKEYS" "List a users access keys"; if [ $bCmd -gt 0 ] ; then
+          assert "$ACCOUNT" "Profile not specified"
+          USERLIST=`aws --profile $ACCOUNT iam list-users --query "Users[*].[UserName]" --output text`
+
+          for USER in $USERLIST; do
+              print $USER
+               AK=`aws --profile $ACCOUNT --output text iam list-access-keys --query "AccessKeyMetadata[*].AccessKeyId" --user-name $USER`
+               if [ "$AK" == "" ] ; then
+                   AK=NONE
+                   LU=NA
+               else
+                   LU=`aws --profile $ACCOUNT --output text iam get-access-key-last-used --access-key-id $AK --query="AccessKeyLastUsed.LastUsedDate"`
+               fi
+               print $USER | gawk -v U=$USER -v K=$AK -v L="$LU"  'END {print U, K, L}'
+
+#           aws iam get-access-key-last-used --access-key-id ABCDEXAMPLE
+#           AccessKeyMetadata[*].CreateDate
+          done
+          USERLIST=""
 fi
 COMMANDPROC "ACCESSKEYSDELETE,ACCESSKEYCLEAR,DELETEACCESSKEYS" "Delete all access keys attached to user"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
@@ -1274,6 +1341,10 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: USER Operations
 # -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "ADMINACCESS" "ADMIN Access" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAME
+          policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
+fi
 COMMANDPROC "USERCREATEADMIN,CREATEREADMINUSER" "Create admin user" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
@@ -1360,22 +1431,93 @@ COMMANDPROC "PASSWORDFIXED,FIXED" "Change a users password (fixed)" "-a -u -p"; 
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $FIXEDWORD 
 fi
-COMMANDPROC "PASSWORDCHANGE,CHANGEPASSWORD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "PASSWORD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAMEandPASSWORD
+          PASSWORD=`LC_ALL=C tr -dc 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz023456789!' </dev/urandom | head -c 9 ; echo`
+          print $USERNAME
+          print $PASSWORD
+          confirm
+          aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD
+fi
+COMMANDPROC "RESET" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          PASSWORD=`LC_ALL=C tr -dc 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz023456789!' </dev/urandom | head -c 9 ; echo`
+          cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZ" | fold -w 2 | head -1  > $Tmp
+          cat /dev/urandom |tr -dc "abcdefghkmnpqrstuvwxyz" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "23456789" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "ABCDEFGHJKLMNPQRSTUVWXYZ" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "23456789" | fold -w 2 | head -1 >> $Tmp
+          PASSWORD=`cat $Tmp |gawk '{sz=sz $1} END {print sz "!!"}'`
+          assertACCOUNTandUSERNAMEandPASSWORD
+          print $USERNAME
+          print $PASSWORD
+          confirm
+          aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD
+fi
+COMMANDPROC "RESETX" "Reset a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAME
+          confirm
+          RAN=`cat $Tmp |gawk '{sz=sz $1} END {print sz "!!"}'`
+          cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZ" | fold -w 2 | head -1  > $Tmp
+          cat /dev/urandom |tr -dc "abcdefghkmnpqrstuvwxyz" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "23456789" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "!" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "ABCDEFGHJKLMNPQRSTUVWXYZ" | fold -w 2 | head -1 >> $Tmp
+          cat /dev/urandom |tr -dc "23456789" | fold -w 2 | head -1 >> $Tmp
+          rm -rf $Tmp
+          print $USERNAME
+          print $RAN
+          aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $RAN  --password-reset-required
+          #aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN  --password-reset-required
+fi
+COMMANDPROC "PASSWORDCHANGE,CHANGEPASSWORD,UNSCRAM" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
+          print $USERNAME
+          print $PASSWORD
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
 fi
+COMMANDPROC "UNSCRAMPROFILECREATE" "Change a users password, profile create" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAMEandPASSWORD
+          confirm
+          print $USERNAME
+          print $PASSWORD
+          aws --profile $ACCOUNT iam create-login-profile --user-name $USERNAME --password $PASSWORD  --password-reset-required
+fi
+
+
 COMMANDPROC "PASSWORDCHANGEHARD,CHANGEPASSWORDHARD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD
 fi
-COMMANDPROC "PASSWORDSCRAM,SCRAMPASSWORD" "Make a users password unkown (scram)" "-a -u"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "PASSWORDSCRAM,SCRAMPASSWORD,SCRAM" "Make a users password unkown (scram)" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
           confirm
+          wipeSERVICESPECIFICCREDENTIALS
+          wipeSSHPUBLICKEYS
+          wipeACCESSKEYS
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
 fi
+COMMANDPROC "SCRAMSET" "Scram a set of users" "-a -u"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNT
+          cat userlist 
+          confirm
+          cat userlist | while read USERNAME; do
+               print $USERNAME
+               RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "AAbb123!!"}'`
+               wipeSERVICESPECIFICCREDENTIALS
+               wipeSSHPUBLICKEYS
+               wipeACCESSKEYS
+               print $RAN
+               aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $RAN
+               print $USERNAME" SCRAMMED"
+               cuu -a $ACCOUNT -c du -u $USERNAME
+          done
+fi
+
+
+
 COMMANDPROC "PASSWORDSCRAMSET,SCRAMPASSWORDSET" "Make fileset of user password unkown (scram)" "-a -u"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           cat fileset | while read ITEM; do
@@ -1414,11 +1556,19 @@ COMMANDPROC "USERDELETE,DELETEUSER" "Delete user" "-a -u"; if [ $bCmd -gt 0 ] ; 
           wipeUSER
           deleteUSER
 fi
+COMMANDPROC "LUX" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
+          buildPROFILELIST
+          clean
+          for ITEM in $PROFILELIST; do
+               aws --output json --profile $ITEM iam list-users  
+          done
+          cat $Tmp | column -t
+fi
 COMMANDPROC "USERLS,USERLIST,LISTUSERS,LU" "User listing" "-a"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
-               aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
+               aws --profile $ITEM iam list-users --query "Users[*].[UserName,CreateDate,PasswordLastUsed,Arn]" | gawk -v A=$ITEM -f noindent.awk >> $Tmp
           done
           cat $Tmp | column -t
 fi
@@ -1665,6 +1815,13 @@ COMMANDPROC "POLICYUSERCHANGEPASSWORD-REMOVE,IAMUSERCHANGEPASSWORD-REMOVE" "Remo
                assertACCOUNTandUSERNAME
                policyREMOVE $THIS
 fi
+
+THIS="arn:aws:iam::aws:policy/AdministratorAccess"
+COMMANDPROC "POLICYUSERADMIN-REMOVE,IAMUSERADMIN-REMOVE,NOADMIN" "Remove "$THIS" from user"; if [ $bCmd -gt 0 ] ; then
+               assertACCOUNTandUSERNAME
+               policyREMOVE $THIS
+fi
+
 COMMANDPROC "UTILPUBLISHCUUREPORT,PUBLISHCUUREPORT" "Publish cuureport.txt" "-a"; if [ $bCmd -gt 0 ] ; then
      assertfile cuureport.txt
      EPOCHTIME=`date --rfc-3339=seconds |gawk '{print $1 "." $2}'`
@@ -1775,6 +1932,38 @@ COMMANDPROC "VOLUMESTORAGE,EBS" "Aggregate Volume Size"; if [ $bCmd -gt 0 ] ; th
  done
     gawk '{ct=ct+$1} END {print ct}' $Tmp
 fi
+
+COMMANDPROC "SNAPSHOTLS" "List Snapshots"; if [ $bCmd -gt 0 ] ; then
+     assert "$ACCOUNT" "Profile not specified"
+     buildVOLUMELIST
+     for VOL in $VOLUMELIST; do
+          SNAP=`echo $VOL | awk '{sub(/vol/,"snap",$0); print $0}'`
+          aws --profile $ACCOUNT --output text ec2 describe-snapshots --filters Name=volume-id,Values=$VOL  --query "Snapshots[*].{V:VolumeId,S:SnapshotId,P:Progress,D:Description}" | gawk '{print $4,$3,$2,$1}'
+      done
+fi
+ 
+COMMANDPROC "VOLUMESNAP,SNAPSHOT" "Snapshot Volumes "; if [ $bCmd -gt 0 ] ; then
+   assert "$ACCOUNT" "Profile not specified"
+   buildVOLUMELIST
+   for VOL in $VOLUMELIST; do
+            # print "Snapshot "$VOL
+            # ID=`aws --output text --profile ADM ec2 describe-volumes --volume-ids $VOL --query "Volumes[*].VolumeId"`
+            # NAME=`aws --output text --profile ADM ec2 describe-volumes --volume-ids $VOL --query "Volumes[*].Tags[?Key=='Name'].Value"`
+            IID=`aws --output text --profile $ACCOUNT ec2 describe-volumes --volume-ids $VOL --query "Volumes[*].Attachments[*].InstanceId"`
+            IDETAIL=`aws --output text --profile $ACCOUNT ec2 describe-instances --instance-ids $IID --query "Reservations[*].Instances[*].Tags[?Key=='Name'].Value"`
+            IDETAIL="\""$IDETAIL"\""
+            VOLDETAIL=`aws --output text --profile $ACCOUNT ec2 describe-volumes --volume-ids $VOL --query "Volumes[*].[VolumeId,AvailabilityZone,VolumeType,CreateTime,Attachments[*].InstanceId,Attachments[*].Device,Size,Tags[?Key=='application_id'].Value,Tags[?Key=='Name'].Value]"`
+            print $VOLDETAIL
+            print $IDETAIL
+#             aws --profile $ACCOUNT ec2 create-snapshot --volume-id $VOL --description "$VOLDETAIL" --tag-specifications 'ResourceType=snapshot,Tags=[{Key=snapshotpurpose,Value=AKB}']
+   done
+#    for VOL in $VOLUMELIST; do
+#           SNAP=`echo $VOL | awk '{sub(/vol/,"snap",$0); print $0}'`
+#           aws --profile $ACCOUNT --output text ec2 describe-snapshots --filters Name=volume-id,Values=$VOL  --query "Snapshots[*].{V:VolumeId,S:SnapshotId,P:Progress,D:Description}" | gawk '{print $4,$3,$2,$1}'
+#    done
+fi
+
+
 COMMANDPROC "VOLUMESLS,VOLUMELS, VOLLS" "Volume List"; if [ $bCmd -gt 0 ] ; then
    assert "$ACCOUNT" "Profile not specified"
    buildPROFILELIST
@@ -1782,7 +1971,8 @@ COMMANDPROC "VOLUMESLS,VOLUMELS, VOLLS" "Volume List"; if [ $bCmd -gt 0 ] ; then
    for ACC in $PROFILELIST; do
    for REG in $REGIONLIST; do
      # aws --profile $ACC --output json --region $REG ec2 describe-volumes > zzed
-     aws --profile $ACC --region $REG ec2 describe-volumes --query "Volumes[*].{ID:VolumeId,TY:VolumeType,IO:Iops,SZ:Size}"
+     # aws --profile $ACC --region $REG ec2 describe-volumes --query "Volumes[*].[VolumeId,VolumeType,Iops,Size,SnapshotId,Tags[?Key==\`Nami\`]]"
+     aws --profile $ACC --region $REG ec2 describe-volumes --query "Volumes[*].[VolumeId,VolumeType,Iops,Size,SnapshotId]"
 #             "Encrypted": false, 
 #             "VolumeType": "gp2", 
 #             "VolumeId": "vol-0b454f04a3247bdf4", 
@@ -1794,25 +1984,114 @@ COMMANDPROC "VOLUMESLS,VOLUMELS, VOLLS" "Volume List"; if [ $bCmd -gt 0 ] ; then
  done
  done
 fi
+
+
+COMMANDPROC "RUNNING" "Running EC2 Instances"; if [ $bCmd -gt 0 ] ; then
+     cuu -r US -a $ACCOUNT EC2LS    | grep run
+fi
+COMMANDPROC "REPORT" "Overall Status Report"; if [ $bCmd -gt 0 ] ; then
+     cuu -r GLOBAL -a $ACCOUNT EC2LS    | grep run
+     cuu -r GLOBAL -a $ACCOUNT VOLUMELS | grep running
+fi
 FLDS="InstanceId,ImageId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
+FLDS="InstanceId,Placement.AvailabilityZone,State.Name,InstanceType,PrivateIpAddress,PublicIpAddress,LaunchTime,Tags[?Key==\`Name\`].Value[]"
 COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
    assert "$ACCOUNT" "Profile not specified"
    datestampCUUOUT
    buildPROFILELIST
    buildREGIONLIST
+   verbose $REGION
    for ACC in $PROFILELIST; do
    for REG in $REGIONLIST; do
-     print "EC2-Listing "$ACC" "$REG | tee -a /tmp/cuu.out
+     verbose $ACC 
+     verbose $REG
+     # print "EC2-Listing "$ACC" "$REG | tee -a /tmp/cuu.out
      aws --profile $ACC --region $REG ec2 describe-instances \
      --query 'Reservations[*].Instances[*].['$FLDS']' \
-     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' | sed -e 's/null/None/g' | grep '^i-' | sort -k 5,5 -k 9,9 | gawk -f isotolocal.awk | column -t \
-                                                                                                                                          | gawk -v A=$ACC -v B=$REG -f noindent.awk \
-                                                                                                                                          | tee -a /tmp/cuu.out
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' \
+                                                                               | sed -e 's/null/None/g' \
+                                                                               | grep '^i-' \
+                                                                               | sort -k 5,5 -k 9,9 \
+                                                                               | gawk -f isotolocal.awk \
+                                                                               | gawk -f paddedip.awk \
+                                                                               | sed 's/us-east/usE/g' \
+                                                                               | sed 's/us-west/usW/g' \
+                                                                               | sed 's/running/run/g' \
+                                                                               | sed 's/\t//g' \
+                                                                               | sed 's/  / /g' \
+                                                                               | tee -a /tmp/cuu.out
  done
  done
 fi
 
 
+FLDS="InstanceId,Placement.AvailabilityZone,State.Name,InstanceType,LaunchTime,Tags[?Key==\`Name\`].Value[],Tags[?Key==\`Created_By\`].Value[]"
+FLDS="InstanceId,Placement.AvailabilityZone,State.Name,InstanceType,LaunchTime,Tags[?Key==\`Name\`].Value[]"
+COMMANDPROC "ELS,ELIST" "EC2List"; if [ $bCmd -gt 0 ] ; then
+   rm -rf /tmp/cuu.txt >/dev/null 2>&1
+   rm -rf /tmp/cuuraw  >/dev/null 2>&1
+   assert "$ACCOUNT" "Profile not specified"
+   # datestampCUUOUT
+   buildPROFILELIST
+   REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
+   REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2"
+   verbose $REGION
+   for ACC in $PROFILELIST; do
+   for REG in $REGIONLIST; do
+     verbose $ACC 
+     verbose $REG
+     # print "EC2-Listing "$ACC" "$REG | tee -a /tmp/cuu.out
+     aws --profile $ACC --region $REG ec2 describe-instances \
+     --query 'Reservations[*].Instances[*].['$FLDS']' \
+     --output json | tr -d '\n[] "' | perl -pe 's/[^m]i-/\ni-/g' | tr ',' '\t' \
+                                                                               | tee -a /tmp/cuuraw     \
+                                                                               | sed -e 's/null/None/g' \
+                                                                               | grep '^i-' \
+                                                                               | sort -k 3,3 \
+                                                                               | gawk -f isotolocal.awk \
+                                                                               | gawk -f paddedip.awk \
+                                                                               | sed 's/ap-southeast/aSE/g' \
+                                                                               | sed 's/us-east/usE/g' \
+                                                                               | sed 's/us-west/usW/g' \
+                                                                               | gawk '{if ($0 ~ "running") print $0}' \
+                                                                               | sed 's/running/r/' \
+                                                                               | sed 's/stopped/s/' \
+                                                                               | sed 's/[.]small/-sml /g' \
+                                                                               | sed 's/[.]micro/-mic /g' \
+                                                                               | sed 's/[.]medium/-med /g' \
+                                                                               | sed 's/[.]large/-lrg /g' \
+                                                                               | sed 's/[.]xlarge/-xlg /g' \
+                                                                               | sed 's/[.]2xlarge/-2xl /g' \
+                                                                               | sed 's/[.]4xlarge/-4xl /g' \
+                                                                               | sed 's/[.]8xlarge/-8xl /g' \
+                                                                               | sed 's/\t//g' \
+                                                                               | sed 's/  / /g' \
+                                                                               | sed 's/^ //' \
+                                                                               | gawk '{if (NF>0) print $0}' \
+                                                                               | gawk -v A=$REG '{print A,$0}' \
+                                                                               | gawk -v A=$ACC '{print A,$0}' \
+                                                                               | gawk '{ 
+                                                                                         system( "./yyy " $1 " " $2 " " $3);
+                                                                                         printf("%s\n",$0);
+                                                                                       }' \
+                                                                               | tee -a /tmp/cuu.txt
+ done
+ done
+ rm -rf /tmp/cuudos.txt
+ cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/cuudos.txt
+ cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/$ACC.txt
+if [ "$MAILME" == "1" ] ; then
+      todtcc -f /tmp/$ACC.txt
+fi
+fi
+# awk 'sub("$", "\r")' /tmp/ITA.txt > /tmp/ITADOS.txtV
+#                                                                                | sed 's/[.]small/-sml /g' \
+#                                                                                | sed 's/[.]micro/-mic /g' \
+#                                                                                | sed 's/[.]medium/-med /g' \
+#                                                                                | sed 's/[.]large/-lrg /g' \
+#                                                                                | sed 's/[.]xlarge/-xlg /g' \
+#                                                                                | sed 's/[.]2xlarge/-2xl /g' \
+                                                                                                                                         # | gawk -v A=$ACC -v B=$REG -f noindent.awk \
 # aws --profile ADM ec2 describe-tags --filters "Name=resource-id,Values=i-00be83e2267acb66d"
 
 COMMANDPROC "EC2TAGS" "EC2 Tags"; if [ $bCmd -gt 0 ] ; then
@@ -1888,6 +2167,7 @@ COMMANDPROC "EC2LS2,EC2LIST2," "List Instances 2" "-a"; if [ $bCmd -gt 0 ] ; the
      buildPROFILELIST
      buildREGIONLIST
      clean
+        print "-----------------------------------------" >&2
      for ACC in $PROFILELIST; do
       for REG in $REGIONLIST; do
         aws --profile $ACC --region $REG  ec2 describe-instances \
@@ -2105,14 +2385,18 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
                aws --profile $ACCOUNT --output text ec2 describe-instances | gawk 'BEGIN {}/INSTANCES/{if(NF==19) print $8;if(NF==22) print $9}' | gawk -v S=$ISOAGO -v A=$ACCOUNT '
                @include "cuu.awk"
                {
-               sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 300 --namespace AWS/EC2 --statistics Maximum \
-                   --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterday(1) " --end-time " isonow()
+               sz ="aws --profile " A " cloudwatch get-metric-statistics --metric-name CPUUtilization --period 3600 --namespace AWS/EC2 --statistics Maximum \
+                   --dimensions Name=InstanceId,Value=" $0 " --start-time " isoyesterfiveday() " --end-time " isonowhour()
                print "INSTANCE " $0
                system(sz)
            } ' | gawk '
            @include "cuu.awk" 
-           /INSTANCE/ {printf("%s\n",$0)}
-           /DATAPOINTS/ {printf("METRIC %5.2f %s\n", $2, isotolocal($3))}
+
+           {printf("%s\n",$0)}
+           /INSTANCEXX/ {printf("%s\n",$0)}
+           /INSTANCE/ {II=$0}
+           /DATAPOINTSXX/ {printf("METRIC %5.2f %s\n", $2, isotolocal($3))}
+           /DATAPOINTSXX/ {printf("%s %s %5.2f\n",II, isotolocal($3), $2)}
            ' 
            fi
 
@@ -2363,119 +2647,11 @@ COMMANDPROC "S3CREATEBUCKET-USWEST2" "Create S3 Bucket in us-west-2" "-a -b"; if
 fi
 
 
-COMMANDPROC "COSTY" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-$AWS ce get-dimension-values  --dimension SERVICE --time-period Start=$CESTART,End=$CEEND  
-fi
-
-
-COMMANDPROC "COSTDDB,COSTDYNAMODB" "DynamoDB Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "COST" "Cost report" "-a -b"; if [ $bCmd -gt 0 ] ; then
      CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
      CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-     buildPROFILELISTnp
-     clean
-     for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
-              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon DynamoDB" ] } }' | \
-              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s DynamoDB\n", $2,$3)}' | tee -a $Tmp
-     done
-     cp $Tmp $Tmp2
-     echo "" | tee -a $Tmp
-     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
-
- fi
-COMMANDPROC "COSTLAMBDA" "Lambda Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-     buildPROFILELISTnp
-     clean
-     for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
-              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "AWS Lambda" ] } }' | \
-              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s Lambda\n", $2,$3)}' | tee -a $Tmp
-     done
-     cp $Tmp $Tmp2
-     echo "" | tee -a $Tmp
-     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
-
- fi
-COMMANDPROC "COSTS3" "S3 Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-     buildPROFILELISTnp
-     clean
-     for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
-              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Simple Storage Service" ] } }' | \
-              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s S3\n", $2,$3)}' | tee -a $Tmp
-     done
-     cp $Tmp $Tmp2
-     echo "" | tee -a $Tmp
-     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
-
- fi
-COMMANDPROC "COSTEC2" "EC2 Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-     buildPROFILELISTnp
-     clean
-     for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND  \
-              --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Elastic Compute Cloud - Compute","EC2 - Other" ] } }' | \
-              gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '/TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}/BLENDEDCOST/ {printf("%8.0f %s EC2\n", $2,$3)}' | tee -a $Tmp
-     done
-     cp $Tmp $Tmp2
-     echo "" | tee -a $Tmp
-     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
-
- fi
-COMMANDPROC "COSTRDS" "RDS Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-     buildPROFILELISTnp
-     clean
-     for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND \
-                   --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Relational Database Service" ] } }' | \
-                                                                                    gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
-                                                                                    /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
-                                                                                    /BLENDEDCOST/ {printf("%8.0f %s RDS\n", $2,$3)}
-                                                                                    ' | tee -a $Tmp
-     done
-     cp $Tmp $Tmp2
-     echo "" | tee -a $Tmp
-     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
-
- fi
-# ddcat ffed | gnuplot -p -e "set terminal dumb size 120, 30; set autoscale; plot '-' using 1:2 with lines notitle"
-
-
-COMMANDPROC "COSTYEARBYDAY,COSTYD" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
-     buildPROFILELISTnp
-     clean
-     for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity DAILY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
-                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
-                                                                                   /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
-                                                                                   /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)}
-                                                                                   ' | tee -a $Tmp
-     done
-     cp $Tmp $Tmp2
-     echo "" | tee -a $Tmp
-     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
- fi
-COMMANDPROC "COSTYEAR,COST" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
-     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     print $CESTART
+     print $CEEND
      buildPROFILELISTnp
      clean
      for ACC in $PROFILELIST; do
@@ -2488,25 +2664,76 @@ COMMANDPROC "COSTYEAR,COST" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] 
      cp $Tmp $Tmp2
      echo "" | tee -a $Tmp
      gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
-     notify "CUU-BILLING-REPORT-THIS-YEAR"
- fi
-COMMANDPROC "COSTMONTH" "Cost report this month" "-a -b"; if [ $bCmd -gt 0 ] ; then
-     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..$/, "", sz); print sz "01";}'`
+fi
+#           aws --profile $ACC  ce get-dimension-values --dimension SERVICE --time-period Start=$CESTART,End=$CEEND  
+#           aws --profile $ACC  ce get-dimension-values --dimension SERVICE --time-period Start=$CESTART,End=$CEEND  | gawk '
+#                function ltrim(s) { sub(/^ */, "", s); return s }
+#                function rtrim(s) { sub(/ *$/, "", s); return s }
+#                function trim(s) { return rtrim(ltrim(s)); }
+#                function dq(sz) { return("\"" sz "\"") }
+#                /^DIM/{$1="";print dq(trim($0)) ","}'
+# 
+COMMANDPROC "COSTDETAIL" "Cost detail report" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
      CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
      buildPROFILELISTnp
      clean
+     rm -rf $Tmp
      for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
+          aws --profile $ACC  ce get-cost-and-usage --group-by Type=DIMENSION,Key=SERVICE  --filter file://f.json --granularity MONTHLY --metrics "BlendedCost" "UnblendedCost" "UsageQuantity" --time-period Start=$CESTART,End=$CEEND > $Tmp
+
+          cat $Tmp | gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                function ltrim(s) { sub(/^ */, "", s); return s }
+                function rtrim(s) { sub(/ *$/, "", s); return s }
+                function trim(s) { return rtrim(ltrim(s)); }
+                function dq(sz) { return("\"" sz "\"") }
+                function put(sz) { printf("%s",sz) }
+                function put40(sz) { printf("%-40s",sz) }
+                function putf(sz) { printf("%8.2f",sz) }
+                function putln(sz) { printf("%s\n",sz) }
+                BEGIN {t=0.0;timeperiod=sprintf(" %s %s",S,E )}
+                /^KEY/ {$1="";service=trim($0)}
+                /^BLENDED/ {
+                     $1="";
+                     putf($0)
+                     t=t+$0
+                     put40(" " service) 
+                     put(" " A)
+                     put40(timeperiod)
+                     putln("")
+                }
+                END {
+                     putf(t)
+                     putln("")
+                } 
+
+
+          '
+     done
+fi
+
+#               --filter '{      "Dimensions": { "Key": "SERVICE", "Values": [ "Amazon Simple Storage Service" ] } }' |
+COMMANDPROC "COST2" "Cost report this year" "-a -b"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
+     CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
+     buildPROFILELISTnp
+     clean
+     ZERG="{\"Dimensions\": { \"Key\": \"SERVICE\", \"Values\": [ \"Amazon Simple Storage Service\" ] } }"
+     ZERG="{\"Dimensions\": { \"Key\": \"SERVICE\", \"Values\": [ \"AWS Lambda\" ] } }"
+     ZERG="{\"Dimensions\": { \"Key\": \"SERVICE\", \"Values\": [ \"Amazon Elastic Compute Cloud - Compute\" ] } }"
+     ZERG="{\"Dimensions\": { \"Key\": \"SERVICE\", \"Values\": [ \"EC2 - Other\" ] } }"
+     print "$ZERG"
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND --filter "$ZERG" |
                                                                                    gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
                                                                                    /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
                                                                                    /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)}
                                                                                    ' | tee -a $Tmp
      done
-     notify "CUU-BILLING-REPORT-THIS-MONTH"
-
+     cp $Tmp $Tmp2
+     echo "" | tee -a $Tmp
+     gawk '{ct=ct+$4;}END{print "TOTAL " ct " USD"}' $Tmp2 | tee -a $Tmp
 fi
-
-
 COMMANDPROC "COSTDAY" "Cost report last month to today" "-a -b"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      CESTART=$LASTMONTHSTART
@@ -2533,64 +2760,6 @@ COMMANDPROC "COSTDAY" "Cost report last month to today" "-a -b"; if [ $bCmd -gt 
           plot [1:] '$Tmp' using 1:3 with boxes notitle
 EOFMarker
 fi
-COMMANDPROC "COSTDAY2" "Cost report last month to today" "-a -b"; if [ $bCmd -gt 0 ] ; then
-#    http://gnuplot.sourceforge.net/demo_4.5/multiplt.html
-     assert "$ACCOUNT"  "Profile not specified"
-     CESTART=$LASTMONTHSTART
-     CEEND=$THISDAY
-     clean
-     aws --profile $ACCOUNT  ce get-cost-and-usage --granularity DAILY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
-                                                                                 gawk -v S=$CESTART -v E=$CEEND -v A=$ACCOUNT '
-                                                                                 /TIMEPERIOD/  { gsub(/[-]/, "/", $3); dt=$3;dd=$3;sub(/^......../, "", dd);}
-                                                                                 /BLENDEDCOST/ {if ($2 <0) $2=0;ct++;printf("%d %s %1.0f %s\n",ct,dt,$2,dd)}
-                                                                                 ' > $Tmp
-     cp $Tmp zed
-     PLOTTITLE=$ACCOUNT" Charges by day, "$LASTMONTHSTART" - "$THISDAY
-     gnuplot46 -p <<-EOFMarker
-set style function lines
-set size 1.0, 1.0
-set origin 100,100 
-
-
-
-          plottitle="`echo $PLOTTITLE` "
-          set terminal wxt enhanced 
-set multiplot
-set size 0.5,0.5
-set origin 0.0,0.5
-set grid
-unset key
-          set title plottitle font ",12" textcolor rgbcolor "black"
-          set decimal locale
-          set format y "%'g"
-          set xlabel 'Day'
-          set ylabel 'Dollars'
-          set boxwidth 0.5
-          set style fill solid
-          set xtic 10
-          plot [1:] '$Tmp' using 1:3 with boxes notitle
-EOFMarker
-fi
-#           set xdata time
-#           set timefmt '%Y/%m/$d'
-# ------------------------------------------------------------------------------------------------------------------------------------
-#           plot '$Tmp' using 1:2:xtic(2) with boxes notitle
-# ------------------------------------------------------------------------------------------------------------------------------------
-#      cat $Tmp2 | gnuplot -p -e "set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
-#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 120, 30; set title "time"; set autoscale; plot '-' using 1:2 with lines notitle" | tee -a $Tmp
-#      cat $Tmp2 | gnuplot -p -e "set terminal dumb size 200, 30;set autoscale;set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes" | tee -a $Tmp
-#      cat $Tmp2 | gnuplot -p -e "set terminal x11;set autoscale;set xlabel 'Day'; set ylabel 'Dollars'; set boxwidth 0.25;set style fill solid;plot '-' using 1:2:xtic(1) with boxes"
-# ------------------------------------------------------------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------------------------------------------------------------
-#           set autoscale
-#     set title "Walt pedometer" font ",14" textcolor rgbcolor "royalblue"
-#     set timefmt "%y/%m/%d"
-#     set yrange $minval:$maxval
-#     set xdata time
-#     set pointsize 1
-#     set terminal wxt  enhanced title "Walt's steps " persist raise
-#     plot "/home/walt/var/Pedometer" using 1:2 with linespoints
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -2967,6 +3136,11 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM
      getconfigecho "LASTSUBNET2"; LASTSUBNET2=$CONFIGITEM
      getconfigecho "LASTSGID";    LASTSGID=$CONFIGITEM
+     print ""
+     print "Region Lists"
+     print "US     "$USREGIONLIST
+     print "EUROPE "$EUROPEREGIONLIST
+     print "GLOBAL "$GLOBALREGIONLIST
 
      print ""
      getconfigecho "LASTINSTANCEID";    LASTINSTANCEID=$CONFIGITEM
@@ -2979,6 +3153,8 @@ COMMANDPROC "UTILSET,SET" "Set and Show configuration/environment variables" "-a
      getconfigecho "LASTBUCKET";  LASTBUCKET=$CONFIGITEM
      print ""
      print "LAST COMMAND       $LASTCOMMAND"
+     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
+     print "CONSOLE     https://$THISACCT.signin.aws.amazon.com/console/"
 
 fi
 # -----------------------------------------------------------------------------------------------------------------------
@@ -2997,7 +3173,8 @@ print "Test Mode"
 #            print $LRAN >> /tmp/big
 #            (( i += 1 ))
 #        done
-     wipeSERVICESPECIFICCREDENTIALS
+#     wipeSERVICESPECIFICCREDENTIALSa
+    print $ACCOUNT
 fi
 
 

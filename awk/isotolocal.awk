@@ -11,7 +11,7 @@
 }
 
 
-function isotolocalwithlapse(sz,                      fmt,yr,mo,dy,hr,mn,se,zu,i,szsz) {
+function isotolocalwithlapse(sz,                      fmt,yr,mo,dy,hr,mn,se,zu,i,l,n,d,szsz,s,szszsz) {
      # sz = "2018-05-21T14:42:36Z"
      # return strftime(fmt, mktime(yr " " mo " " dy " " hr " " mn " " se) - (4 * 3600) )
      yr = substr(sz,1,4)
@@ -26,11 +26,14 @@ function isotolocalwithlapse(sz,                      fmt,yr,mo,dy,hr,mn,se,zu,i
      fmt = "%m/%d/%Y %H:%M:%S";
      fmt = "%m/%d/%Y-%I:%M:%S%p";
      fmt = "%m/%d-%I:%M:%S%p";
+     # Very Short Format
+     fmt = "%m%d%I%M%S%p";
      szsz=strftime(fmt, mktime(yr " " mo " " dy " " hr " " mn " " se) - (4 * 3600) );
 
 
      i = (systime() - mktime(yr " " mo " " dy " " hr " " mn " " se)) - (4 * 3600) ;
 
-     return szsz ":" sprintf("%d", i/(24*3600));
+     s= szsz ":" sprintf("%03dD", i/(24*3600)) "";
+     return s
 
 }

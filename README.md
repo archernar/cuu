@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Thu Sep 13 15:30:35 EDT 2018
+       build date: Fri Jun  7 14:08:33 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -61,6 +61,7 @@ User Commands
      userlsp                      -a           User listing (simple format)
      usermenu                     -a           Menu driven user information
 Password Commands  
+     password                     -a -u -p     Change a users password
      passwordchange               -a -u -p     Change a users password
      passwordchangehard           -a -u -p     Change a users password
      passwordfixed                -a -u -p     Change a users password (fixed)
@@ -106,6 +107,7 @@ Policy Commands
      policysetattach              -a -u        Attach all policies specified in policyset.txt to user
      policysetremove              -a -u        Remove all policies specified in policyset.txt from user
      policyupdate                 -a -t -D     Update policy
+     policyuseradmin-remove       -a           Remove arn:aws:iam::aws:policy/AdministratorAccess from user
      policyuserchangepassword-add -a           Add arn:aws:iam::aws:policy/IAMUserChangePassword to user
      policyuserchangepassword-remove -a           Remove arn:aws:iam::aws:policy/IAMUserChangePassword from user
      policyuserdetachall          -a -u        Detach all policies from user
@@ -156,6 +158,7 @@ EC2 Commands
   
 VOLUME Commands  
      volumesls                    -a           Volume List
+     volumesnap                   -a           Snapshot Volumes 
      volumestorage                -a           Aggregate Volume Size
   
 RDS Commands  
@@ -163,6 +166,7 @@ RDS Commands
      rdslist                      -a -r -t (grep) List RDS Instances
   
 AMI Commands  
+     amicreate                    -a           AMI CREATE
      amils                        -a           List Local AMIs
   
 LAMBDA Commands  
@@ -198,17 +202,10 @@ S3 Commands
      s3url                        -a -b -k     Create a Signed URL
   
 COST Commands  
-     costday2                     -a -b        Cost report last month to today
+     cost2                        -a -b        Cost report this year
+     cost                         -a -b        Cost report
      costday                      -a -b        Cost report last month to today
-     costddb                      -a -b        DynamoDB Cost report this year
-     costec2                      -a -b        EC2 Cost report this year
-     costlambda                   -a -b        Lambda Cost report this year
-     costmonth                    -a -b        Cost report this month
-     costrds                      -a -b        RDS Cost report this year
-     costs3                       -a -b        S3 Cost report this year
-     costy                        -a -b        Cost report this year
-     costyear                     -a -b        Cost report this year
-     costyearbyday                -a -b        Cost report this year
+     costdetail                   -a -b        Cost detail report
   
 Vim Commands  
      vims3put                     -a -b -d     S3 Vim Put
@@ -243,7 +240,9 @@ Utility Commands
 ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
 ACCESSKEYREPLACE                 REPLACEACCESSKEYS                                                         
 ACCESSKEYSDELETE                 ACCESSKEYCLEAR           DELETEACCESSKEYS                                 
-ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEY                                    
+ACCESSKEYSLS                     ACCESSKEYLIST            LISTACCESSKEYS                                   
+ADMINACCESS                                                                                                
+AMICREATE                                                                                                  
 AMILS                                                                                                      
 CL                                                                                                         
 CLEARCUUOUT                                                                                                
@@ -253,17 +252,10 @@ CLOUDTRAIL-WATCH
 CLOUDTRAILMENU                                                                                             
 CLOUDTRAILWORLD                  WORLD                                                                     
 CONSOLEOPEN                      CONSOLE                                                                   
+COST                                                                                                       
+COST2                                                                                                      
 COSTDAY                                                                                                    
-COSTDAY2                                                                                                   
-COSTDDB                          COSTDYNAMODB                                                              
-COSTEC2                                                                                                    
-COSTLAMBDA                                                                                                 
-COSTMONTH                                                                                                  
-COSTRDS                                                                                                    
-COSTS3                                                                                                     
-COSTY                                                                                                      
-COSTYEAR                         COST                                                                      
-COSTYEARBYDAY                    COSTYD                                                                    
+COSTDETAIL                                                                                                 
 DDBCREATENAMEVALUETABLE                                                                                    
 DDBCREATETABLE                                                                                             
 DDBDELETETABLE                                                                                             
@@ -284,6 +276,7 @@ EC2TAGS
 EC2TAGS2222                                                                                                
 EC2TERMINATE                                                                                               
 EC2TERMINATELAST                                                                                           
+ELS                              ELIST                                                                     
 GAPP                                                                                                       
 GROUPADDUSER                     GROUPADD                                                                  
 GROUPCREATE                                                                                                
@@ -306,10 +299,13 @@ GROUPSFORUSER                    LISTUSERGROUPS
 KEYPAIRCREATE                    CREATEKEYPAIR                                                             
 LAMBDALS                         LAMBDATLIST                                                               
 LOGINPROFILECREATE                                                                                         
-PASSWORDCHANGE                   CHANGEPASSWORD                                                            
+LUX                                                                                                        
+ONE                              TWO                      THREE                                            
+PASSWORD                                                                                                   
+PASSWORDCHANGE                   CHANGEPASSWORD           UNSCRAM                                          
 PASSWORDCHANGEHARD               CHANGEPASSWORDHARD                                                        
 PASSWORDFIXED                    FIXED                                                                     
-PASSWORDSCRAM                    SCRAMPASSWORD                                                             
+PASSWORDSCRAM                    SCRAMPASSWORD            SCRAM                                            
 PASSWORDSCRAMSET                 SCRAMPASSWORDSET                                                          
 POLICYATTACHTOALLUSERS           ATTACHPOLICYTOALLUSERS                                                    
 POLICYATTACHTOUSER               ATTACHPOLICYTOUSER                                                        
@@ -343,12 +339,17 @@ POLICYP5-REMOVE                  P5R
 POLICYSETATTACH                  ATTACHPOLICYSET                                                           
 POLICYSETREMOVE                  REMOVEPOLICYSET                                                           
 POLICYUPDATE                     UPDATEPOLICY                                                              
+POLICYUSERADMIN-REMOVE           IAMUSERADMIN-REMOVE      NOADMIN                                          
 POLICYUSERCHANGEPASSWORD-ADD     IAMUSERCHANGEPASSWORD-ADD                                                  
 POLICYUSERCHANGEPASSWORD-REMOVE  IAMUSERCHANGEPASSWORD-REMOVE                                                  
 POLICYUSERDETACHALL              DETACHUSERPOLICIES                                                        
 RDSLIMITS                                                                                                  
 RDSLIST                          RDSLS                                                                     
+REPORT                                                                                                     
+RESET                                                                                                      
+RESETX                                                                                                     
 ROLELS                           ROLESLIST                LISTROLES                                        
+RUNNING                                                                                                    
 S3CLEARBUCKET                    S3CLEAR                                                                   
 S3COPY                                                                                                     
 S3COPY-1MINUTE                                                                                             
@@ -374,9 +375,12 @@ S3PUTTEXT
 S3REMOVE                         S3RM                                                                      
 S3RMFILESET                                                                                                
 S3URL                                                                                                      
+SCRAMSET                                                                                                   
+SNAPSHOTLS                                                                                                 
 STAMPCUUOUT                      STAMP                                                                     
 TAGG                                                                                                       
 TAGSLS                           TAGSLIST                                                                  
+UNSCRAMPROFILECREATE                                                                                       
 USERCREATE                       CREATEUSER                                                                
 USERCREATEADMIN                  CREATEREADMINUSER                                                         
 USERCREATEDEFAULT                CREATEDEFAULTUSER                                                         
@@ -406,6 +410,7 @@ UTILTIME                         TIME
 VIMS3PUT                         S3VIMPUT                                                                  
 VOLUMESLS                        VOLUMELS                                                                  
 VOLLS                                                                                                      
+VOLUMESNAP                       SNAPSHOT                                                                  
 VOLUMESTORAGE                    EBS                                                                       
 VPCCREATE                        CREATEVPC-2SUBNETS                                                        
 VPCDELETE                        DELETEVPC                                                                 
@@ -449,5 +454,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Thu Sep 13 15:30:39 EDT 2018
+Fri Jun  7 14:08:37 EDT 2019
 </pre>
