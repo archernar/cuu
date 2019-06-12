@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 11 23:09:57 EDT 2019
+       build date: Tue Jun 11 23:13:18 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -47,76 +47,42 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
 </pre>
 ### Commands  
 <pre>
-     Command            Options        Ver    Description                                   Aliases
-     COST               -a -b          v1.5   Cost report                                   
-     COSTDAY            -a -b          v2.0   Cost report last month to today (gnuplot)     
-     COSTDETAIL         -a -b          v1.5   Cost detail report                            
-     DDBDELETETABLE     -a -t          v1.0   Delete DynamoDB table                         
-     DDBLS              -a -t          v1.0   List DynamoDB tables                          DDBLIST 
-     EC2SG              -a             v1.0   Security Group Detail Report                  
-     EC2TAGS            -a [-r]        v1.0   List EC2 Tags                                 ECT 
-     ELS                -a             v1.0   EC2 List with CPU Utilization                 ECPU ECPULS 
-     LAMBDALS           -a             v2.0   List Lambda Functions                         LAMBDATLIST 
-     PASSWORDCHANGE     -a -u -p       v1.5   Change a users password (given pword)         CHANGEPASSWORD 
-     PASSWORDRESET      -a -u -p       v1.1   Reset use password to a random password       RESET 
-     PASSWORDSCRAM      -a -u          v1.5   Make a users password unknown                 SCRAMPASSWORD SCRAM 
-     POLICYDETACH       -a -u -t arn   v1.0   Detach policy from user                       
-     POLICYLISTALL      -a             v1.0   List all policies                             LISTALLPOLICIES POLICYLS 
-     POLICYLISTAWS      -a             v1.0   List all AWS policies                         LISTAWSPOLICIES 
-     POLICYLISTLOCAL    -a             v1.0   List local policies                           LISTLOCALPOLICIES 
-     S3CREATEBUCKET     -a -b [-r]     v1.2   Create S3 Bucket                              S3CB 
-     S3DELETEBUCKET     -a -b          v1.0   Deletes a S3 Bucket                           S3RB 
-     S3LS               -a [-b]        v1.0   S3 List                                       S3LIST LB 
-     S3LSR              -a [-b]        v1.0   S3 List (recursive)                           S3LISTR LBR 
-     S3PUT              -a -b -k -d    v1.5   S3 Put Object                                 
-     S3PUTPDF           -a -b -k -d    v1.5   S3 Put PDF Object                             
-     USERCREATEDEFAULT  -a -u          v1.5   Create a user with default settings           CREATEDEFAULTUSER CDU 
-     USERDELETE         -a -u          v1.0   Delete user                                   DELETEUSER 
-     USERDESCRIBE       -a -u          v2.5   List groups & policies a/w user or userlist   DESCRIBEUSERS DU 
-     USERLS             -a             v2.0   User listing                                  USERLIST LISTUSERS LU 
-     USERLSS            -a             v2.0   User listing in simple format                 LUS 
-     UTILACCOUNTNUMBER  -a             v1.1   Print account number                          ACCOUNTNUMBER 
-     UTILCONSOLE        -a             v1.0   Open AWS Console                              CONSOLE 
-     UTILOGINURL        -a             v1.0   Print console login URL                       LOGINURL LOGIN 
-     UTILSET            -a             v1.5   Set & show config/env variables               SET 
-     VOLUMELS           -a -r          v1.0   Volume List                                   VOLLS 
-     VPCCREATE          -a -r          v1.0   Create a Two Subnet VPC                       CREATEVPC-2SUBNETS 
-     VPCDELETE          -a -r -t       v1.0   Delete VPC                                    DELETEVPC 
-     VPCLS              -a             v1.0   List VPCs                                     
-User Commands  
-Password Commands  
-  
-AccessKey Commands  
-  
-Policy Commands  
-  
-Group Commands  
-  
-Role Commands  
-  
-VPC Commands  
-  
-EC2 Commands  
-  
-VOLUME Commands  
-  
-RDS Commands  
-  
-AMI Commands  
-  
-LAMBDA Commands  
-  
-S3 Commands  
-  
-COST Commands  
-  
-Vim Commands  
-  
-  
-CloudTrail Commands  
-  
-Utility Commands  
-</pre>
+Command            Options        Ver    Description                                   Aliases
+COST               -a -b          v1.5   Cost report                                   
+COSTDAY            -a -b          v2.0   Cost report last month to today (gnuplot)     
+COSTDETAIL         -a -b          v1.5   Cost detail report                            
+DDBDELETETABLE     -a -t          v1.0   Delete DynamoDB table                         
+DDBLS              -a -t          v1.0   List DynamoDB tables                          DDBLIST 
+EC2SG              -a             v1.0   Security Group Detail Report                  
+EC2TAGS            -a [-r]        v1.0   List EC2 Tags                                 ECT 
+ELS                -a             v1.0   EC2 List with CPU Utilization                 ECPU ECPULS 
+LAMBDALS           -a             v2.0   List Lambda Functions                         LAMBDATLIST 
+PASSWORDCHANGE     -a -u -p       v1.5   Change a users password (given pword)         CHANGEPASSWORD 
+PASSWORDRESET      -a -u -p       v1.1   Reset use password to a random password       RESET 
+PASSWORDSCRAM      -a -u          v1.5   Make a users password unknown                 SCRAMPASSWORD SCRAM 
+POLICYDETACH       -a -u -t arn   v1.0   Detach policy from user                       
+POLICYLISTALL      -a             v1.0   List all policies                             LISTALLPOLICIES POLICYLS 
+POLICYLISTAWS      -a             v1.0   List all AWS policies                         LISTAWSPOLICIES 
+POLICYLISTLOCAL    -a             v1.0   List local policies                           LISTLOCALPOLICIES 
+S3CREATEBUCKET     -a -b [-r]     v1.2   Create S3 Bucket                              S3CB 
+S3DELETEBUCKET     -a -b          v1.0   Deletes a S3 Bucket                           S3RB 
+S3LS               -a [-b]        v1.0   S3 List                                       S3LIST LB 
+S3LSR              -a [-b]        v1.0   S3 List (recursive)                           S3LISTR LBR 
+S3PUT              -a -b -k -d    v1.5   S3 Put Object                                 
+S3PUTPDF           -a -b -k -d    v1.5   S3 Put PDF Object                             
+USERCREATEDEFAULT  -a -u          v1.5   Create a user with default settings           CREATEDEFAULTUSER CDU 
+USERDELETE         -a -u          v1.0   Delete user                                   DELETEUSER 
+USERDESCRIBE       -a -u          v2.5   List groups & policies a/w user or userlist   DESCRIBEUSERS DU 
+USERLS             -a             v2.0   User listing                                  USERLIST LISTUSERS LU 
+USERLSS            -a             v2.0   User listing in simple format                 LUS 
+UTILACCOUNTNUMBER  -a             v1.1   Print account number                          ACCOUNTNUMBER 
+UTILCONSOLE        -a             v1.0   Open AWS Console                              CONSOLE 
+UTILOGINURL        -a             v1.0   Print console login URL                       LOGINURL LOGIN 
+UTILSET            -a             v1.5   Set & show config/env variables               SET 
+VOLUMELS           -a -r          v1.0   Volume List                                   VOLLS 
+VPCCREATE          -a -r          v1.0   Create a Two Subnet VPC                       CREATEVPC-2SUBNETS 
+VPCDELETE          -a -r -t       v1.0   Delete VPC                                    DELETEVPC 
+VPCLS              -a             v1.0   List VPCs                                     
 ### Command Aliases
 <pre>
 ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
@@ -337,5 +303,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 11 23:10:04 EDT 2019
+Tue Jun 11 23:13:25 EDT 2019
 </pre>

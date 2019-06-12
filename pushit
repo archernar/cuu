@@ -39,78 +39,7 @@ echo "</pre>" >> README.md
 
 echo "### Commands  " >> README.md
 echo "<pre>" >> README.md
-cuu -c commands >> README.md
-
-echo "User Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*user" >> README.md
-
-echo "Password Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*password" >> README.md
-echo "  " >> README.md
-
-echo "AccessKey Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*accesskey" >> README.md
-echo "  " >> README.md
-
-
-
-echo "Policy Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*policy" >> README.md
-echo "  " >> README.md
-echo "Group Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*group" >> README.md
-echo "  " >> README.md
-echo "Role Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*role" >> README.md
-echo "  " >> README.md
-
-
-echo "VPC Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*vpc" >> README.md
-echo "  " >> README.md
-
-echo "EC2 Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*ec2" >> README.md
-echo "  " >> README.md
-
-echo "VOLUME Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*volume" >> README.md
-echo "  " >> README.md
-
-echo "RDS Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*rds" >> README.md
-echo "  " >> README.md
-
-echo "AMI Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*ami" >> README.md
-echo "  " >> README.md
-
-
-echo "LAMBDA Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*lambda" >> README.md
-echo "  " >> README.md
-
-echo "S3 Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*s3" >> README.md
-echo "  " >> README.md
-
-echo "COST Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*cost" >> README.md
-echo "  " >> README.md
-
-echo "Vim Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*vim" >> README.md
-echo "  " >> README.md
-
-
-echo "  " >> README.md
-echo "CloudTrail Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*cloudtrail" >> README.md
-
-echo "  " >> README.md
-echo "Utility Commands  " >> README.md
-cat $Tmp | egrep "^[ ]*util" >> README.md
-echo "</pre>" >> README.md
+cuu -c commands | sed -e "s/^[ ]*//" >> README.md
 
 
 echo "### Command Aliases" >> README.md
