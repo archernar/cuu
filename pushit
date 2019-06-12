@@ -39,6 +39,8 @@ echo "</pre>" >> README.md
 
 echo "### Commands  " >> README.md
 echo "<pre>" >> README.md
+cuu -c commands >> README.md
+
 echo "User Commands  " >> README.md
 cat $Tmp | egrep "^[ ]*user" >> README.md
 
