@@ -42,11 +42,6 @@ echo "<pre>" >> README.md
 cuu -c commands | sed -e "s/^[ ]*//" >> README.md
 echo "</pre>" >> README.md
 
-echo "### Command Aliases" >> README.md
-echo "<pre>" >> README.md
-cuu -c aliaslist >> README.md
-echo "</pre>" >> README.md
-
 
 echo "### ~/.cuu.txt can contain defaults for these settings" >> README.md
 echo "<pre>" >> README.md
