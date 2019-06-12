@@ -1598,13 +1598,12 @@ COMMANDPROC "USERDELETE,DELETEUSER" "Delete user" "-a -u" "v1.0"; if [ $bCmd -gt
           wipeUSER
           deleteUSER
 fi
-COMMANDPROC "LUJ" "User listing in json format" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERLSJSON,USERLISTJSON,LUJ" "List users (json format)" "-a" "v1.1"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
           clean
           for ITEM in $PROFILELIST; do
                aws --output json --profile $ITEM iam list-users  
           done
-          cat $Tmp | column -t
 fi
 COMMANDPROC "USERLS,USERLIST,LISTUSERS,LU" "User listing" "-a" "v2.0"; if [ $bCmd -gt 0 ] ; then
           buildPROFILELIST
@@ -1681,7 +1680,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: ROLE Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "ROLELS,ROLESLIST,LISTROLES" "List Roles"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "ROLELS,ROLESLIST,LISTROLES" "List Roles" "-a" "v1.1"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -1743,6 +1742,14 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: GROUP Operations
 # -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "GROUPLS,GROUPLIST,LISTGROUPS" "List groups in profile" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
+               assert "$ACCOUNT" "Profile not specified"
+               clean
+               for ITEM in $ACCOUNT; do
+                    aws --profile $ACCOUNT iam list-groups --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
+               done
+               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
+fi
 COMMANDPROC "GROUPCREATE" "Create group in profile" "-a -t"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT" "Profile not specified"
                assert "$THING"   "Group not specified"
@@ -1754,14 +1761,6 @@ COMMANDPROC "GROUPDELETE" "Delete group from profile by group name" "-a -u -t"; 
                assertACCOUNTandUSERNAME
                assert "$THING" "Group not specified"
                $AWS iam delete-group --group-name $THING
-fi
-COMMANDPROC "GROUPLS,GROUPLIST,LISTGROUPS" "List groups in profile" "-a"; if [ $bCmd -gt 0 ] ; then
-               assert "$ACCOUNT" "Profile not specified"
-               clean
-               for ITEM in $ACCOUNT; do
-                    aws --profile $ACCOUNT iam list-groups --query "Groups[*].[GroupName,CreateDate,Arn]" >> $Tmp
-               done
-               cat $Tmp | gawk -v A=$ITEM -f noindent.awk | column -t
 fi
 COMMANDPROC "GROUPLISTUSERS,LISTUSERSINGROUP" "List users in group"; if [ $bCmd -gt 0 ] ; then
               assertACCOUNTandTHING "Group-Name"
