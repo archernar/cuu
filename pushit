@@ -40,7 +40,7 @@ echo "</pre>" >> README.md
 echo "### Commands  " >> README.md
 echo "<pre>" >> README.md
 cuu -c commands | sed -e "s/^[ ]*//" >> README.md
-
+echo "</pre>" >> README.md
 
 echo "### Command Aliases" >> README.md
 echo "<pre>" >> README.md

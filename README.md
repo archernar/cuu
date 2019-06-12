@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Tue Jun 11 23:13:18 EDT 2019
+       build date: Tue Jun 11 23:14:54 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -a  operand:  cli profile name, maps to AWS account  (from .aws/config)
@@ -83,6 +83,7 @@ VOLUMELS           -a -r          v1.0   Volume List                            
 VPCCREATE          -a -r          v1.0   Create a Two Subnet VPC                       CREATEVPC-2SUBNETS 
 VPCDELETE          -a -r -t       v1.0   Delete VPC                                    DELETEVPC 
 VPCLS              -a             v1.0   List VPCs                                     
+</pre>
 ### Command Aliases
 <pre>
 ACCESSKEYCREATE                  CREATEACCESSKEY                                                           
@@ -303,5 +304,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Tue Jun 11 23:13:25 EDT 2019
+Tue Jun 11 23:15:01 EDT 2019
 </pre>
