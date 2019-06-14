@@ -1,4 +1,9 @@
-# Commands  
+# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
+Script | Description | Usage | Defaults
+------ | ----------- | ----- | --------
+cuu | A multi function AWS CLI Wrapper Utility | See below
+ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>" | All US regions
+ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | EUROPE, US, GLOBAL, or specific region string
 Command | Options | Ver | Description | Aliases
 ------------|----------------|--------------|-----------|-----------------
 
@@ -53,12 +58,6 @@ VOLUMELS | -a [-r] | v1.0 | Volume List | VOLLS
 VPCCREATE | -a [-r] | v1.0 | Create a Two Subnet VPC | CREATEVPC-2SUBNETS 
 VPCDELETE | -a [-r] -u | v1.0 | Delete VPC | DELETEVPC 
 VPCLS | -a [-r] | v1.0 | List VPCs | 
-# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
-Script | Description | Usage | Defaults
------- | ----------- | ----- | --------
-cuu | A multi function AWS CLI Wrapper Utility | See below
-ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>" | All US regions
-ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | EUROPE, US, GLOBAL, or specific region string
 ### Examples
 <pre>
  cuu -a ENV1 -c USERLIST
@@ -70,7 +69,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 14 16:28:07 EDT 2019
+       build date: Fri Jun 14 16:30:27 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -189,5 +188,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 14 16:28:14 EDT 2019
+Fri Jun 14 16:30:33 EDT 2019
 </pre>
