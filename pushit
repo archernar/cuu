@@ -24,8 +24,9 @@ print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" > README.md
 # print "ec2ls | A ec2 listing utility | ec2ls -a \"\<profile list\>\" -r \"\<region list\>\" | All US regions" >> README.md
 # print "ec2sg | A sg check utility | ec2sg -a \"\<profile list\>\" -r \"\<region list\>\" | EUROPE, US, GLOBAL, or specific region string" >> README.md
 # print ""
-printf "%s | %s | %s | %s | %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> README.md
-print "------------|----------------|--------------|-----------|-----------------" >> README.md 
+p
+print "Command     | Options        | Ver          | Description | Aliases         "
+print "------------|----------------|--------------|-------------|-----------------"
 cuu -c commands  >> README.md
 print ""
 print "### Examples" >> README.md
