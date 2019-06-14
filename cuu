@@ -888,6 +888,7 @@ COMMANDLIST() {
           if [ "$SZOPTO" == "-a -b" ] ; then SZOPTO="-a [-r] -u"; fi
           if [ "$SZOPTO" == "-a -p -u" ] ; then SZOPTO="-a [-r] -u"; fi
           if [ "$SZOPTO" == "-a -u -p" ] ; then SZOPTO="-a [-r] -u"; fi
+          if [ "${CMDALI[$ITEM]}" == "" ] ; then CMDALI[$ITEM]="-"; fi
                typeset -l v=$ITEM
                UPPERSTRING=$v
                #printf "%-21s %-26s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp

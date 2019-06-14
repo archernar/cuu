@@ -1,18 +1,18 @@
 # CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
 Command | Options | Ver | Description | Aliases
 ------------|----------------|--------------|-----------|-----------------
-COST | -a [-r] -u | v1.5 | Cost report | 
-COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | 
-COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | 
-DDBCREATETABLE | -a -t <table> | v1.0 | Create a DynamoDB table | 
-DDBDELETETABLE | -a [-r] -u | v1.0 | Delete DynamoDB table | 
+COST | -a [-r] -u | v1.5 | Cost report | -
+COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | -
+COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | -
+DDBCREATETABLE | -a -t <table> | v1.0 | Create a DynamoDB table | -
+DDBDELETETABLE | -a [-r] -u | v1.0 | Delete DynamoDB table | -
 DDBLS | -a [-r] -u | v1.0 | List DynamoDB tables | DDBLIST 
 EC2RUNNING | -r | v1.1 | Running EC2 Instances | RUNNING 
-EC2SG | -a [-r] | v1.0 | Security Group Detail Report | 
+EC2SG | -a [-r] | v1.0 | Security Group Detail Report | -
 EC2TAGS | -a [-r] | v1.0 | List EC2 Tags | ECT 
-EC2TERMINATE | -a [-r] -t <id> | v1.1 | Terminate Instance | 
+EC2TERMINATE | -a [-r] -t <id> | v1.1 | Terminate Instance | -
 ELS | -a [-r] | v1.0 | EC2 List with CPU Utilization | ECPU ECPULS 
-GROUPDELETE | -a -u -t <g> | v1.0 | Delete group from profile by group name | 
+GROUPDELETE | -a -u -t <g> | v1.0 | Delete group from profile by group name | -
 GROUPLS | -a [-r] | v1.0 | List groups in profile | GROUPLIST LISTGROUPS 
 LAMBDALS | -a [-r] | v2.0 | List Lambda Functions | LAMBDATLIST 
 PASSWORDCHANGE | -a [-r] -u | v1.5 | Change a users password (given pword) | CHANGEPASSWORD 
@@ -20,7 +20,7 @@ PASSWORDRESET | -a [-r] -u | v1.1 | Reset useir password to a random password | 
 PASSWORDSCRAM | -a [-r] -u | v1.5 | Make a users password unknown | SCRAMPASSWORD SCRAM 
 POLICYATTACHADMIN | -a [-r] -u | v1.0 | Attach admin policy to user | ADMINACCESS 
 POLICYATTACHREADONLY | -a [-r] -u | v1.0 | Attach readonly policy to user | READONLYACCESS 
-POLICYDETACH | -a [-r] -u -t arn | v1.0 | Detach policy from user | 
+POLICYDETACH | -a [-r] -u -t arn | v1.0 | Detach policy from user | -
 POLICYLISTALL | -a [-r] | v1.0 | List all policies | LISTALLPOLICIES POLICYLS 
 POLICYLISTAWS | -a [-r] | v1.0 | List all AWS policies | LISTAWSPOLICIES 
 POLICYLISTLOCAL | -a [-r] | v1.0 | List local policies | LISTLOCALPOLICIES 
@@ -32,8 +32,8 @@ S3CREATEBUCKET | -a [-r] -b | v1.2 | Create S3 Bucket | S3CB
 S3DELETEBUCKET | -a [-r] -b | v1.0 | Delete S3 Bucket | S3RB 
 S3LS | -a [-r] [-b] | v1.0 | List S3 | S3LIST LB 
 S3LSR | -a [-r] [-b] | v1.0 | List S3 (recursive) | S3LISTR LBR 
-S3PUT | -a [-r] -b -k -d | v1.5 | Put S3 Object | 
-S3PUTPDF | -a [-r] -b -k -d | v1.5 | Put S3 PDF Object | 
+S3PUT | -a [-r] -b -k -d | v1.5 | Put S3 Object | -
+S3PUTPDF | -a [-r] -b -k -d | v1.5 | Put S3 PDF Object | -
 USERCREATEADMIN | -a [-r] -u -p [-t <g>] | v1.1 | Create admin user | CREATEADMINUSER 
 USERCREATE | -a [-r] -u -p [-t <g>] | v1.1 | Create a user and assign access keys | CREATEUSER 
 USERCREATEDEFAULT | -a [-r] -u | v1.5 | Create a user with default settings | CREATEDEFAULTUSER CDU 
@@ -51,7 +51,7 @@ UTILSET | -a [-r] | v1.5 | Set & show config/env variables | SET
 VOLUMELS | -a [-r] | v1.0 | Volume List | VOLLS 
 VPCCREATE | -a [-r] | v1.0 | Create a Two Subnet VPC | CREATEVPC-2SUBNETS 
 VPCDELETE | -a [-r] -u | v1.0 | Delete VPC | DELETEVPC 
-VPCLS | -a [-r] | v1.0 | List VPCs | 
+VPCLS | -a [-r] | v1.0 | List VPCs | -
 ### Examples
 <pre>
  cuu -a ENV1 -c USERLIST
@@ -63,7 +63,7 @@ VPCLS | -a [-r] | v1.0 | List VPCs |
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 14 16:33:40 EDT 2019
+       build date: Fri Jun 14 16:37:16 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -94,18 +94,18 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
 </pre>
 ### Commands  
 <pre>
-COST | -a [-r] -u | v1.5 | Cost report | 
-COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | 
-COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | 
-DDBCREATETABLE | -a -t <table> | v1.0 | Create a DynamoDB table | 
-DDBDELETETABLE | -a [-r] -u | v1.0 | Delete DynamoDB table | 
+COST | -a [-r] -u | v1.5 | Cost report | -
+COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | -
+COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | -
+DDBCREATETABLE | -a -t <table> | v1.0 | Create a DynamoDB table | -
+DDBDELETETABLE | -a [-r] -u | v1.0 | Delete DynamoDB table | -
 DDBLS | -a [-r] -u | v1.0 | List DynamoDB tables | DDBLIST 
 EC2RUNNING | -r | v1.1 | Running EC2 Instances | RUNNING 
-EC2SG | -a [-r] | v1.0 | Security Group Detail Report | 
+EC2SG | -a [-r] | v1.0 | Security Group Detail Report | -
 EC2TAGS | -a [-r] | v1.0 | List EC2 Tags | ECT 
-EC2TERMINATE | -a [-r] -t <id> | v1.1 | Terminate Instance | 
+EC2TERMINATE | -a [-r] -t <id> | v1.1 | Terminate Instance | -
 ELS | -a [-r] | v1.0 | EC2 List with CPU Utilization | ECPU ECPULS 
-GROUPDELETE | -a -u -t <g> | v1.0 | Delete group from profile by group name | 
+GROUPDELETE | -a -u -t <g> | v1.0 | Delete group from profile by group name | -
 GROUPLS | -a [-r] | v1.0 | List groups in profile | GROUPLIST LISTGROUPS 
 LAMBDALS | -a [-r] | v2.0 | List Lambda Functions | LAMBDATLIST 
 PASSWORDCHANGE | -a [-r] -u | v1.5 | Change a users password (given pword) | CHANGEPASSWORD 
@@ -113,7 +113,7 @@ PASSWORDRESET | -a [-r] -u | v1.1 | Reset useir password to a random password | 
 PASSWORDSCRAM | -a [-r] -u | v1.5 | Make a users password unknown | SCRAMPASSWORD SCRAM 
 POLICYATTACHADMIN | -a [-r] -u | v1.0 | Attach admin policy to user | ADMINACCESS 
 POLICYATTACHREADONLY | -a [-r] -u | v1.0 | Attach readonly policy to user | READONLYACCESS 
-POLICYDETACH | -a [-r] -u -t arn | v1.0 | Detach policy from user | 
+POLICYDETACH | -a [-r] -u -t arn | v1.0 | Detach policy from user | -
 POLICYLISTALL | -a [-r] | v1.0 | List all policies | LISTALLPOLICIES POLICYLS 
 POLICYLISTAWS | -a [-r] | v1.0 | List all AWS policies | LISTAWSPOLICIES 
 POLICYLISTLOCAL | -a [-r] | v1.0 | List local policies | LISTLOCALPOLICIES 
@@ -125,8 +125,8 @@ S3CREATEBUCKET | -a [-r] -b | v1.2 | Create S3 Bucket | S3CB
 S3DELETEBUCKET | -a [-r] -b | v1.0 | Delete S3 Bucket | S3RB 
 S3LS | -a [-r] [-b] | v1.0 | List S3 | S3LIST LB 
 S3LSR | -a [-r] [-b] | v1.0 | List S3 (recursive) | S3LISTR LBR 
-S3PUT | -a [-r] -b -k -d | v1.5 | Put S3 Object | 
-S3PUTPDF | -a [-r] -b -k -d | v1.5 | Put S3 PDF Object | 
+S3PUT | -a [-r] -b -k -d | v1.5 | Put S3 Object | -
+S3PUTPDF | -a [-r] -b -k -d | v1.5 | Put S3 PDF Object | -
 USERCREATEADMIN | -a [-r] -u -p [-t <g>] | v1.1 | Create admin user | CREATEADMINUSER 
 USERCREATE | -a [-r] -u -p [-t <g>] | v1.1 | Create a user and assign access keys | CREATEUSER 
 USERCREATEDEFAULT | -a [-r] -u | v1.5 | Create a user with default settings | CREATEDEFAULTUSER CDU 
@@ -144,7 +144,7 @@ UTILSET | -a [-r] | v1.5 | Set & show config/env variables | SET
 VOLUMELS | -a [-r] | v1.0 | Volume List | VOLLS 
 VPCCREATE | -a [-r] | v1.0 | Create a Two Subnet VPC | CREATEVPC-2SUBNETS 
 VPCDELETE | -a [-r] -u | v1.0 | Delete VPC | DELETEVPC 
-VPCLS | -a [-r] | v1.0 | List VPCs | 
+VPCLS | -a [-r] | v1.0 | List VPCs | -
 </pre>
 ### ~/.cuu.txt can contain defaults for these settings
 <pre>
@@ -182,5 +182,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 14 16:33:47 EDT 2019
+Fri Jun 14 16:37:23 EDT 2019
 </pre>
