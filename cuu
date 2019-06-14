@@ -780,6 +780,7 @@ AWSJ="aws --profile $ACCOUNT --region $REGION --output json "
 ISOAGO=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isoyesterhour(T);}'`
 ISOFUTURE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofuturehour(T);}'`
 ISOFUTUREMINUTE=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print isofutureminute(1);}'`
+LOCALFUTUREMINUTE=`gawk  -v T=$ISOFUTUREMINUTE  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 ISOANON=`gawk '@include "cuu.awk"; BEGIN { print isonow();}'`
 AGO=`gawk  -v T=$ISOAGO  '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
 ANON=`gawk -v T=$ISOANON '@include "cuu.awk"; BEGIN { print isotolocal(T, "%m/%d/%Y %I:%M:%S%p");}'`
@@ -879,6 +880,7 @@ COMMANDLIST() {
      LIST=`cat $CuuCommandFile`
      # printf "%-21s %-26s %-6s %-45s %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
      printf "%s | %s | %s | %s | %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
+     print "------------|----------------|--------------|-----------|-----------------\n" >> $Tmp
      for ITEM in $LIST; do
           SZOPTO="${OPTO[$ITEM]}"
           if [ "$SZOPTO" == "" ] ;      then SZOPTO="-a [-r]"; fi
@@ -890,8 +892,8 @@ COMMANDLIST() {
           if [ "$SZOPTO" == "-a -u -p" ] ; then SZOPTO="-a [-r] -u"; fi
                typeset -l v=$ITEM
                UPPERSTRING=$v
-               # printf "%-21s %-26s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
-               printf "%s | %s | %s | %s | %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
+               #printf "%-21s %-26s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
+                printf "%s | %s | %s | %s | %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
      done
      cp $Tmp fed
      if [ "$1" == "" ] ; then 
@@ -2465,7 +2467,7 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: S3 Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LS,S3LIST,LB" "List S3" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -2476,7 +2478,7 @@ COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ]
                     fi
                done
 fi
-COMMANDPROC "S3LSR,S3LISTR,LBR" "S3 List (recursive)" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LSR,S3LISTR,LBR" "List S3 (recursive)" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -2496,7 +2498,7 @@ COMMANDPROC "S3CREATEBUCKET,S3CB" "Create S3 Bucket" "-a [-r] -b" "v1.2"; if [ $
                aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region $REGION
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
-COMMANDPROC "S3DELETEBUCKET,S3RB" "Deletes a S3 Bucket" "-a [-r] -b" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3DELETEBUCKET,S3RB" "Delete S3 Bucket" "-a [-r] -b" "v1.0"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandS3BUCKET
                assert "$REGION"   "Region not specified"
                print  "Region is: "$REGION
@@ -2504,12 +2506,12 @@ COMMANDPROC "S3DELETEBUCKET,S3RB" "Deletes a S3 Bucket" "-a [-r] -b" "v1.0"; if 
                confirm
                aws --profile $ACCOUNT s3api delete-bucket --bucket $S3BUCKET 
 fi
-COMMANDPROC "S3PUT" "S3 Put Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3PUT" "Put S3 Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
                # java Gpurl us-east-1 $S3BUCKET $S3KEY 5
 fi
-COMMANDPROC "S3PUTPDF" "S3 Put PDF Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3PUTPDF" "Put S3 PDF Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$REGION"   "Region not specified"
                assert "$S3BUCKET" "Bucket not specified"
@@ -2518,7 +2520,7 @@ COMMANDPROC "S3PUTPDF" "S3 Put PDF Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type application/pdf
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
-COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a [-r] -b -C"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3HTML" "List S3 as HTML Page" "-a [-r] -b -C"; if [ $bCmd -gt 0 ] ; then
                clean
                aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
                $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.html"
@@ -2556,7 +2558,7 @@ fi
 
 
 
-COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a [-r] -b -d"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3COPY" "Copy S3 with wildcard (%) documents" "-a [-r] -b -d"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      assert "$S3BUCKET" "S3 Bucket not specified"
      assert "$DOCUMENT" "Document(s) not specified"
@@ -2626,14 +2628,14 @@ COMMANDPROC "S3COPYWITHRENAMING" "S3 Copy and Rename, with wildcard (%) document
      rm -rf $TmpDir
 fi
 
-COMMANDPROC "S3CLEARBUCKET,S3CLEAR" "S3 Remove Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3CLEARBUCKET,S3CLEAR" "Remove S3 Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKET
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
      confirm
      $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "*"
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
-COMMANDPROC "S3REMOVE,S3RM" "S3 Remove Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3REMOVE,S3RM" "Remove S3 Object, with wildcard (%) keys" "-a -b -k"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKETandS3KEY
      confirm
      S3KEY=`echo $S3KEY | sed -e "s/[%]/*/g"`
@@ -2641,9 +2643,16 @@ COMMANDPROC "S3REMOVE,S3RM" "S3 Remove Object, with wildcard (%) keys" "-a -b -k
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
-COMMANDPROC "S3COPY-1MINUTE" "S3 Copy, Expires in 1 Minute" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3COPY-1MINUTE, S3C1M" "Copy Document to S3, Expires in 1 Minute" "-a -b -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKET
+     assert "$DOCUMENT" "Document not specified"
+     print $DOCUMENT
+     print  s3://$S3BUCKET/$DOCUMENT
+     print $ISOFUTUREMINUTE
+     print $LOCALFUTUREMINUTE
+     confirm
      aws --profile $ACCOUNT s3 cp $DOCUMENT s3://$S3BUCKET/$DOCUMENT --expires $ISOFUTUREMINUTE
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
 
 COMMANDPROC "S3PUTTEXT" "S3 Put Text Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then
