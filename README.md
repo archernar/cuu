@@ -6,7 +6,6 @@ ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>"
 ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | EUROPE, US, GLOBAL, or specific region string
 Command | Options | Ver | Description | Aliases
 ------------|----------------|--------------|-----------|-----------------
-
 COST | -a [-r] -u | v1.5 | Cost report | 
 COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | 
 COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | 
@@ -69,7 +68,7 @@ VPCLS | -a [-r] | v1.0 | List VPCs |
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 14 16:30:27 EDT 2019
+       build date: Fri Jun 14 16:32:36 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -188,5 +187,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 14 16:30:33 EDT 2019
+Fri Jun 14 16:32:43 EDT 2019
 </pre>
