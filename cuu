@@ -879,8 +879,6 @@ COMMANDLIST() {
      rm $Tmp  >/dev/null 2>&1
      LIST=`cat $CuuCommandFile`
      # printf "%-21s %-26s %-6s %-45s %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
-     printf "%s | %s | %s | %s | %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
-     print "------------|----------------|--------------|-----------|-----------------\n" >> $Tmp
      for ITEM in $LIST; do
           SZOPTO="${OPTO[$ITEM]}"
           if [ "$SZOPTO" == "" ] ;      then SZOPTO="-a [-r]"; fi

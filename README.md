@@ -1,7 +1,7 @@
 # Commands  
-
-------------|----------------|--------------|-----------|-----------------
 Command | Options | Ver | Description | Aliases
+------------|----------------|--------------|-----------|-----------------
+
 COST | -a [-r] -u | v1.5 | Cost report | 
 COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | 
 COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | 
@@ -70,7 +70,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 14 16:25:26 EDT 2019
+       build date: Fri Jun 14 16:28:07 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -101,9 +101,6 @@ Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
 </pre>
 ### Commands  
 <pre>
-
-------------|----------------|--------------|-----------|-----------------
-Command | Options | Ver | Description | Aliases
 COST | -a [-r] -u | v1.5 | Cost report | 
 COSTDAY | -a [-r] -u | v2.0 | Cost report last month to today (gnuplot) | 
 COSTDETAIL | -a [-r] -u | v1.5 | Cost detail report | 
@@ -192,5 +189,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 14 16:25:33 EDT 2019
+Fri Jun 14 16:28:14 EDT 2019
 </pre>

@@ -17,6 +17,8 @@ print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 echo "# Commands  " > README.md
+     printf "%s | %s | %s | %s | %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> README.md
+     print "------------|----------------|--------------|-----------|-----------------\n" >> README.md 
 cuu -c commands | sed -e "s/^[ ]*//" >> README.md
 
 print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" >> README.md
