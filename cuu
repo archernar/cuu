@@ -5,8 +5,10 @@ Tmp2="/tmp/$$_$$"
 Tmp3="/tmp/$$_$$_$$"
 TmpDir="/tmp/dir$$"
 CuuCommandFile="/tmp/CuuCommandFile$$"
+DotCuuFile="/tmp/DotCuuFile$$"
 # trap 'rm -f "$Tmp" >/dev/null 2>&1;rm -f "$Tmp2" >/dev/null 2>&1;rm -f "$CuuCommandFile" >/dev/null 2>&1;' 0
 trap 'rm -f "$Tmp" >/dev/null 2>&1;rm -f "$CuuCommandFile" >/dev/null 2>&1;' 0
+trap 'rm -f "$DotCuuFile" >/dev/null 2>&1;' 0
 trap "exit 2" 1 2 3 13 15
 rm $Tmp  >/dev/null 2>&1
 # -----------------------------------------------------------------------------------------------------------------------
@@ -55,29 +57,28 @@ usage(){
      print "       build date: BUILDDATE"
      print "       repo:       https://github.com/archernar/cuu"
      print "  operands"
-     print "      -a  operand:  cli profile name, maps to AWS account  (from .aws/config)"
-     print "      -u  operand:  username"
-     print "      -p  operand:  password    (default may be set in ~/.cuu.txt)"
-     print "      -t  operand:  thing name  (specify a resource or object name)"
-     print "      -T  operand:  time window in hours (to specify (now minus T) to now)"
-     print "      -D  operand:  specify a document\file to upload (e.g. a policy document)"
-     print "      -e  operand:  expire time in seconds (0 == 7 days)"
-     print "      -C  operand:  content type (pdf, text, html, mp3)"
-     print "      -b  operand:  s3 bucket name"
-     print "      -k  operand:  s3 key name"
-     print "      -n  operand:  name string"
+     print "      -c  <operand>:  a command name (see below)"
+     print "      -a  <operand>:  cli profile name, maps to AWS account (from .aws/config)"
+     print "      -u  <operand>:  username    (use \"ALLUSERS\" to operate on all users)"
+     print "      -p  <operand>:  password    (default may be set in ~/.cuu.txt)"
+     print "      -t  <operand>:  thing name  (specify a resource or object name)"
+     print "      -T  <operand>:  time window in hours (to specify (now minus T) to now)"
+     print "      -D  <operand>:  specify a document\file to upload (e.g. a policy document)"
+     print "      -e  <operand>:  expire time in seconds (0 == 7 days)"
+     print "      -b  <operand>:  S3 bucket name"
+     print "      -k  <operand>:  S3 key name"
+     print "      -C  <operand>:  content type (pdf, text, html, mp3)"
+     print "      -n  <operand>:  name string"
      print "  flags"
-     print "      -h  flag:     display usage"
-     print "      -d  flag:     limits abbreviations"
-     print "      -j  flag:     use long datetime fields"
-     print "      -F  flag:     force mode, do not confirm any command"
-     print "      -B  flag:     show full user names"
-     print "      -E  flag:     show event names"
-     print "      -R  flag:     show raw records in output"
-     print "      -Z  flag:     output iso time"
-     print "      -i  flag:     interactive mode ('q' to quit)"
-     print "      -C  flag:     Content type (text,pdf,json,html)"
-     print "      -c  command:"
+     print "      -h              display usage"
+     print "      -d              limits abbreviations"
+     print "      -j              use long datetime fields"
+     print "      -F              force mode, do not confirm any command"
+     print "      -B              show full user names"
+     print "      -E              show event names"
+     print "      -R              show raw records in output"
+     print "      -Z              output iso time"
+     print "      -i              interactive mode ('q' to quit)"
      print "          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS"
      print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
      print " "
@@ -409,17 +410,6 @@ notify() {
                    cat $Tmp | mailx -r $NOTIFYFROM -s $1 $NOTIFYTO
                fi
 }
-xnotify() {
-     if [ "$NOTIFICATION" == "ON" ] ; then
-          if [ "$NOTIFYFROM" != "NONE" ] ; then
-               if [ "$NOTIFYTO" != "NONE" ] ; then
-                    if [ "`which mailx`" != "" ] ; then
-                         cat $Tmp | mailx -r $NOTIFYFROM -s 'CUU Notification' $NOTIFYTO
-                    fi
-               fi
-          fi
-     fi
-}
 
 clean() {
     rm -rf $Tmp
@@ -576,6 +566,12 @@ confirm() {
 echoitem() {
     print $1
 }
+typeset -A DOTCUU
+getdotcuu() {
+     SZITEM=`gawk -v w=$1 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+     DOTCUU[$SZITEM]=$2
+     print $1 >> $DotCuuFile
+}
 typeset -A CMDREL
 typeset -A INFO 
 typeset -A OPTO 
@@ -617,6 +613,12 @@ USREGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2"
 EUROPEREGIONLIST="eu-west-1 eu-west-2 eu-west-3 eu-central-1"
 GLOBALREGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
 RAN=`tr -cd \#_[:alnum:] < /dev/urandom |  fold -w 18 | head -1 |gawk '{print $0 "!!"}'`
+getdotcuu "P1" "Policy 1 ARN"; P1=$SZITEM;
+getdotcuu "P2" "Policy 2 ARN"; P2=$SZITEM;
+getdotcuu "P3" "Policy 3 ARN"; P3=$SZITEM;
+getdotcuu "P4" "Policy 4 ARN"; P4=$SZITEM;
+getdotcuu "P5" "Policy 5 ARN"; P5=$SZITEM;
+
 P1=`gawk -v w=P1 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 P2=`gawk -v w=P2 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 P3=`gawk -v w=P3 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -627,7 +629,7 @@ G2=`gawk -v w=G2 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exi
 G3=`gawk -v w=G3 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 G4=`gawk -v w=G4 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 G5=`gawk -v w=G5 -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
-PASSWORD=`gawk -v w=PASSWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
+PASSWORD=`gawk  -v w=PASSWORD  -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 FIXEDWORD=`gawk -v w=FIXEDWORD -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHUSER=`gawk -v w=WATCHUSER -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
 WATCHPROFILE=`gawk -v w=WATCHPROFILE -F= '{b="";gsub(re,b,$1);gsub(re,b,$2);if ($1==w) {print $2;exit;}}' ~/.cuu.txt`
@@ -687,6 +689,7 @@ do
             m) MAILME="1" ;;
             X) EXTRA=$OPTARG ;;
             N) NOTIFYTO=$OPTARG ;;
+            n) NAMESTRING=$OPTARG ;;
             e) EXPIRES=$OPTARG 
                if [ $EXPIRES -eq 0 ] ; then
                     EXPIRES=$((3600*24*7))
@@ -705,7 +708,6 @@ do
             i) LOOP="yes" ;;
             d) DETAIL="yes"; DETAILFLAG=" -d " ;;
             D) DOCUMENT=$OPTARG ;;
-            n) NAMESTRING=$OPTARG ;;
             T) TIMEFACTOR=$OPTARG ;;
             Q) QUANTAFACTOR=$OPTARG ;;
             c) COMMAND=$OPTARG ;;
@@ -724,7 +726,6 @@ do
                ;;
             R) SHOWRAW="yes" ;;
             p) PASSWORD=$OPTARG ;;
-            t) THING=$OPTARG ;;
             t) THING=$OPTARG ;;
 	    H) cuu -c commands | egrep -i "^[ ]*$OPTARG"
                exit 0;;
@@ -876,15 +877,19 @@ commands() {
 COMMANDLIST() {
      rm $Tmp  >/dev/null 2>&1
      LIST=`cat $CuuCommandFile`
-     printf "     %-18s %-14s %-6s %-45s %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
+     printf "   %-21s %-23s %-6s %-45s %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
      for ITEM in $LIST; do
           SZOPTO="${OPTO[$ITEM]}"
-          if [ "$SZOPTO" == "" ] ; then
-               SZOPTO="-a"
-          fi
+          if [ "$SZOPTO" == "" ] ;      then SZOPTO="-a [-r]"; fi
+          if [ "$SZOPTO" == "-a" ] ;    then SZOPTO="-a [-r]"; fi
+          if [ "$SZOPTO" == "-a -u" ] ; then SZOPTO="-a [-r] -u"; fi
+          if [ "$SZOPTO" == "-a -t" ] ; then SZOPTO="-a [-r] -u"; fi
+          if [ "$SZOPTO" == "-a -b" ] ; then SZOPTO="-a [-r] -u"; fi
+          if [ "$SZOPTO" == "-a -p -u" ] ; then SZOPTO="-a [-r] -u"; fi
+          if [ "$SZOPTO" == "-a -u -p" ] ; then SZOPTO="-a [-r] -u"; fi
                typeset -l v=$ITEM
                UPPERSTRING=$v
-               printf "     %-18s %-14s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
+               printf "   %-21s %-23s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
      done
      cp $Tmp fed
      if [ "$1" == "" ] ; then 
@@ -900,6 +905,16 @@ COMMANDINFO() {
     # print ${INFO[$szCmd]}
 }
 
+DOTCUULIST() {
+     rm $Tmp  >/dev/null 2>&1
+     LIST=`cat $DotCuuFile`
+     printf "     %s %s\n" "Item" "Description"
+     for ITEM in $LIST; do
+               printf "     %s %s\n" "$ITEM" "${DOTCUU["$ITEM"]}"
+     done
+     NOTHING=0
+     LIST=""
+}
 COMMANDPROC "ONE,TWO,THREE" "Mark the cuu.out file with a stamp" "-a"; if [ $bCmd -gt 0 ] ; then
      print "START"
 fi
@@ -925,7 +940,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: VPC Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "VPCDELETE,DELETEVPC" "Delete VPC" "-a -r -t" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VPCDELETE,DELETEVPC" "Delete VPC" "-a -t" "v1.0"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
      assert "$THING"    "VPC ID not specified"
@@ -973,7 +988,7 @@ COMMANDPROC "VPCLS" "List VPCs" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
 fi
 
 
-COMMANDPROC "EC2TERMINATE" "Terminate Instance" "-a"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2TERMINATE" "Terminate Instance" "-a [-r] -t <id>" "v1.1"; if [ $bCmd -gt 0 ] ; then
      print "Instance ID "$THING
      $AWS ec2 terminate-instances --instance-id $THING
 fi
@@ -1046,7 +1061,7 @@ COMMANDPROC "VPCINSTANCE" "Create an instance in the VPC" "-a"; if [ $bCmd -gt 0
  fi
 
 
-COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a -r" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VPCCREATE,CREATEVPC-2SUBNETS" "Create a Two Subnet VPC" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT"  "Profile not specified"
      assert "$REGION"   "Region not specified"
      assert "$MYCIDR"   "My CIDR not specified"
@@ -1176,16 +1191,16 @@ COMMANDPROC "POLICYDELETE" "Delete local policy ARN" "-a -t"; if [ $bCmd -gt 0 ]
      aws --profile $ACCOUNT iam delete-policy --policy-arn "arn:aws:iam::"$THIS":policy/"$THING
      THIS=""
 fi
-COMMANDPROC "POLICYLISTUSER,LISTUSERPOLICIES" "List policies atttached to user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYLISTUSER,LISTUSERPOLICIES" "List policies atttached to user" "-a -u" "v1.0"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME --query "AttachedPolicies[*].[PolicyName,PolicyArn]" --output text
 fi
-COMMANDPROC "POLICYDETACH" "Detach policy from user" "-a -u -t arn" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYDETACH" "Detach policy from user" "-a [-r] -u -t arn" "v1.0"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      confirm
      aws --profile $ACCOUNT iam detach-user-policy --user-name $USERNAME --policy-arn $THING 
 fi
-COMMANDPROC "POLICYUSERDETACHALL,DETACHUSERPOLICIES" "Detach all policies from user" "-a -u"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYUSERDETACHALL,DETACHUSERPOLICIES" "Detach all policies from user" "-a -u" "v1.0"; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandUSERNAME
      confirm
      aws --profile $ACCOUNT iam list-attached-user-policies --user-name $USERNAME | gawk -v A=$ACCOUNT -v U=$USERNAME ' {
@@ -1372,28 +1387,32 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: USER Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "ADMINACCESS" "ADMIN Access" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYATTACHADMIN,ADMINACCESS" "Attach admin policy to user" "-a -u" "v1.0"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAME
           policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
 fi
-COMMANDPROC "USERCREATEADMIN,CREATEREADMINUSER" "Create admin user" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYATTACHREADONLY,READONLYACCESS" "Attach readonly policy to user" "-a -u" "v1.0"; if [ $bCmd -gt 0 ] ; then
+          assertACCOUNTandUSERNAME
+          policyATTACH arn:aws:iam::aws:policy/ReadOnlyAccess
+fi
+COMMANDPROC "USERCREATEADMIN,CREATEADMINUSER" "Create admin user" "-a [-r] -u -p [-t <g>]" "v1.1"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           policyATTACH arn:aws:iam::aws:policy/AdministratorAccess
           optionalGROUPADD
 fi
-COMMANDPROC "USERCREATEREADONLY,CREATEREADONLYUSER" "Create readonly user" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATEREADONLY,CREATEREADONLYUSER" "Create readonly user" "-a [-r] -u -p [-t <g>]" "v1.1"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           policyATTACH arn:aws:iam::aws:policy/ReadOnlyAccess
           optionalGROUPADD
 fi
-COMMANDPROC "USERCREATENOKEY,CREATEUSERNOKEY" "Create a user with no access keys" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATENOKEY,CREATEUSERNOKEY" "Create user with no access keys" "-a [-r] -u -p [-t <g>]" "v1.1"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           optionalGROUPADD
 fi
-COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a -u -p -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "USERCREATE,CREATEUSER" "Create a user and assign access keys" "-a [-r] -u -p [-t <g>]" "v1.1"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           createUSER
           optionalGROUPADD
@@ -1438,7 +1457,7 @@ COMMANDPROC "RDSLIMITS" "List RDS Limits" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
        # echo "$Tmp"  | mailx -q $Tmp -r $NOTIFYFROM -s "$0"  $NOTIFYFROM
 fi
 
-COMMANDPROC "RDSLIST,RDSLS" "List RDS Instances" "-a -r -t (grep)"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "RDSLIST,RDSLS" "List RDS Instances" "-a -t (grep)"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      datestampCUUOUT
      buildPROFILELIST
@@ -1473,15 +1492,7 @@ COMMANDPROC "PASSWORDFIXED,FIXED" "Change a users password (fixed)" "-a -u -p"; 
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $FIXEDWORD 
 fi
-COMMANDPROC "PASSWORD" "Change a users password" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
-          assertACCOUNTandUSERNAMEandPASSWORD
-          PASSWORD=`LC_ALL=C tr -dc 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz023456789!' </dev/urandom | head -c 9 ; echo`
-          print $USERNAME
-          print $PASSWORD
-          confirm
-          aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD
-fi
-COMMANDPROC "PASSWORDRESET,RESET" "Reset use password to a random password" "-a -u -p" "v1.1"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "PASSWORDRESET,RESET,PASSWORD" "Reset useir password to a random password" "-a -u" "v1.1"; if [ $bCmd -gt 0 ] ; then
           PASSWORD=`LC_ALL=C tr -dc 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz023456789!' </dev/urandom | head -c 9 ; echo`
           cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZ" | fold -w 2 | head -1  > $Tmp
           cat /dev/urandom |tr -dc "abcdefghkmnpqrstuvwxyz" | fold -w 2 | head -1 >> $Tmp
@@ -1489,7 +1500,12 @@ COMMANDPROC "PASSWORDRESET,RESET" "Reset use password to a random password" "-a 
           cat /dev/urandom |tr -dc "ABCDEFGHJKLMNPQRSTUVWXYZ" | fold -w 2 | head -1 >> $Tmp
           cat /dev/urandom |tr -dc "23456789" | fold -w 2 | head -1 >> $Tmp
           PASSWORD=`cat $Tmp |gawk '{sz=sz $1} END {print sz "!!"}'`
-          assertACCOUNTandUSERNAMEandPASSWORD
+          cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" | fold -w 2000 | head -1  > $Tmp
+          cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZ" | fold -w 4096 | head -1  > $Tmp
+          cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" | fold -w 2000 | head -1  > $Tmp
+          cat /dev/urandom |tr -dc "ABCDEFGHKMNPQRSTUVWXYZ" | fold -w 4096 | head -1  > $Tmp
+          rm -rf $Tmp >/dev/null 2>&1
+          assertACCOUNTandUSERNAME
           print $USERNAME
           print $PASSWORD
           confirm
@@ -1691,7 +1707,7 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: DDB Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "DDBCREATETABLE" "Create a DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "DDBCREATETABLE" "Create a DynamoDB table" "-a -t <table>" "v1.0"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      assert "$THING"   "Table not specified"
      $AWS dynamodb create-table --table-name $THING \
@@ -1701,6 +1717,7 @@ COMMANDPROC "DDBCREATETABLE" "Create a DynamoDB table" "-a -t"; if [ $bCmd -gt 0
                                                          AttributeName=SongTitle,KeyType=RANGE \
                                 --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 fi
+
 COMMANDPROC "DDBCREATENAMEVALUETABLE" "Create a Name-Value DynamoDB table" "-a -t"; if [ $bCmd -gt 0 ] ; then
 #                                                          AttributeName=Value,KeyType=RANGE \
 #                                                          AttributeName=Value,AttributeType=S \
@@ -1757,7 +1774,7 @@ COMMANDPROC "GROUPCREATE" "Create group in profile" "-a -t"; if [ $bCmd -gt 0 ] 
                $AWS iam create-group --group-name $THING
                $AWS iam list-groups  --query "Groups[*].[GroupName,CreateDate,Arn]"
 fi
-COMMANDPROC "GROUPDELETE" "Delete group from profile by group name" "-a -u -t"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "GROUPDELETE" "Delete group from profile by group name" "-a -u -t <g>" "v1.0"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandUSERNAME
                assert "$THING" "Group not specified"
                $AWS iam delete-group --group-name $THING
@@ -2005,7 +2022,7 @@ COMMANDPROC "VOLUMESNAP,SNAPSHOT" "Snapshot Volumes "; if [ $bCmd -gt 0 ] ; then
 fi
 
 
-COMMANDPROC "VOLUMELS,VOLLS" "Volume List" "-a -r" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VOLUMELS,VOLLS" "Volume List" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
    assert "$ACCOUNT" "Profile not specified"
    buildPROFILELIST
    buildREGIONLIST
@@ -2027,7 +2044,7 @@ COMMANDPROC "VOLUMELS,VOLLS" "Volume List" "-a -r" "v1.0"; if [ $bCmd -gt 0 ] ; 
 fi
 
 
-COMMANDPROC "RUNNING" "Running EC2 Instances"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "EC2RUNNING,RUNNING" "Running EC2 Instances" "-r" "v1.1"; if [ $bCmd -gt 0 ] ; then
      cuu -r US -a $ACCOUNT EC2LS    | grep run
 fi
 COMMANDPROC "REPORT" "Overall Status Report"; if [ $bCmd -gt 0 ] ; then
@@ -2113,8 +2130,8 @@ COMMANDPROC "ELS,ECPU,ECPULS" "EC2 List with CPU Utilization" "-a" "v1.0"; if [ 
                                                                                | gawk -v A=$REG '{print A,$0}' \
                                                                                | gawk -v A=$ACC '{print A,$0}' \
                                                                                | gawk '{ 
-                                                                                         system( "./yyy " $1 " " $2 " " $3);
-                                                                                         printf("%s\n",$0);
+                                                                                         system( "./yyy -d 5 -q 8 " $1 " " $2 " " $3);
+                                                                                         printf("%s %s %s %s %s\n",$1,$4,$5,$6,$3);
                                                                                        }' \
                                                                                | tee -a /tmp/cuu.txt
  done
@@ -2122,9 +2139,9 @@ COMMANDPROC "ELS,ECPU,ECPULS" "EC2 List with CPU Utilization" "-a" "v1.0"; if [ 
  rm -rf /tmp/cuudos.txt
  cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/cuudos.txt
  cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/$ACC.txt
-if [ "$MAILME" == "1" ] ; then
-      todtcc -f /tmp/$ACC.txt
-fi
+# if [ "$MAILME" == "1" ] ; then
+#      echo "$file"  | mailx -a $file -r $NOTIFYFROM -s "$file"  $NOTIFYTO
+# fi
 fi
 # awk 'sub("$", "\r")' /tmp/ITA.txt > /tmp/ITADOS.txtV
 #                                                                                | sed 's/[.]small/-sml /g' \
@@ -2446,7 +2463,7 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: S3 Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -2457,7 +2474,7 @@ COMMANDPROC "S3LS,S3LIST,LB" "S3 List" "-a [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; th
                     fi
                done
 fi
-COMMANDPROC "S3LSR,S3LISTR,LBR" "S3 List (recursive)" "-a [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3LSR,S3LISTR,LBR" "S3 List (recursive)" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
                for ITEM in $PROFILELIST; do
@@ -2468,7 +2485,7 @@ COMMANDPROC "S3LSR,S3LISTR,LBR" "S3 List (recursive)" "-a [-b]" "v1.0"; if [ $bC
                     fi
                done
 fi
-COMMANDPROC "S3CREATEBUCKET,S3CB" "Create S3 Bucket" "-a -b [-r]" "v1.2"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3CREATEBUCKET,S3CB" "Create S3 Bucket" "-a [-r] -b" "v1.2"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$REGION"   "Region not specified"
                print  "Region is: "$REGION
@@ -2477,7 +2494,7 @@ COMMANDPROC "S3CREATEBUCKET,S3CB" "Create S3 Bucket" "-a -b [-r]" "v1.2"; if [ $
                aws --profile $ACCOUNT s3api create-bucket --bucket $S3BUCKET --region $REGION
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
-COMMANDPROC "S3DELETEBUCKET,S3RB" "Deletes a S3 Bucket" "-a -b" "v1.0"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3DELETEBUCKET,S3RB" "Deletes a S3 Bucket" "-a [-r] -b" "v1.0"; if [ $bCmd -gt 0 ] ; then
                assertACCOUNTandS3BUCKET
                assert "$REGION"   "Region not specified"
                print  "Region is: "$REGION
@@ -2485,12 +2502,12 @@ COMMANDPROC "S3DELETEBUCKET,S3RB" "Deletes a S3 Bucket" "-a -b" "v1.0"; if [ $bC
                confirm
                aws --profile $ACCOUNT s3api delete-bucket --bucket $S3BUCKET 
 fi
-COMMANDPROC "S3PUT" "S3 Put Object" "-a -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3PUT" "S3 Put Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
                # java Gpurl us-east-1 $S3BUCKET $S3KEY 5
 fi
-COMMANDPROC "S3PUTPDF" "S3 Put PDF Object" "-a -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3PUTPDF" "S3 Put PDF Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$REGION"   "Region not specified"
                assert "$S3BUCKET" "Bucket not specified"
@@ -2499,7 +2516,7 @@ COMMANDPROC "S3PUTPDF" "S3 Put PDF Object" "-a -b -k -d" "v1.5"; if [ $bCmd -gt 
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type application/pdf
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
 fi
-COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a [-r] -b -C"; if [ $bCmd -gt 0 ] ; then
                clean
                aws --profile $ACCOUNT s3 ls --recursive s3://$S3BUCKET 
                $AWS  s3 rm s3://$S3BUCKET/ --recursive --exclude "*" --include "index.html"
@@ -2522,13 +2539,13 @@ COMMANDPROC "S3HTML" "S3 List as HTML Page" "-a -b -C"; if [ $bCmd -gt 0 ] ; the
                     aws --output text --profile $ACCOUNT s3 presign s3://$S3BUCKET/index.m3u --expires-in $EXPIRES  | tee $Tmp
                fi
 fi
-COMMANDPROC "S3URL" "Create a Signed URL" "-a -b -k" ; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3URL" "Create a Signed URL" "-a [-r] -b -k" ; if [ $bCmd -gt 0 ] ; then
      assertACCOUNTandS3BUCKETandS3KEY
      java Gpurl $REGION  $S3BUCKET $S3KEY 5
 fi
 
 
-COMMANDPROC "VIMS3PUT,S3VIMPUT" "S3 Vim Put" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "VIMS3PUT,S3VIMPUT" "S3 Vim Put" "-a [-r] -b -d"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      assert "$S3BUCKET" "S3 Bucket not specified"
      assert "$DOCUMENT" "Document(s) not specified"
@@ -2537,7 +2554,7 @@ fi
 
 
 
-COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a [-r] -b -d"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      assert "$S3BUCKET" "S3 Bucket not specified"
      assert "$DOCUMENT" "Document(s) not specified"
@@ -2561,7 +2578,7 @@ COMMANDPROC "S3COPY" "S3 Copy, with wildcard (%) documents" "-a -b -d"; if [ $bC
      print "Document     "$DOCUMENT
      $AWS s3 cp ./ s3://$S3BUCKET/ --sse --recursive --exclude "*" --include "$DOCUMENT" $CTYPE
 fi
-COMMANDPROC "S3COPYWITHRENAMING" "S3 Copy and Rename, with wildcard (%) documents" "-a -b -d"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "S3COPYWITHRENAMING" "S3 Copy and Rename, with wildcard (%) documents" "-a -[r] -b -d"; if [ $bCmd -gt 0 ] ; then
      assert "$ACCOUNT" "Profile not specified"
      assert "$S3BUCKET" "S3 Bucket not specified"
      assert "$DOCUMENT" "Document(s) not specified"
@@ -3169,7 +3186,6 @@ COMMANDPROC "UTILACCOUNTNUMBER,ACCOUNTNUMBER" "Print account number" "" "v1.1"; 
      THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
      print $THISACCT
      print "https://$THISACCT.signin.aws.amazon.com/console/"
-     print ""
      $AWS iam list-account-aliases
 
 fi
@@ -3268,7 +3284,7 @@ print "Test Mode"
 #            (( i += 1 ))
 #        done
 #     wipeSERVICESPECIFICCREDENTIALSa
-    print $ACCOUNT
+    DOTCUULIST
 fi
 
 
