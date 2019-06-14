@@ -16,7 +16,8 @@ ANON=`date`
 print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
-cuu -h  > README.md
+print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" > README.md
+cuu -h  >> README.md
 print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" >> README.md
 print "Script | Description | Usage | Defaults" >> README.md
 print "------ | ----------- | ----- | --------" >> README.md
