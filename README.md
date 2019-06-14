@@ -1,9 +1,4 @@
 # CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
-Script | Description | Usage | Defaults
------- | ----------- | ----- | --------
-cuu | A multi function AWS CLI Wrapper Utility | See below
-ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>" | All US regions
-ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | EUROPE, US, GLOBAL, or specific region string
 Command | Options | Ver | Description | Aliases
 ------------|----------------|--------------|-----------|-----------------
 COST | -a [-r] -u | v1.5 | Cost report | 
@@ -68,7 +63,7 @@ VPCLS | -a [-r] | v1.0 | List VPCs |
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 14 16:32:36 EDT 2019
+       build date: Fri Jun 14 16:33:40 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -187,5 +182,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 14 16:32:43 EDT 2019
+Fri Jun 14 16:33:47 EDT 2019
 </pre>
