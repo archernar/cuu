@@ -17,8 +17,6 @@ print $ANON
 cuu -c utilcommands | grep -v alias  > $Tmp
 
 print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" > README.md
-cuu -h  >> README.md
-print "# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts" >> README.md
 print "Script | Description | Usage | Defaults" >> README.md
 print "------ | ----------- | ----- | --------" >> README.md
 print "cuu | A multi function AWS CLI Wrapper Utility | See below" >> README.md
