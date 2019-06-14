@@ -878,7 +878,7 @@ commands() {
 COMMANDLIST() {
      rm $Tmp  >/dev/null 2>&1
      LIST=`cat $CuuCommandFile`
-     # printf "%-21s %-26s %-6s %-45s %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
+     printf "%-21s %-26s %-6s %-45s %s\n" "Command" "Options" "Ver" "Description" "Aliases" >> $Tmp
      for ITEM in $LIST; do
           SZOPTO="${OPTO[$ITEM]}"
           if [ "$SZOPTO" == "" ] ;      then SZOPTO="-a [-r]"; fi
@@ -891,8 +891,7 @@ COMMANDLIST() {
           if [ "${CMDALI[$ITEM]}" == "" ] ; then CMDALI[$ITEM]="-"; fi
                typeset -l v=$ITEM
                UPPERSTRING=$v
-               #printf "%-21s %-26s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
-                printf "%s | %s | %s | %s | %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
+               printf "%-21s %-26s %-6s %-45s %s\n" $UPPERSTRING "$SZOPTO" "${CMDREL[$ITEM]}" "${INFO[$ITEM]}" "${CMDALI[$ITEM]}" >> $Tmp
      done
      cp $Tmp fed
      if [ "$1" == "" ] ; then 
