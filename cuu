@@ -506,12 +506,17 @@ assertACCOUNTandS3BUCKETandS3KEYandDOCUMENT() {
      assert "$S3KEY"     "S3 Key not specified"
      assert "$DOCUMENT"  "Document/Content/File not specified"
 }
+assertACCOUNTandS3BUCKETandDOCUMENT() {
+     assert "$ACCOUNT"   "Profile not specified"
+     assert "$S3BUCKET"  "S3 Bucket not specified"
+     assert "$DOCUMENT"  "Document/Content/File not specified"
+}
 assertACCOUNTandS3BUCKET() {
      assert "$ACCOUNT"  "Profile not specified"
      assert "$S3BUCKET"  "S3 Bucket not specified"
 }
 assertACCOUNTandS3BUCKETandS3KEY() {
-     assert "$ACCOUNT"  "Profile not specified"
+     assert "$ACCOUNT"   "Profile not specified"
      assert "$S3BUCKET"  "S3 Bucket not specified"
      assert "$S3KEY"     "S3 Key not specified"
 }
@@ -2465,6 +2470,33 @@ COMMANDPROC "EC2-UTIL" "CloudWatch CPU Utilization"; if [ $bCmd -gt 0 ] ; then
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: S3 Operations
 # -----------------------------------------------------------------------------------------------------------------------
+COMMANDPROC "S3PUT" "Put document into bucket (opt key)" "-a -b -d [-k]" "v1.5"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandDOCUMENT
+     print  s3://$S3BUCKET/$DOCUMENT
+     if [ "$S3KEY" != "" ] ; then
+          print  $S3KEY
+     fi
+     confirm
+     if [ "$S3KEY" == "" ] ; then
+          aws --profile $ACCOUNT s3 cp "$DOCUMENT" "s3://$S3BUCKET/$DOCUMENT"
+     else
+          aws --profile $ACCOUNT s3api put-object --bucket "$S3BUCKET" --key "$S3KEY" --body "$DOCUMENT"
+     fi
+     aws --profile $ACCOUNT s3 ls "s3://$S3BUCKET" --recursive
+fi
+COMMANDPROC "S3GET" "Get S3 object" "-a -b -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
+     assertACCOUNTandS3BUCKETandS3KEY
+     print  s3://$S3BUCKET/$S3KEY
+     if [ "$DOCUMENT" != "" ] ; then
+          print  $DOCUMENT
+     fi
+     confirm
+     if [ "$DOCUMENT" == "" ] ; then
+          aws --profile $ACCOUNT s3 cp "s3://$S3BUCKET/$S3KEY" .
+     else
+          aws --profile $ACCOUNT s3api get-object --bucket "$S3BUCKET" --key "$S3KEY" "$DOCUMENT"
+     fi
+fi
 COMMANDPROC "S3LS,S3LIST,LB" "List S3" "-a [-r] [-b]" "v1.0"; if [ $bCmd -gt 0 ] ; then
                buildPROFILELIST
                clean
@@ -2504,11 +2536,6 @@ COMMANDPROC "S3DELETEBUCKET,S3RB" "Delete S3 Bucket" "-a [-r] -b" "v1.0"; if [ $
                confirm
                aws --profile $ACCOUNT s3api delete-bucket --bucket $S3BUCKET 
 fi
-COMMANDPROC "S3PUT" "Put S3 Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
-               aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT
-               aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
-               # java Gpurl us-east-1 $S3BUCKET $S3KEY 5
-fi
 COMMANDPROC "S3PUTPDF" "Put S3 PDF Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd -gt 0 ] ; then
                assert "$ACCOUNT"  "Profile not specified"
                assert "$REGION"   "Region not specified"
@@ -2517,6 +2544,7 @@ COMMANDPROC "S3PUTPDF" "Put S3 PDF Object" "-a [-r] -b -k -d" "v1.5"; if [ $bCmd
                assert "$DOCUMENT" "Document not specified"
                aws --profile $ACCOUNT s3api put-object --bucket $S3BUCKET --key $S3KEY --body $DOCUMENT --content-type application/pdf
                aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+               # java Gpurl us-east-1 $S3BUCKET $S3KEY 5
 fi
 COMMANDPROC "S3HTML" "List S3 as HTML Page" "-a [-r] -b -C"; if [ $bCmd -gt 0 ] ; then
                clean
@@ -2649,8 +2677,19 @@ COMMANDPROC "S3COPY-1MINUTE, S3C1M" "Copy Document to S3, Expires in 1 Minute" "
      print $ISOFUTUREMINUTE
      print $LOCALFUTUREMINUTE
      confirm
+     rm -rf /tmp/$DOCUMENT
+     print "copy"
      aws --profile $ACCOUNT s3 cp $DOCUMENT s3://$S3BUCKET/$DOCUMENT --expires $ISOFUTUREMINUTE
+     print "get"
+     aws --profile $ACCOUNT s3api get-object --bucket $S3BUCKET --key $DOCUMENT /tmp/$DOCUMENT
+     print "ls"
      aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+     print "remove"
+     aws --profile $ACCOUNT s3 rm s3://$S3BUCKET/$S3KEY
+     print "ls"
+     aws --profile $ACCOUNT s3 ls s3://$S3BUCKET --recursive
+     print "get"
+     aws --profile $ACCOUNT s3api get-object --bucket $S3BUCKET --key $DOCUMENT /tmp/$DOCUMENT
 fi
 
 COMMANDPROC "S3PUTTEXT" "S3 Put Text Object" "-a -b -k -d"; if [ $bCmd -gt 0 ] ; then

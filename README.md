@@ -15,7 +15,7 @@ ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | 
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Fri Jun 14 18:48:23 EDT 2019
+       build date: Sat Jun 15 15:48:41 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -76,9 +76,10 @@ ROLELS                -a [-r]                    v1.1   List Roles              
 S3COPY-1MINUTE        -a -b -d                   v1.5   Copy Document to S3, Expires in 1 Minute      S3C1M 
 S3CREATEBUCKET        -a [-r] -b                 v1.2   Create S3 Bucket                              S3CB 
 S3DELETEBUCKET        -a [-r] -b                 v1.0   Delete S3 Bucket                              S3RB 
+S3GET                 -a -b -d                   v1.5   Get S3 object                                 -
 S3LS                  -a [-r] [-b]               v1.0   List S3                                       S3LIST LB 
 S3LSR                 -a [-r] [-b]               v1.0   List S3 (recursive)                           S3LISTR LBR 
-S3PUT                 -a [-r] -b -k -d           v1.5   Put S3 Object                                 -
+S3PUT                 -a -b -d [-k]              v1.5   Put document into bucket (opt key)            -
 S3PUTPDF              -a [-r] -b -k -d           v1.5   Put S3 PDF Object                             -
 USERCREATEADMIN       -a [-r] -u -p [-t <g>]     v1.1   Create admin user                             CREATEADMINUSER 
 USERCREATE            -a [-r] -u -p [-t <g>]     v1.1   Create a user and assign access keys          CREATEUSER 
@@ -135,5 +136,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Fri Jun 14 18:48:27 EDT 2019
+Sat Jun 15 15:48:45 EDT 2019
 </pre>
