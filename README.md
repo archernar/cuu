@@ -3,9 +3,11 @@
 ###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory
 <pre>
 Usage: cuu -a -c [-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-e]
-    Basic Use:    cuu -a <AWS profile> -c <cuu command>
+ 
+Basic Use:  cuu -a &lt;AWS profile&gt; -c cuu &lt;command&gt;
+ 
   info
-       build date: Sat Jun 15 15:54:40 EDT 2019
+       build date: Sat Jun 15 15:57:05 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -126,5 +128,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Jun 15 15:54:45 EDT 2019
+Sat Jun 15 15:57:09 EDT 2019
 </pre>
