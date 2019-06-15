@@ -1,21 +1,10 @@
-# CUU Repo - A set of AWS CLI Wrappers and Utility Scripts
-Script | Description | Usage | Defaults
------- | ----------- | ----- | --------
-cuu | A multi function AWS CLI Wrapper Utility | See below
-ec2ls | A ec2 listing utility | ec2ls -a "\<profile list\>" -r "\<region list\>" | All US regions
-ec2sg | A sg check utility | ec2sg -a "\<profile list\>" -r "\<region list\>" | EUROPE, US, GLOBAL, or specific region string
-### Examples
-<pre>
- cuu -a ENV1 -c USERLIST
- ec2ls -a "ENV1 EVN2"
-</pre>
- 
+# AWS CLI Wrappers and Utility Scripts
 ## CUU - An AWS CLI Wrapper
 ###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory
 <pre>
 Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
   info
-       build date: Sat Jun 15 15:48:41 EDT 2019
+       build date: Sat Jun 15 15:51:23 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -136,5 +125,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Jun 15 15:48:45 EDT 2019
+Sat Jun 15 15:51:28 EDT 2019
 </pre>
