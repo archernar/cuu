@@ -52,7 +52,8 @@ export AWKPATH=$AWKPATH:$CUUHOME/awk
 # M <pre>
 usage(){
 # README.md Start
-     print "Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]"
+     print "Usage: cuu -a -c [-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-e]"
+     print "    Basic Use:    cuu -a <AWS profile> -c <cuu command>"
      print "  info"
      print "       build date: BUILDDATE"
      print "       repo:       https://github.com/archernar/cuu"

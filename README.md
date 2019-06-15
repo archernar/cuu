@@ -2,9 +2,10 @@
 ## CUU - An AWS CLI Wrapper
 ###### Setup:  CUUHOME enviroment variable should be set to the cuu install directory
 <pre>
-Usage: cuu [-h][-a][-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-c][-e]
+Usage: cuu -a -c [-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-e]
+    Basic Use:    cuu -a <AWS profile> -c <cuu command>
   info
-       build date: Sat Jun 15 15:51:23 EDT 2019
+       build date: Sat Jun 15 15:54:40 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -c  <operand>:  a command name (see below)
@@ -125,5 +126,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Jun 15 15:51:28 EDT 2019
+Sat Jun 15 15:54:45 EDT 2019
 </pre>
