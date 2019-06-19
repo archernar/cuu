@@ -7,7 +7,7 @@ Usage: cuu -a -c [-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-e]
 Basic Use:  cuu -a &lt;AWS profile&gt; -c cuu &lt;command&gt;
  
   info
-       build date: Wed Jun 19 15:39:46 EDT 2019
+       build date: Wed Jun 19 15:42:14 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -a  <operand>:  cli profile name, maps to AWS account (from .aws/config)
@@ -131,5 +131,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Wed Jun 19 15:39:50 EDT 2019
+Wed Jun 19 15:42:18 EDT 2019
 </pre>

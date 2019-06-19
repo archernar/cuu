@@ -74,7 +74,7 @@ git add pushit
 git add spark
 git add cuuhisto
 git add cuu
-
+git tag -a v100.0 -m "version 100.0"
 git commit -m "Update"
 
 if [ "$LOCAL" == "" ] ; then
