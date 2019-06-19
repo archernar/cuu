@@ -1,0 +1,149 @@
+#!/usr/bin/ksh
+Tmp="/tmp/$$"
+trap 'rm -f "$Tmp" >/dev/null 2>&1; >/dev/null 2>&1;' 0
+trap "exit 2" 1 2 3 13 15
+rm $Tmp  >/dev/null 2>&1
+TILES=4
+DAYS=4
+while getopts "q:d:" arg
+do
+	case $arg in
+            q) TILES=$OPTARG ;;
+            d) DAYS=$OPTARG ;;
+	esac
+done
+shift $(($OPTIND - 1))
+
+ls | gawk -v fout=$Tmp -v Inst=$3 -v Reg=$2 -v Acc=$1 -v Days=$DAYS '
+function isonowhour() {
+     fmt = "%Y-%m-%dT%H:00:00Z";
+     return strftime(fmt, systime() + (4 * 3600) )
+}
+function isoyester(d) {
+     fmt = "%Y-%m-%dT%H:00:00Z";
+     return strftime(fmt, (systime() + (4 * 3600)) - (24 * 3600 * d) )
+}
+BEGIN {
+}
+END {
+     sz ="aws --profile " Acc " --region " Reg " cloudwatch get-metric-statistics --metric-name CPUUtilization \
+              --period 3600 --namespace AWS/EC2 --statistics Maximum \
+              --dimensions Name=InstanceId,Value=" Inst " \
+              --start-time " isoyester(Days) " --end-time " isonowhour() " >" fout
+system(sz)
+}
+'
+
+max=`cat $Tmp | grep DATAPOINTS | gawk 'BEGIN {p=0.0} {if ( $2 > p ) p = $2} END {print p}'`
+dp=`cat $Tmp | grep DATAPOINTS | wc -l`
+cp $Tmp zed
+
+cat $Tmp | grep DATAPOINTS | gawk -v DP=$dp -v MAX=$max -v tiles=$TILES '
+     function calc(qq,dp, f) {
+          f = (qq/dp)*100.00;
+          if ( f ==  100.00) f=99.9;
+          return f
+     }
+     BEGIN {
+          qtr1=0;qtr2=0;qtr3=0;qtr4=0;
+          q1=0;q2=0;q3=0;q4=0;q5=0;q6=0;q7=0;q8=0;
+          qq1=0;qq2=0;qq3=0;qq4=0;qq5=0;qq6=0;qq7=0;qq8=0;qq9=0;qq10=0;qq11=0;qq12=0;qq13=0;qq14=0;qq15=0;qq16=0;
+     } 
+     {
+       d= $2 * 1.0;
+       if ( d == 0.0 ) qtr1++
+       if ( d > 0.0   && d <=25.0)  qtr1++
+       if ( d > 25.0  && d <=50.0)  qtr2++
+       if ( d > 50.0  && d <=75.0)  qtr3++
+       if ( d > 75.0  && d <=100.0) qtr4++
+
+       if ( d == 0.0 ) q1++
+       if ( d > 0.0  && d <=12.5)  q1++
+       if ( d > 12.5  && d <=25.0) q2++
+       if ( d > 25.0  && d <=37.5) q3++
+       if ( d > 37.5  && d <=50.0) q4++
+       if ( d > 50.0  && d <=62.5) q5++
+       if ( d > 62.5  && d <=75.0) q6++
+       if ( d > 75.0  && d <=87.5) q7++
+       if ( d > 87.5  && d <=100.0) q8++
+
+       if ( d == 0.0 )               qq1++
+       if ( d >   0.0  && d  <=6.25) qq1++
+       if ( d >  6.25  && d <=12.50) qq2++
+       if ( d > 12.50  && d <=18.75) qq3++
+       if ( d > 18.75  && d <=25.00) qq4++
+       if ( d > 25.00  && d <=31.25) qq5++
+       if ( d > 31.25  && d <=37.50) qq6++
+       if ( d > 37.50  && d <=43.75) qq7++
+       if ( d > 43.75  && d <=50.00) qq8++
+       if ( d > 50.00  && d <=56.25) qq9++
+       if ( d > 56.25  && d <=62.50) qq10++
+       if ( d > 62.50  && d <=68.75) qq11++
+       if ( d > 68.75  && d <=75.00) qq12++
+       if ( d > 75.00  && d <=81.25) qq13++
+       if ( d > 81.25  && d <=87.50) qq14++
+       if ( d > 87.50  && d <=93.75) qq15++
+       if ( d > 93.75 && d <=100.00) qq16++
+     } 
+     END {
+     if (DP==0)DP=1;
+
+     if (tiles==4) {
+     printf("%3d %5.1f | %4.1f %4.1f %4.1f %4.1f | ",DP,MAX,
+     calc(qtr1,DP),
+     calc(qtr2,DP),
+     calc(qtr3,DP),
+     calc(qtr4,DP));
+     }
+
+     if (tiles==8) {
+     printf("%3d %5.1f | %4.1f %4.1f %4.1f %4.1f | %4.1f %4.1f %4.1f %4.1f | ",DP,MAX,
+     calc(q1,DP),
+     calc(q2,DP),
+     calc(q3,DP),
+     calc(q4,DP),
+     calc(q5,DP),
+     calc(q6,DP),
+     calc(q7,DP),
+     calc(q8,DP));
+     }
+     if (tiles==16) {
+     printf("%3d %5.1f | %4.1f %4.1f %4.1f %4.1f | %4.1f %4.1f %4.1f %4.1f | %4.1f %4.1f %4.1f %4.1f | %4.1f %4.1f %4.1f %4.1f | ",DP,MAX,
+     calc(qq1,DP),
+     calc(qq2,DP),
+     calc(qq3,DP),
+     calc(qq4,DP),
+     calc(qq5,DP),
+     calc(qq6,DP),
+     calc(qq7,DP),
+     calc(qq8,DP),
+     calc(qq9,DP),
+     calc(qq10,DP),
+     calc(qq11,DP),
+     calc(qq12,DP),
+     calc(qq13,DP),
+     calc(qq14,DP),
+     calc(qq15,DP),
+     calc(qq16,DP));
+     }
+#      out = "qqed"
+#      printf("%4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f %4.1f\n",
+#      calc(qq1,DP),
+#      calc(qq2,DP),
+#      calc(qq3,DP),
+#      calc(qq4,DP),
+#      calc(qq5,DP),
+#      calc(qq6,DP),
+#      calc(qq7,DP),
+#      calc(qq8,DP),
+#      calc(qq9,DP),
+#      calc(qq10,DP),
+#      calc(qq11,DP),
+#      calc(qq12,DP),
+#      calc(qq13,DP),
+#      calc(qq14,DP),
+#      calc(qq15,DP),
+#      calc(qq16,DP)) >> out;
+#      close(out);
+
+     }'

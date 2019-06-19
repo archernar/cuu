@@ -60,8 +60,8 @@ usage(){
      print "       build date: BUILDDATE"
      print "       repo:       https://github.com/archernar/cuu"
      print "  operands"
-     print "      -c  <operand>:  a command name (see below)"
      print "      -a  <operand>:  cli profile name, maps to AWS account (from .aws/config)"
+     print "      -c  <operand>:  a command name (see below)"
      print "      -u  <operand>:  username    (use \"ALLUSERS\" to operate on all users)"
      print "      -p  <operand>:  password    (default may be set in ~/.cuu.txt)"
      print "      -t  <operand>:  thing name  (specify a resource or object name)"
@@ -73,15 +73,15 @@ usage(){
      print "      -C  <operand>:  content type (pdf, text, html, mp3)"
      print "      -n  <operand>:  name string"
      print "  flags"
-     print "      -h              display usage"
+     print "      -F              force mode, do not confirm any command"
      print "      -d              limits abbreviations"
      print "      -j              use long datetime fields"
-     print "      -F              force mode, do not confirm any command"
      print "      -B              show full user names"
      print "      -E              show event names"
      print "      -R              show raw records in output"
      print "      -Z              output iso time"
      print "      -i              interactive mode ('q' to quit)"
+     print "      -h              display usage"
      print "          Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS"
      print "          Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES"
      print " "
@@ -430,6 +430,27 @@ awsdbg() {
 crack() {
     print $1
     exit 1
+}
+# -----------------------------------------------------------------------------------------------------------------------
+# -- TMs
+# -----------------------------------------------------------------------------------------------------------------------
+tmclear() {
+    clear
+}
+tmwhole() {
+    TMROW=1
+    TMCOL=1
+    tput cup $TMROW $TMCOL
+}
+tmhalf() {
+    TMROW=1
+    TMCOL=40
+    tput cup $TMROW $TMCOL
+}
+tmput() {
+    print $1
+    TMROW=`echo $TMROW | gawk 'END {print ($0*1)+1}'`
+    tput cup $TMROW $TMCOL
 }
 # -----------------------------------------------------------------------------------------------------------------------
 # -- ASSERTS
@@ -2140,7 +2161,7 @@ COMMANDPROC "ELS,ECPU,ECPULS" "EC2 List with CPU Utilization" "-a" "v1.0"; if [ 
                                                                                | gawk -v A=$REG '{print A,$0}' \
                                                                                | gawk -v A=$ACC '{print A,$0}' \
                                                                                | gawk '{ 
-                                                                                         system( "./yyy -d 5 -q 8 " $1 " " $2 " " $3);
+                                                                                         system( "./cuuhisto -d 10 -q 16 " $1 " " $2 " " $3);
                                                                                          printf("%s %s %s %s %s\n",$1,$4,$5,$6,$3);
                                                                                        }' \
                                                                                | tee -a /tmp/cuu.txt
@@ -3217,12 +3238,18 @@ fi
 # -----------------------------------------------------------------------------------------------------------------------
 # -- COMMAND SET: UTILITY Operations
 # -----------------------------------------------------------------------------------------------------------------------
-COMMANDPROC "UTILNEWPOLICYDOC,NEWPOLICYDOC" "Create new this.json from policydoc.json template"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYDOCCREATE" "Clone this.json from policydoc.json template" "-" "v1.0"; if [ $bCmd -gt 0 ] ; then
      cp policydoc.json this.json
+     ls -l this.json
 fi
-COMMANDPROC "UTILCATPOLICYDOC,CATPOLICYDOC,SHOWPOLICYDOC" "Display policydoc.json template"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "POLICYDOCEDIT" "Edit this.json" "-" "v1.0"; if [ $bCmd -gt 0 ] ; then
+     cp policydoc.json this.json
+     ls -l this.json
+fi
+COMMANDPROC "POLICYDOCTEMPLATE" "Display policydoc.json template" "-" "v1.0"; if [ $bCmd -gt 0 ] ; then
      cat policydoc.json
 fi
+
 COMMANDPROC "UTILTIME,TIME" "Print time window"; if [ $bCmd -gt 0 ] ; then
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
      print "WINDOW END TIME    "$ISOANON"  "$ANON
@@ -3253,33 +3280,29 @@ COMMANDPROC "UTILALIASLS,ALIASLIST" "Command Aliases" "-a"; if [ $bCmd -gt 0 ] ;
          echo "$ITEM" | gawk -F, '@include "trim.awk"; {printf "%-32s %-24s %-24s %-24s\n", trim($1), trim($2), trim($3), trim($4) }'
      done
 fi
-COMMANDPROC "UTILSET,SET" "Set & show config/env variables" "-a" "v1.5"; if [ $bCmd -gt 0 ] ; then
-     print ""
-     print ""
-     print "PASSWORD:          "$PASSWORD
-     print ""
-     print "MYCUUTAG:          "$MYCUUTAG
-     print "CUUHOME:           "$CUUHOME
-     print "REGION:            "$REGION
-     print "PUBLISH BUCKET:    "$PUBLISHBUCKET
-     print "EXPIRES:           "$EXPIRES
-     print "TIMEFACTOR:        "$TIMEFACTOR
-     print "WINDOW START TIME  "$ISOAGO
-     print "WINDOW END TIME    "$ISOANON
-     print ""
-     print "MYCIDR             "$MYCIDR
-     print ""
-     print "P1                 "$P1
-     print "P2                 "$P2
-     print "P3                 "$P3
-     print "P4                 "$P4
-     print "P5                 "$P5
-     print "G1                 "$G1
-     print "G2                 "$G2
-     print "G3                 "$G3
-     print "G4                 "$G4
-     print "G5                 "$G5
-     print ""
+COMMANDPROC "UTILSET,SET" "Set & show config/env variables" "-" "v1.5"; if [ $bCmd -gt 0 ] ; then
+     tmclear
+     tmwhole
+     tmput "PASSWORD:          "$PASSWORD
+     tmput "MYCUUTAG:          "$MYCUUTAG
+     tmput "CUUHOME:           "$CUUHOME
+     tmput "REGION:            "$REGION
+     tmput "PUBLISH BUCKET:    "$PUBLISHBUCKET
+     tmhalf
+     tmput "EXPIRES:           "$EXPIRES
+     tmput "TIMEFACTOR:        "$TIMEFACTOR
+     tmput "WINDOW START TIME  "$ISOAGO
+     tmput "WINDOW END TIME    "$ISOANON
+     tmput "MYCIDR             "$MYCIDR
+     tmput "P3                 "$P3
+     tmput "P4                 "$P4
+     tmput "P5                 "$P5
+     tmput "G1                 "$G1
+     tmput "G2                 "$G2
+     tmput "G3                 "$G3
+     tmput "G4                 "$G4
+     tmput "G5                 "$G5
+     exit
      getconfigecho "LASTVPCID";   LASTVPCID=$CONFIGITEM
      getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM
      getconfigecho "LASTSUBNET2"; LASTSUBNET2=$CONFIGITEM
@@ -3301,8 +3324,6 @@ COMMANDPROC "UTILSET,SET" "Set & show config/env variables" "-a" "v1.5"; if [ $b
      getconfigecho "LASTBUCKET";  LASTBUCKET=$CONFIGITEM
      print ""
      print "LAST COMMAND       $LASTCOMMAND"
-     THISACCT=`aws --profile $ACCOUNT sts get-caller-identity --output text --query "Account"`
-     print "CONSOLE     https://$THISACCT.signin.aws.amazon.com/console/"
      echoitem "THISDAY"
      print $LASTMONTHSTART
      print $LASTMONTHEND
@@ -3337,6 +3358,7 @@ print "Test Mode"
 #     wipeSERVICESPECIFICCREDENTIALSa
     DOTCUULIST
 fi
+
 
 
 

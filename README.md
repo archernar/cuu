@@ -7,11 +7,11 @@ Usage: cuu -a -c [-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-e]
 Basic Use:  cuu -a &lt;AWS profile&gt; -c cuu &lt;command&gt;
  
   info
-       build date: Sat Jun 15 15:57:05 EDT 2019
+       build date: Wed Jun 19 15:39:46 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
-      -c  <operand>:  a command name (see below)
       -a  <operand>:  cli profile name, maps to AWS account (from .aws/config)
+      -c  <operand>:  a command name (see below)
       -u  <operand>:  username    (use \"ALLUSERS\" to operate on all users)
       -p  <operand>:  password    (default may be set in ~/.cuu.txt)
       -t  <operand>:  thing name  (specify a resource or object name)
@@ -23,15 +23,15 @@ Basic Use:  cuu -a &lt;AWS profile&gt; -c cuu &lt;command&gt;
       -C  <operand>:  content type (pdf, text, html, mp3)
       -n  <operand>:  name string
   flags
-      -h              display usage
+      -F              force mode, do not confirm any command
       -d              limits abbreviations
       -j              use long datetime fields
-      -F              force mode, do not confirm any command
       -B              show full user names
       -E              show event names
       -R              show raw records in output
       -Z              output iso time
       -i              interactive mode ('q' to quit)
+      -h              display usage
           Optional :UL: may specify a user, a list of users, a file, or the keyword ALLUSERS
           Optional :PL: may specify a profile, a list of profiles, or the special keyword ALLPROFILES
  
@@ -59,6 +59,9 @@ PASSWORDSCRAM         -a [-r] -u                 v1.5   Make a users password un
 POLICYATTACHADMIN     -a [-r] -u                 v1.0   Attach admin policy to user                   ADMINACCESS 
 POLICYATTACHREADONLY  -a [-r] -u                 v1.0   Attach readonly policy to user                READONLYACCESS 
 POLICYDETACH          -a [-r] -u -t arn          v1.0   Detach policy from user                       -
+POLICYDOCCREATE       -                          v1.0   Clone this.json from policydoc.json template  -
+POLICYDOCEDIT         -                          v1.0   Edit this.json                                -
+POLICYDOCTEMPLATE     -                          v1.0   Display policydoc.json template               -
 POLICYLISTALL         -a [-r]                    v1.0   List all policies                             LISTALLPOLICIES POLICYLS 
 POLICYLISTAWS         -a [-r]                    v1.0   List all AWS policies                         LISTAWSPOLICIES 
 POLICYLISTLOCAL       -a [-r]                    v1.0   List local policies                           LISTLOCALPOLICIES 
@@ -86,7 +89,7 @@ USERLSS               -a [-r]                    v2.0   User listing in simple f
 UTILACCOUNTNUMBER     -a [-r]                    v1.1   Print account number                          ACCOUNTNUMBER 
 UTILCONSOLE           -a [-r]                    v1.0   Open AWS Console                              CONSOLE 
 UTILOGINURL           -a [-r]                    v1.0   Print console login URL                       LOGINURL LOGIN 
-UTILSET               -a [-r]                    v1.5   Set & show config/env variables               SET 
+UTILSET               -                          v1.5   Set & show config/env variables               SET 
 VOLUMELS              -a [-r]                    v1.0   Volume List                                   VOLLS 
 VPCCREATE             -a [-r]                    v1.0   Create a Two Subnet VPC                       CREATEVPC-2SUBNETS 
 VPCDELETE             -a [-r] -u                 v1.0   Delete VPC                                    DELETEVPC 
@@ -128,5 +131,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Sat Jun 15 15:57:09 EDT 2019
+Wed Jun 19 15:39:50 EDT 2019
 </pre>

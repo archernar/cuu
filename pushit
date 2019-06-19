@@ -72,6 +72,7 @@ git add awk/trim.awk
 git add awk/cuu.awk
 git add pushit
 git add spark
+git add cuuhisto
 git add cuu
 
 git commit -m "Update"
