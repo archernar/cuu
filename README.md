@@ -7,7 +7,7 @@ Usage: cuu -a -c [-u][-p][-t][-d][-D][-j][-F][-B][-E][-R][-Z][-i][-e]
 Basic Use:  cuu -a &lt;AWS profile&gt; -c cuu &lt;command&gt;
  
   info
-       build date: Wed Jun 19 15:42:14 EDT 2019
+       build date: Tue Jun 25 13:24:48 EDT 2019
        repo:       https://github.com/archernar/cuu
   operands
       -a  <operand>:  cli profile name, maps to AWS account (from .aws/config)
@@ -39,9 +39,13 @@ Basic Use:  cuu -a &lt;AWS profile&gt; -c cuu &lt;command&gt;
 ### Commands  
 <pre>
 Command               Options                    Ver    Description                                   Aliases
+CONI                  -a [-r]                    v1.0   Coni                                          -
 COST                  -a [-r] -u                 v1.5   Cost report                                   -
 COSTDAY               -a [-r] -u                 v2.0   Cost report last month to today (gnuplot)     -
 COSTDETAIL            -a [-r] -u                 v1.5   Cost detail report                            -
+COSTDETAILDAYS        -a -b -t                   v1.0   Cost detail report                            -
+COSTMTD               -a [-r]                    v1.0   Cost MTD                                      -
+COSTYTD               -a [-r]                    v1.0   Cost YTD                                      -
 DDBCREATETABLE        -a -t <table>              v1.0   Create a DynamoDB table                       -
 DDBDELETETABLE        -a [-r] -u                 v1.0   Delete DynamoDB table                         -
 DDBLS                 -a [-r] -u                 v1.0   List DynamoDB tables                          DDBLIST 
@@ -53,6 +57,7 @@ ELS                   -a [-r]                    v1.0   EC2 List with CPU Utiliz
 GROUPDELETE           -a -u -t <g>               v1.0   Delete group from profile by group name       -
 GROUPLS               -a [-r]                    v1.0   List groups in profile                        GROUPLIST LISTGROUPS 
 LAMBDALS              -a [-r]                    v2.0   List Lambda Functions                         LAMBDATLIST 
+LOGINPROFILECREATE    -a [-r] -u                 v1.0   Create Login Profile                          LPC 
 PASSWORDCHANGE        -a [-r] -u                 v1.5   Change a users password (given pword)         CHANGEPASSWORD 
 PASSWORDRESET         -a [-r] -u                 v1.1   Reset useir password to a random password     RESET PASSWORD 
 PASSWORDSCRAM         -a [-r] -u                 v1.5   Make a users password unknown                 SCRAMPASSWORD SCRAM 
@@ -102,7 +107,7 @@ DEFAULTUSERGROUP=
 DEFAULTUSERPOLICY=
 REGION=
 REGIONLIST=
-PROFILELIST=
+PROFILELIST=ECD1 ITA
 PUBLISHBUCKET=
 PASSWORD=
 STARTDATE=2018-05-01T00:00:00Z        ; Obsolete
@@ -131,5 +136,5 @@ NOTIFYTO=
 </pre>
 ### Build Date
 <pre>
-Wed Jun 19 15:42:18 EDT 2019
+Tue Jun 25 13:24:53 EDT 2019
 </pre>

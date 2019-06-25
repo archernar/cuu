@@ -102,6 +102,11 @@ function isoyestertenday() {
      fmt = "%Y-%m-%dT%H:00:00Z";
      return strftime(fmt, (systime() + (4 * 3600)) - (24 * 3600 * 10) )
 }
+function yesterdatehour(n) {
+     fmt = "%Y-%m-%d";
+     if ( n <=0 ) n = 1;
+     return strftime(fmt, (systime() + (4 * 3600)) - (1 * 3600 * n) )
+}
 function isoyesterhour(n) {
      fmt = "%Y-%m-%dT%H:%M:%SZ";
      if ( n <=0 ) n = 1;
@@ -129,3 +134,31 @@ function isofutureminute(n) {
      return strftime(fmt, (systime() + (4 * 3600)) + (1 * 60 * n) )
 }
 
+# cal 4 2013 | awk 'NF {DAYS = $NF}; END {print DAYS}
+
+function startofyear(      fmt) {
+     fmt = "%Y-01-01";
+     return strftime(fmt, (systime() + (4 * 3600)) - (1 * 3600 * 0) )
+}
+function startofmonth(      fmt) {
+     fmt = "%Y-%m-01";
+     return strftime(fmt, (systime() + (4 * 3600)) - (1 * 3600 * 0) )
+}
+function thisyear() {
+     return strftime("%Y", (systime() + (4 * 3600)) - (1 * 3600 * 0));
+}
+function thismonth() {
+     return strftime("%m", (systime() + (4 * 3600)) - (1 * 3600 * 0));
+}
+function thisday() {
+     return strftime("%d", (systime() + (4 * 3600)) - (1 * 3600 * 0));
+}
+function yesterytd(                    i,j,y,m,d,sz) {
+     y = strftime("%Y", (systime() + (4 * 3600)) - (1 * 3600 * 0))*1;
+     j = strftime("%m", (systime() + (4 * 3600)) - (1 * 3600 * 0))*1;
+     sz="";
+     for (i=1;i<=j;i++) {
+         sz =  sz y "-" sprintf("%02d", i) "-01 "
+     }
+     return sz;
+}

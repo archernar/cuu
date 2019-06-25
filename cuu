@@ -137,7 +137,10 @@ getconfig() {
 }
 getconfigecho() {
      CONFIGITEM=`gawk  -v w=$1 -v def=NONE -F= '{r=def;gsub(/[;].*$/,"",$0);gsub(/[ ]*$/,"",$0);if ($1==w) {r=$2;exit;}} END{print r;}' ~/.cuu.txt`
-     printf "%-18s %s\n" $1 $CONFIGITEM
+     # printf "%-18s %s\n" $1 $CONFIGITEM
+     if [ "$2" != "" ] ; then
+          printf "$2" $1 $CONFIGITEM
+     fi
 }
 window() {
      print "WINDOW START TIME  "$ISOAGO"  "$AGO
@@ -442,9 +445,20 @@ tmwhole() {
     TMCOL=1
     tput cup $TMROW $TMCOL
 }
+tmrow() {
+    TMROW=$1
+}
+tmcolumn() {
+    TMCOL=$1
+}
 tmhalf() {
     TMROW=1
     TMCOL=40
+    tput cup $TMROW $TMCOL
+}
+tmcr() {
+    TMROW=`echo $TMROW | gawk 'END {print ($0*1)+1}'`
+    TMCOL=1
     tput cup $TMROW $TMCOL
 }
 tmput() {
@@ -608,7 +622,6 @@ typeset -A CMDALI
 typeset -u COMMAND
 typeset -u UPPERSTRING
 typeset -l CTYPE
-typeset -u EXTRA
 COMMAND=""
 USERNAME=""
 ACCOUNT=""
@@ -709,37 +722,57 @@ CTYPE="";
 EXTRA="";
 VERBOSE="0"
 MAILME="0"
+TERMHL=""
 
-
-while getopts "mvX:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihH:SZBET:Q:" arg
+while getopts "mvVX:e:C:b:k:jr:Ff:D:dN:n:c:Ru:a:p:t:ihH:SZBET:Q:" arg
 do
 	case $arg in
-            v) VERBOSE="1" ;;
-            m) MAILME="1" ;;
-            X) EXTRA=$OPTARG ;;
-            N) NOTIFYTO=$OPTARG ;;
-            n) NAMESTRING=$OPTARG ;;
+            a) ACCOUNT=$OPTARG ;;
+            b) S3BUCKET=$OPTARG ;;
+            B) BIGNAMES="yes" ;;
+            c) COMMAND=$OPTARG ;;
+            C) CTYPE=$OPTARG ;;
+            d) DETAIL="yes"; DETAILFLAG=" -d " ;;
+            D) DOCUMENT=$OPTARG ;;
             e) EXPIRES=$OPTARG 
                if [ $EXPIRES -eq 0 ] ; then
                     EXPIRES=$((3600*24*7))
                fi
                ;;
-            C) CTYPE=$OPTARG ;;
-            b) S3BUCKET=$OPTARG ;;
-            k) S3KEY=$OPTARG ;;
-            S) SUMMARY="yes" ;;
-            B) BIGNAMES="yes" ;;
             E) BIGEVENTS="yes" ;;
-            Z) ISOTIME="yes" ;;
-            r) REGION=$OPTARG  ;;
-            F) FORCE="yes" ;;
+            abc) ACCOUNT=$OPTARG
+               if [ "$ACCOUNT" == "ALL" ] ; then
+                   ACCOUNT=$PROFILELIST
+               fi
+               if [ "$ACCOUNT" == "ALLACCOUNTS" ] ; then
+                   ACCOUNT=$PROFILELIST
+               fi
+               if [ "$ACCOUNT" == "LIST" ] ; then
+                   ACCOUNT=$PROFILELIST
+               fi
+               ;;
             f) FILE=$OPTARG ;;
+            F) FORCE="yes" ;;
+	    h) usage
+	       cuu -c commands
+               exit 0 ;;
+	    H) cuu -c commands | egrep -i "^[ ]*$OPTARG"
+               exit 0;;
             i) LOOP="yes" ;;
-            d) DETAIL="yes"; DETAILFLAG=" -d " ;;
-            D) DOCUMENT=$OPTARG ;;
-            T) TIMEFACTOR=$OPTARG ;;
+            k) S3KEY=$OPTARG ;;
+
+            m) MAILME="1" ;;
+            n) NAMESTRING=$OPTARG ;;
+            N) NOTIFYTO=$OPTARG ;;
+            p) PASSWORD=$OPTARG ;;
             Q) QUANTAFACTOR=$OPTARG ;;
-            c) COMMAND=$OPTARG ;;
+            r) REGION=$OPTARG  ;;
+            R) SHOWRAW="yes" ;;
+            S) SUMMARY="yes" ;;
+            t) THING=$OPTARG ;;
+            T) TIMEFACTOR=$OPTARG ;;
+            v) VERBOSE="1" ;;
+            V) TERMHL=" -V " ;;
             u) USERNAME=$OPTARG
                if [ "$USERNAME" == "ALLUSERS" ] ; then
                   assert "$ACCOUNT"  "Profile not specified"
@@ -753,27 +786,8 @@ do
                   print "" 
                fi
                ;;
-            R) SHOWRAW="yes" ;;
-            p) PASSWORD=$OPTARG ;;
-            t) THING=$OPTARG ;;
-	    H) cuu -c commands | egrep -i "^[ ]*$OPTARG"
-               exit 0;;
-	    h) usage
-	       cuu -c commands
-               exit 0 ;;
-            a) ACCOUNT=$OPTARG
-               ;;
-            abc) ACCOUNT=$OPTARG
-               if [ "$ACCOUNT" == "ALL" ] ; then
-                   ACCOUNT=$PROFILELIST
-               fi
-               if [ "$ACCOUNT" == "ALLACCOUNTS" ] ; then
-                   ACCOUNT=$PROFILELIST
-               fi
-               if [ "$ACCOUNT" == "LIST" ] ; then
-                   ACCOUNT=$PROFILELIST
-               fi
-               ;;
+            X) EXTRA=$OPTARG ;;
+            Z) ISOTIME="yes" ;;
 	    *) exit 0 ;;
 	esac
 done
@@ -1513,7 +1527,7 @@ COMMANDPROC "RDSLIST,RDSLS" "List RDS Instances" "-a -t (grep)"; if [ $bCmd -gt 
           done
      done
 fi
-COMMANDPROC "LOGINPROFILECREATE" "Create Login Profile" "-a -u -p"; if [ $bCmd -gt 0 ] ; then
+COMMANDPROC "LOGINPROFILECREATE,LPC" "Create Login Profile" "-a -u -p" "v1.0"; if [ $bCmd -gt 0 ] ; then
           assertACCOUNTandUSERNAMEandPASSWORD
           confirm
           createLOGINPROFILE
@@ -1539,6 +1553,8 @@ COMMANDPROC "PASSWORDRESET,RESET,PASSWORD" "Reset useir password to a random pas
           assertACCOUNTandUSERNAME
           print $USERNAME
           print $PASSWORD
+#           print "$EXTRA"
+#           echo "$PASSWORD"  | mailx -r "$NOTIFYFROM" -s "creds" "$EXTRA"
           confirm
           aws --profile $ACCOUNT iam update-login-profile --user-name $USERNAME --password $PASSWORD
 fi
@@ -2113,6 +2129,21 @@ COMMANDPROC "EC2LS,EC2LIST" "EC2 List"; if [ $bCmd -gt 0 ] ; then
  done
 fi
 
+FLDS="InstanceId"
+COMMANDPROC "CONI" "Coni" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
+   assert "$ACCOUNT" "Profile not specified"
+   REGIONLIST="us-east-1"
+   buildPROFILELIST
+   for ACC in $PROFILELIST; do
+   for REG in $REGIONLIST; do
+     aws --profile $ACC --region $REG ec2 describe-instances --query 'Reservations[*].Instances[*].['$FLDS']' --output text >$Tmp 
+     INSTANCELIST=`cat $Tmp | gawk 'BEGIN {sz="";} {sz=sz $0 " ";} END {print sz;}'`
+     for I in $INSTANCELIST; do
+          print $I
+     done
+   done
+   done
+fi
 
 FLDS="InstanceId,Placement.AvailabilityZone,State.Name,InstanceType,LaunchTime,Tags[?Key==\`Name\`].Value[],Tags[?Key==\`Created_By\`].Value[]"
 FLDS="InstanceId,Placement.AvailabilityZone,State.Name,InstanceType,LaunchTime,Tags[?Key==\`Name\`].Value[]"
@@ -2123,9 +2154,10 @@ COMMANDPROC "ELS,ECPU,ECPULS" "EC2 List with CPU Utilization" "-a" "v1.0"; if [ 
    assert "$ACCOUNT" "Profile not specified"
    # datestampCUUOUT
    buildPROFILELIST
-   REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
    REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2"
+   REGIONLIST="us-east-1 us-east-2 us-west-1 us-west-2 eu-west-1 eu-west-2 eu-west-3 eu-central-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 sa-east-1"
    verbose $REGION
+   ./cuuhisto -x
    for ACC in $PROFILELIST; do
    for REG in $REGIONLIST; do
      verbose $ACC 
@@ -2161,20 +2193,40 @@ COMMANDPROC "ELS,ECPU,ECPULS" "EC2 List with CPU Utilization" "-a" "v1.0"; if [ 
                                                                                | gawk -v A=$REG '{print A,$0}' \
                                                                                | gawk -v A=$ACC '{print A,$0}' \
                                                                                | gawk '{ 
-                                                                                         system( "./cuuhisto -d 10 -q 16 " $1 " " $2 " " $3);
-                                                                                         printf("%s %s %s %s %s\n",$1,$4,$5,$6,$3);
+                                                                                         system( "./cuuhisto  -d 60 -q 16 " $1 " " $2 " " $3);
+                                                                                         sub(/^.*[:]/,"",$7);
+                                                                                         sub(/[D]/,"",$7);
+                                                                                         $8=substr($8,1,20);
+                                                                                         printf("%-4s %s %s %s %s %s\n",$1,$4,$7,$6,$3,$8);
                                                                                        }' \
-                                                                               | tee -a /tmp/cuu.txt
+                                                                               | tee -a /tmp/cuu.txt \
+                                                                               | gawk -v rev="$(tput rev)" -v norm="$(tput sgr0)" ' {
+                                                                                    gsub(/[|][|]N[|][|]/,norm,$0);
+                                                                                    gsub(/[|][|]R[|][|]/,rev,$0);
+                                                                                    print $0;
+                                                                                 }'
  done
  done
  rm -rf /tmp/cuudos.txt
- cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/cuudos.txt
- cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/$ACC.txt
+
+
+
+
+
+./cuuhisto -x > $Tmp
+cat /tmp/cuu.txt | gawk '{
+                     gsub(/[|][|]N[|][|]/,"",$0);
+                     gsub(/[|][|]R[|][|]/,"",$0);
+                     print $0;
+                   }' | sort -k 2,2 >> $Tmp
+cp $Tmp /tmp/cuu.txt
+
+#  cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/cuudos.txt
+#  cat /tmp/cuu.txt | gawk 'sub("$", "\r")'  > /tmp/$ACC.txt
 # if [ "$MAILME" == "1" ] ; then
 #      echo "$file"  | mailx -a $file -r $NOTIFYFROM -s "$file"  $NOTIFYTO
 # fi
 fi
-# awk 'sub("$", "\r")' /tmp/ITA.txt > /tmp/ITADOS.txtV
 #                                                                                | sed 's/[.]small/-sml /g' \
 #                                                                                | sed 's/[.]micro/-mic /g' \
 #                                                                                | sed 's/[.]medium/-med /g' \
@@ -2793,11 +2845,11 @@ COMMANDPROC "COST" "Cost report" "-a -b" "v1.5"; if [ $bCmd -gt 0 ] ; then
      buildPROFILELISTnp
      clean
      for ACC in $PROFILELIST; do
-          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost --time-period Start=$CESTART,End=$CEEND | \
-                                                                                   gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
-                                                                                   /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
-                                                                                   /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)}
-                                                                                   ' | tee -a $Tmp
+          aws --profile $ACC  ce get-cost-and-usage --granularity MONTHLY --metrics UnblendedCost \
+              --time-period Start=$CESTART,End=$CEEND | \
+                            gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                            /TIMEPERIOD/ {printf("%4s %s %s ", A,$3,$2)}
+                            /BLENDEDCOST/ {printf("%8.0f %s\n", $2,$3)} ' | tee -a $Tmp
      done
      cp $Tmp $Tmp2
      echo "" | tee -a $Tmp
@@ -2811,6 +2863,73 @@ fi
 #                function dq(sz) { return("\"" sz "\"") }
 #                /^DIM/{$1="";print dq(trim($0)) ","}'
 # 
+COMMANDPROC "COSTYTD" "Cost YTD" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`gawk '@include "cuu.awk"; BEGIN { print startofyear();}'`
+     CEEND=`  gawk '@include "cuu.awk"; BEGIN { print yesterdatehour(0);}'`
+     buildPROFILELISTnp
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --group-by Type=DIMENSION,Key=SERVICE  --filter file://f.json \
+              --granularity MONTHLY --metrics "BlendedCost" \
+              --time-period Start=$CESTART,End=$CEEND | grep BLENDED > $Tmp
+          cp $Tmp zed
+          cat $Tmp | gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                BEGIN      {t=0.0;}
+                /^BLENDED/ {t=t+$2;}
+                END        { printf("%14s %s %s %10.2f\n",A,S,E,t) }'
+     done
+fi
+COMMANDPROC "COSTMTD" "Cost MTD" "-a" "v1.0"; if [ $bCmd -gt 0 ] ; then
+     CETHISYEAR=` gawk 'BEGIN { print strftime("%Y", (systime() + (4*3600)) - (1*3600*0));}'`
+     CETHISMONTH=`gawk 'BEGIN { print strftime("%m", (systime() + (4*3600)) - (1*3600*0));}'`
+     ISOSTAMPNOW=`gawk 'BEGIN { print strftime( "%Y-%m-%dT%H:%M:%SZ", (systime() + (4*3600)) - (1*3600*0));}'`
+     LOCALSTAMPNOW=`gawk 'BEGIN { print strftime( "%Y-%m-%dT%H:%M:%SZ", (systime() + (0*3600)) - (1*3600*0));}'`
+     DATENOW=`  gawk 'BEGIN { print strftime("%Y-%m-%d", (systime() + (4*3600)) - (1*3600*0));}'`
+     Y=` gawk 'BEGIN { print strftime("%Y", (systime() + (4*3600)) - (1*3600*0));}'`
+     M=` gawk 'BEGIN { print strftime("%m", (systime() + (4*3600)) - (1*3600*0));}'`
+     D=` gawk 'BEGIN { print strftime("%d", (systime() + (4*3600)) - (1*3600*0));}'`
+     DAYLDOM=` cal $M $Y | gawk -v y=$Y -v m=$M 'NF {d=$NF}; END {printf("%02d",d)}'`
+     DATELDOM=`cal $M $Y | gawk -v y=$Y -v m=$M 'NF {d=$NF}; END {printf("%02d-%02d-%02d",y,m,d)}'`
+     DATEFDOM=`gawk 'BEGIN { print strftime("%Y-%m-01", (systime() + (4*3600)) - (1*3600*0));}'`
+     DATEFDOY=`gawk 'BEGIN { print strftime("%Y-01-01", (systime() + (4*3600)) - (1*3600*0));}'`
+     DATELDOY=`gawk 'BEGIN { print "12-01-01";}'`
+
+
+     CESTART=`gawk 'BEGIN { print strftime("%Y-%m-01", (systime() + (4*3600)) - (1*3600*0));}'`
+     CEEND=`  gawk 'BEGIN { print strftime("%Y-%m-%d", (systime() + (4*3600)) - (1*3600*0));}'`
+     buildPROFILELISTnp
+     print $PROFILELIST
+     clean
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --group-by Type=DIMENSION,Key=SERVICE  --filter file://f.json \
+              --granularity MONTHLY --metrics "BlendedCost" \
+              --time-period Start=$CESTART,End=$CEEND | grep BLENDED > $Tmp
+          cat $Tmp | gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                BEGIN      {t=0.0;}
+                /^BLENDED/ {t=t+$2;}
+                END        { printf("%14s %s %s %10.2f\n",A,S,E,t) }'
+     done
+fi
+COMMANDPROC "COSTDETAILDAYS" "Cost detail report" "-a -b -t" "v1.0"; if [ $bCmd -gt 0 ] ; then
+     CESTART=`gawk -v T=$TIMEFACTOR -v H=$THING '@include "cuu.awk"; BEGIN { print yesterdatehour(H*24);}'`
+     CEEND=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print yesterdatehour(0);}'`
+     CESTARTOFYEAR=`gawk -v T=$TIMEFACTOR '@include "cuu.awk"; BEGIN { print startofyear();}'`
+     CESTART=$CESTARTOFYEAR
+     buildPROFILELISTnp
+     clean
+     rm -rf $Tmp
+     for ACC in $PROFILELIST; do
+          aws --profile $ACC  ce get-cost-and-usage --group-by Type=DIMENSION,Key=SERVICE  --filter file://f.json \
+              --granularity MONTHLY --metrics "BlendedCost" \
+              --time-period Start=$CESTART,End=$CEEND | grep BLENDED > $Tmp
+          cp $Tmp zed
+          cat $Tmp | gawk -v S=$CESTART -v E=$CEEND -v A=$ACC '
+                BEGIN      {t=0.0;}
+                /^KEY/     {$1="";}
+                /^BLENDED/ { $1=""; t=t+$0; }
+                END        { printf("%14s %s %s %10.2f\n",A,S,E,t) }'
+     done
+fi
 COMMANDPROC "COSTDETAIL" "Cost detail report" "-a -b" "v1.5"; if [ $bCmd -gt 0 ] ; then
      CESTART=`date --rfc-3339=seconds |gawk '{sz=$1; gsub(/..[-]..$/, "", sz); print sz "01-01";}'`
      CEEND=`date --rfc-3339=seconds |gawk '{sz=$1; print sz "";}'`
@@ -3288,7 +3407,8 @@ COMMANDPROC "UTILSET,SET" "Set & show config/env variables" "-" "v1.5"; if [ $bC
      tmput "CUUHOME:           "$CUUHOME
      tmput "REGION:            "$REGION
      tmput "PUBLISH BUCKET:    "$PUBLISHBUCKET
-     tmhalf
+     tmcolumn 60
+     tmrow 0
      tmput "EXPIRES:           "$EXPIRES
      tmput "TIMEFACTOR:        "$TIMEFACTOR
      tmput "WINDOW START TIME  "$ISOAGO
@@ -3302,11 +3422,13 @@ COMMANDPROC "UTILSET,SET" "Set & show config/env variables" "-" "v1.5"; if [ $bC
      tmput "G3                 "$G3
      tmput "G4                 "$G4
      tmput "G5                 "$G5
+     FMT="%-22s %s"
+     getconfigecho "LASTVPCID" "$FMT";   LASTVPCID=$CONFIGITEM
+     getconfigecho "LASTSUBNET1" "$FMT"; LASTSUBNET1=$CONFIGITEM
+     getconfigecho "LASTSUBNET2" "$FMT"; LASTSUBNET2=$CONFIGITEM
+     getconfigecho "LASTSGID"    "$FMT";    LASTSGID=$CONFIGITEM
+     tmcr
      exit
-     getconfigecho "LASTVPCID";   LASTVPCID=$CONFIGITEM
-     getconfigecho "LASTSUBNET1"; LASTSUBNET1=$CONFIGITEM
-     getconfigecho "LASTSUBNET2"; LASTSUBNET2=$CONFIGITEM
-     getconfigecho "LASTSGID";    LASTSGID=$CONFIGITEM
      print ""
      print "Region Lists"
      print "US     "$USREGIONLIST
